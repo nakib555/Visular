@@ -33,12 +33,20 @@ export function MobileToolControls() {
     setIsMobileDrawerOpen
   } = designer;
 
-  const [subCategory, setSubCategory] = React.useState<string>("all");
+  const getInitialSubCategory = (section: string) => {
+    if (section === "layout") return "width";
+    if (section === "typography") return "sizes";
+    if (section === "visuals") return "color";
+    if (section === "motion") return "hover";
+    return "content";
+  };
+
+  const [subCategory, setSubCategory] = React.useState<string>(() => getInitialSubCategory(inspectorSection));
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   // Sync / Reset when active element or tab category changes
   React.useEffect(() => {
-    setSubCategory("all");
+    setSubCategory(getInitialSubCategory(inspectorSection));
     setIsDropdownOpen(false);
   }, [selectedElement?.id, inspectorSection]);
 
@@ -50,28 +58,24 @@ export function MobileToolControls() {
   // Dynamic Subcategories Map based on Active Tab
   const subCategoriesConfig: Record<string, { id: string; label: string; icon: any }[]> = {
     layout: [
-      { id: "all", label: "All Layout", icon: Maximize },
       { id: "width", label: "Sizing", icon: Grid },
       { id: "padding", label: "Padding", icon: Compass },
       { id: "display", label: "Flex & Grid", icon: Cpu }
     ],
     typography: [
-      { id: "all", label: "All Text", icon: Type },
       { id: "sizes", label: "Sizes", icon: Type },
       { id: "align", label: "Alignment", icon: AlignCenter }
     ],
     visuals: [
-      { id: "all", label: "All Visuals", icon: Palette },
       { id: "color", label: "Colors", icon: Palette },
       { id: "rounded", label: "Curves", icon: Layers }
     ],
     motion: [
-      { id: "all", label: "All Motion", icon: Play },
       { id: "hover", label: "Hovers", icon: Play },
       { id: "static", label: "Effects", icon: Sparkles }
     ],
     core: [
-      { id: "all", label: "All Content", icon: Sparkles }
+      { id: "content", label: "Content", icon: Sparkles }
     ]
   };
 
@@ -163,8 +167,8 @@ export function MobileToolControls() {
         const activeSize = getActiveGroupClass(classes, "textSize");
         const activeAlign = getActiveGroupClass(classes, "textAlign") || "text-left";
 
-        const showSizes = subCategory === "all" || subCategory === "sizes";
-        const showAligns = subCategory === "all" || subCategory === "align";
+        const showSizes = subCategory === "sizes";
+        const showAligns = subCategory === "align";
 
         return (
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
@@ -236,8 +240,8 @@ export function MobileToolControls() {
         ];
         const activeRounding = getActiveGroupClass(classes, "rounding") || "rounded-none";
 
-        const showColors = subCategory === "all" || subCategory === "color";
-        const showRounding = subCategory === "all" || subCategory === "rounded";
+        const showColors = subCategory === "color";
+        const showRounding = subCategory === "rounded";
 
         return (
           <div className="flex-1 min-w-0 flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
@@ -385,7 +389,7 @@ export function MobileToolControls() {
             return <IconComponent size={11} className="text-purple-600 shrink-0" />;
           })()}
           <span className="max-w-[75px] truncate">
-            {subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory)?.label || "All Layout"}
+            {subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory)?.label || "Sizing"}
           </span>
           <ChevronDown size={9} className="text-stone-500 shrink-0 ml-0.5" />
         </button>
@@ -445,16 +449,8 @@ export function MobileToolControls() {
       {/* Divider */}
       <div className="h-4 w-px bg-stone-200 shrink-0"></div>
 
-      {/* Right Actions: Detail Sliders, Duplicate & Delete */}
+      {/* Right Actions: Duplicate & Delete */}
       <div className="flex items-center gap-1 shrink-0">
-        <button 
-          type="button"
-          onClick={(e) => { e.stopPropagation(); setIsMobileDrawerOpen(true); }}
-          className="w-7 h-7 rounded-full bg-purple-50 hover:bg-purple-100 flex items-center justify-center text-purple-600 transition border border-purple-200/50 cursor-pointer"
-          title="Open Detailed Style Panel"
-        >
-          <Sliders size={12} />
-        </button>
         <button 
           type="button"
           onClick={(e) => { e.stopPropagation(); duplicateElement(selectedElement.id); }}
