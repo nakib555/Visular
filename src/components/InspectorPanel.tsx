@@ -1,13 +1,242 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Settings, Sparkles, Palette, Maximize, Type, Layers, Play, Code, 
   HelpCircle, AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown, Trash2, Copy,
-  Grid, Compass, Cpu, Move, Wand2
+  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight
 } from "lucide-react";
 import { VisualElement } from "../types";
 import { setGroupClass, getActiveGroupClass, setPrefixedClass, getPrefixedClass, setColorClass } from "../styleUtils";
 
-export type InspectorSection = "layout" | "typography" | "visuals" | "motion" | "core";
+export type InspectorSection = "layout" | "typography" | "visuals" | "motion" | "core" | "help";
+
+interface CSSProperty {
+  name: string;
+  values: string;
+  note?: string;
+}
+
+interface CSSSubCategory {
+  name: string;
+  properties: CSSProperty[];
+}
+
+interface CSSCategory {
+  name: string;
+  icon: any;
+  subCategories: CSSSubCategory[];
+}
+
+const CSS_HIERARCHY_DATA: CSSCategory[] = [
+  {
+    name: "LAYOUT & STRUCTURE",
+    icon: Maximize,
+    subCategories: [
+      {
+        name: "Box Model",
+        properties: [
+          { name: "width", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
+          { name: "height", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
+          { name: "min-width", values: "auto | <length> | <percentage> | max-content | min-content" },
+          { name: "max-width", values: "auto | <length> | <percentage> | max-content | min-content" },
+          { name: "min-height", values: "auto | <length> | <percentage> | max-content | min-content" },
+          { name: "max-height", values: "auto | <length> | <percentage> | max-content | min-content" },
+          { name: "margin", values: "auto | <length> | <percentage>", note: "e.g., 10px, 2rem, 5%" },
+          { name: "margin-top", values: "auto | <length> | <percentage>" },
+          { name: "margin-right", values: "auto | <length> | <percentage>" },
+          { name: "margin-bottom", values: "auto | <length> | <percentage>" },
+          { name: "margin-left", values: "auto | <length> | <percentage>" },
+          { name: "padding", values: "<length> | <percentage>", note: "e.g., 20px, 1.5em, 10%" },
+          { name: "padding-top", values: "<length> | <percentage>" },
+          { name: "padding-right", values: "<length> | <percentage>" },
+          { name: "padding-bottom", values: "<length> | <percentage>" },
+          { name: "padding-left", values: "<length> | <percentage>" },
+          { name: "box-sizing", values: "content-box | border-box" },
+          { name: "aspect-ratio", values: "auto | <ratio>", note: "e.g., 1/1, 16/9, 4/3" }
+        ]
+      },
+      {
+        name: "Positioning",
+        properties: [
+          { name: "position", values: "static | relative | absolute | fixed | sticky" },
+          { name: "top", values: "auto | <length> | <percentage>", note: "e.g., 50px, 100%" },
+          { name: "right", values: "auto | <length> | <percentage>" },
+          { name: "bottom", values: "auto | <length> | <percentage>" },
+          { name: "left", values: "auto | <length> | <percentage>" },
+          { name: "inset", values: "auto | <length> | <percentage>" },
+          { name: "z-index", values: "auto | <integer>", note: "e.g., 1, 999, -1" }
+        ]
+      },
+      {
+        name: "Flexbox Layout (Container & Items)",
+        properties: [
+          { name: "display", values: "flex | inline-flex" },
+          { name: "flex-direction", values: "row | row-reverse | column | column-reverse" },
+          { name: "justify-content", values: "flex-start | flex-end | center | space-between | space-around | space-evenly", note: "Horizontal alignment" },
+          { name: "align-items", values: "stretch | flex-start | flex-end | center | baseline", note: "Vertical alignment" },
+          { name: "flex-wrap", values: "nowrap | wrap | wrap-reverse" },
+          { name: "gap", values: "<length> | <percentage>", note: "e.g., 16px, 1rem" },
+          { name: "flex-grow", values: "<number>", note: "e.g., 0, 1, 2" },
+          { name: "flex-shrink", values: "<number>", note: "e.g., 0, 1, 2" },
+          { name: "flex-basis", values: "auto | <length> | <percentage>" },
+          { name: "order", values: "<integer>", note: "e.g., 1, 2, -1" },
+          { name: "align-self", values: "auto | flex-start | flex-end | center | baseline | stretch" }
+        ]
+      },
+      {
+        name: "Grid Layout (Container & Items)",
+        properties: [
+          { name: "display", values: "grid | inline-grid" },
+          { name: "grid-template-columns", values: "none | <tracks>", note: "e.g., 1fr 1fr, 200px auto, repeat(3, 1fr)" },
+          { name: "grid-template-rows", values: "none | <tracks>" },
+          { name: "justify-items", values: "start | end | center | stretch" },
+          { name: "grid-column", values: "auto | <line-numbers>", note: "e.g., 1 / 3, span 2" },
+          { name: "grid-row", values: "auto | <line-numbers>" },
+          { name: "grid-area", values: "auto | <custom-name>", note: "e.g., header, sidebar" }
+        ]
+      },
+      {
+        name: "Overflow & Scrolling",
+        properties: [
+          { name: "overflow", values: "visible | hidden | scroll | auto | clip" },
+          { name: "overflow-x", values: "visible | hidden | scroll | auto | clip" },
+          { name: "overflow-y", values: "visible | hidden | scroll | auto | clip" },
+          { name: "scroll-behavior", values: "auto | smooth" },
+          { name: "scroll-snap-type", values: "none | x mandatory | y proximity | both mandatory" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "TYPOGRAPHY & TEXT",
+    icon: Type,
+    subCategories: [
+      {
+        name: "Font Styling",
+        properties: [
+          { name: "font-family", values: "<custom-font> | <generic>", note: "e.g., \"Open Sans\", sans-serif, monospace" },
+          { name: "font-size", values: "<length> | <percentage> | small | large", note: "e.g., 16px, 1.2rem" },
+          { name: "font-weight", values: "normal | bold | bolder | lighter | <number>", note: "e.g., 100, 400, 700" },
+          { name: "font-style", values: "normal | italic | oblique" }
+        ]
+      },
+      {
+        name: "Text Formatting",
+        properties: [
+          { name: "text-align", values: "left | right | center | justify" },
+          { name: "text-decoration", values: "none | underline | overline | line-through" },
+          { name: "text-transform", values: "none | capitalize | uppercase | lowercase" },
+          { name: "text-indent", values: "<length> | <percentage>", note: "e.g., 20px, 2rem" }
+        ]
+      },
+      {
+        name: "Text Spacing & Wrapping",
+        properties: [
+          { name: "line-height", values: "normal | <number> | <length> | <percentage>", note: "e.g., 1.5, 24px" },
+          { name: "letter-spacing", values: "normal | <length>", note: "e.g., 1px, 0.05em" },
+          { name: "word-spacing", values: "normal | <length>", note: "e.g., 2px" },
+          { name: "white-space", values: "normal | nowrap | pre | pre-wrap | pre-line" },
+          { name: "word-break", values: "normal | break-all | keep-all | break-word" },
+          { name: "overflow-wrap", values: "normal | break-all | keep-all | break-word" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "APPEARANCE & VISUALS",
+    icon: Palette,
+    subCategories: [
+      {
+        name: "Colors & Backgrounds",
+        properties: [
+          { name: "color", values: "<color-name> | <hex> | <rgb/rgba> | <hsl> | transparent", note: "e.g., red, #ff0000, rgba(0,0,0,0.5)" },
+          { name: "background-color", values: "<color> | transparent" },
+          { name: "background-image", values: "none | url(\"...\") | linear-gradient(...) | radial-gradient(...)" },
+          { name: "background-size", values: "auto | cover | contain | <length/percentage>", note: "e.g., 100% 50%" },
+          { name: "background-position", values: "center | top left | bottom right | <percentage>", note: "e.g., 50% 50%" },
+          { name: "background-repeat", values: "repeat | no-repeat | repeat-x | repeat-y" },
+          { name: "opacity", values: "<number>", note: "0.0 to 1.0 (e.g. 0.5)" }
+        ]
+      },
+      {
+        name: "Borders",
+        properties: [
+          { name: "border", values: "none | <thickness> <style> <color>", note: "e.g., 1px solid black, 2px dashed red" },
+          { name: "outline", values: "none | <thickness> <style> <color>" },
+          { name: "border-radius", values: "<length> | <percentage>", note: "e.g., 8px, 50%" }
+        ]
+      },
+      {
+        name: "Effects & Filters",
+        properties: [
+          { name: "box-shadow", values: "none | <offset-x> <offset-y> <blur> <spread> <color>", note: "e.g., 2px 4px 10px rgba(0,0,0,0.3)" },
+          { name: "text-shadow", values: "none | <offset-x> <offset-y> <blur> <color>", note: "e.g., 1px 1px 2px black" },
+          { name: "filter", values: "none | blur(px) | brightness(num) | contrast(%) | grayscale(%)", note: "e.g., blur(5px)" },
+          { name: "backdrop-filter", values: "none | blur(px) | brightness(num) | contrast(%) | grayscale(%)" },
+          { name: "clip-path", values: "none | circle(%) | polygon(...) | url(#id)" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "MOVEMENT & ANIMATION",
+    icon: Play,
+    subCategories: [
+      {
+        name: "Transitions",
+        properties: [
+          { name: "transition-property", values: "all | none | <property-name>", note: "e.g., background-color, transform" },
+          { name: "transition-duration", values: "<time>", note: "e.g., 0.3s, 500ms" },
+          { name: "transition-timing-function", values: "ease | linear | ease-in | ease-out | ease-in-out | cubic-bezier(...)" },
+          { name: "transition-delay", values: "<time>" }
+        ]
+      },
+      {
+        name: "Transforms",
+        properties: [
+          { name: "transform", values: "none | translate(X, Y) | scale(X, Y) | rotate(deg) | skew(deg, deg)" },
+          { name: "transform-origin", values: "center | top left | bottom right | <length> | <percentage>" }
+        ]
+      },
+      {
+        name: "Keyframe Animations",
+        properties: [
+          { name: "animation-name", values: "none | <custom-name>", note: "e.g., slideIn, pulse" },
+          { name: "animation-duration", values: "<time>" },
+          { name: "animation-iteration-count", values: "<number> | infinite" },
+          { name: "animation-direction", values: "normal | reverse | alternate | alternate-reverse" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "INTERACTIVITY & UI",
+    icon: Cpu,
+    subCategories: [
+      {
+        name: "Mouse Controls",
+        properties: [
+          { name: "cursor", values: "auto | default | pointer | crosshair | not-allowed | grab | grabbing | text" },
+          { name: "pointer-events", values: "auto | none" }
+        ]
+      },
+      {
+        name: "User Behaviors",
+        properties: [
+          { name: "user-select", values: "auto | text | none | all" },
+          { name: "resize", values: "none | both | horizontal | vertical" },
+          { name: "touch-action", values: "auto | none | pan-x | pan-y | manipulation" }
+        ]
+      },
+      {
+        name: "Lists & Tables",
+        properties: [
+          { name: "list-style-type", values: "none | disc | circle | square | decimal | lower-alpha | upper-roman" },
+          { name: "border-collapse", values: "collapse | separate" }
+        ]
+      }
+    ]
+  }
+];
 
 interface InspectorPanelProps {
   selectedElement: VisualElement | null;
@@ -26,6 +255,40 @@ export function InspectorPanel({
   deleteElement,
   duplicateElement
 }: InspectorPanelProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+    "LAYOUT & STRUCTURE": true,
+    "TYPOGRAPHY & TEXT": true,
+    "APPEARANCE & VISUALS": true,
+    "MOVEMENT & ANIMATION": true,
+    "INTERACTIVITY & UI": true,
+  });
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => {
+      setCopiedText((curr) => curr === text ? null : curr);
+    }, 1500);
+  };
+
+  const filteredHierarchy = CSS_HIERARCHY_DATA.map(category => {
+    const matchingSubCategories = category.subCategories.map(subCat => {
+      const matchingProperties = subCat.properties.filter(prop => {
+        const query = searchQuery.toLowerCase();
+        return (
+          prop.name.toLowerCase().includes(query) ||
+          prop.values.toLowerCase().includes(query) ||
+          (prop.note && prop.note.toLowerCase().includes(query))
+        );
+      });
+      return { ...subCat, properties: matchingProperties };
+    }).filter(subCat => subCat.properties.length > 0);
+
+    return { ...category, subCategories: matchingSubCategories };
+  }).filter(category => category.subCategories.length > 0);
+
   if (!selectedElement) return (
     <div className="flex flex-col items-center justify-center h-full w-full text-stone-400 p-8 text-center bg-stone-50/30 animate-fade-in">
       <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-stone-200/60 flex items-center justify-center mb-4 text-stone-300">
@@ -53,7 +316,8 @@ export function InspectorPanel({
           { id: "typography", label: "Typography & Text", icon: Type },
           { id: "visuals", label: "Appearance & Visuals", icon: Palette },
           { id: "motion", label: "Motion & Effects", icon: Play },
-          { id: "core", label: "Content & Code", icon: Sparkles }
+          { id: "core", label: "Content & Code", icon: Sparkles },
+          { id: "help", label: "CSS Guide", icon: HelpCircle }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -1576,6 +1840,187 @@ export function InspectorPanel({
                   placeholder="flex items-center justify-between px-4 py-2 border border-gray-100..."
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 6. CSS PROPERTIES CHEATSHEET & DIRECTORY ==================== */}
+        {inspectorSection === "help" && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right-3 duration-350 pr-0.5">
+            <div className="flex items-center gap-2 mb-1">
+              <HelpCircle size={15} className="text-purple-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">CSS Property Reference</span>
+            </div>
+
+            {/* Quick Live Filter Search */}
+            <div className="relative">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search properties, categories or options..."
+                className="w-full bg-stone-50 border border-stone-200/80 rounded-xl pl-9 pr-8 py-2.5 text-xs text-stone-700 placeholder-stone-400 focus:outline-none focus:border-purple-400 focus:bg-white focus:ring-4 focus:ring-purple-500/10 transition-all font-sans shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 font-semibold text-[11px] px-1 hover:bg-stone-200/50 rounded cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Interactive Hierarchy Accordions */}
+            <div className="flex flex-col gap-4">
+              {filteredHierarchy.length === 0 ? (
+                <div className="text-center py-8 text-stone-400 bg-stone-50/50 rounded-2xl border border-stone-200/40 p-4">
+                  <p className="text-xs font-medium">No CSS properties match "{searchQuery}"</p>
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mt-2 text-xs text-purple-600 font-semibold hover:underline cursor-pointer"
+                  >
+                    Clear Search Filter
+                  </button>
+                </div>
+              ) : (
+                filteredHierarchy.map((category) => {
+                  const isExpanded = expandedCategories[category.name] || searchQuery !== "";
+                  const totalPropertiesCount = category.subCategories.reduce((acc, sub) => acc + sub.properties.length, 0);
+
+                  return (
+                    <div
+                      key={category.name}
+                      className="bg-white border border-stone-200/60 rounded-2xl overflow-hidden shadow-sm hover:border-stone-300 transition-all"
+                    >
+                      {/* Section Accordion Header */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (searchQuery === "") {
+                            setExpandedCategories(prev => ({
+                              ...prev,
+                              [category.name]: !prev[category.name]
+                            }));
+                          }
+                        }}
+                        disabled={searchQuery !== ""}
+                        className={`w-full flex items-center justify-between p-4 bg-stone-50/60 border-b border-stone-100 font-sans cursor-pointer transition-colors ${
+                          searchQuery !== "" ? "cursor-default animate-none" : "hover:bg-stone-100/60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <category.icon size={14} className="text-purple-600" />
+                          <span className="text-[11px] font-bold text-stone-800 uppercase tracking-wider">
+                            {category.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 font-mono">
+                            {totalPropertiesCount} props
+                          </span>
+                          {searchQuery === "" && (
+                            <ChevronDown
+                              size={14}
+                              className={`text-stone-400 transition-transform duration-200 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Section Accordion Content */}
+                      {isExpanded && (
+                        <div className="p-4 pt-3 flex flex-col gap-4 divide-y divide-stone-100">
+                          {category.subCategories.map((subCategory) => (
+                            <div key={subCategory.name} className="pt-3 first:pt-0 flex flex-col gap-2.5">
+                              {/* SubCategory Heading */}
+                              <h4 className="text-[10px] text-purple-600 font-bold uppercase tracking-wider font-sans">
+                                {subCategory.name}
+                              </h4>
+
+                              {/* Properties Matrix */}
+                              <div className="flex flex-col gap-3">
+                                {subCategory.properties.map((property) => (
+                                  <div
+                                    key={property.name}
+                                    className="p-3 bg-stone-50/40 border border-stone-200/30 rounded-xl space-y-2 hover:bg-stone-50/90 transition-colors"
+                                  >
+                                    {/* Property Header */}
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <code
+                                          onClick={() => handleCopy(property.name)}
+                                          title="Click to copy property name"
+                                          className="text-[11.5px] font-mono font-bold text-stone-800 hover:text-purple-700 bg-stone-100/50 px-1.5 py-0.5 rounded cursor-pointer transition-all"
+                                        >
+                                          {property.name}
+                                        </code>
+                                        {property.note && (
+                                          <span className="text-[10px] text-stone-400 font-medium font-sans">
+                                            ({property.note})
+                                          </span>
+                                        )}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCopy(property.name)}
+                                        className="text-stone-400 hover:text-stone-600 transition-colors p-1 rounded-lg hover:bg-stone-200/40 cursor-pointer"
+                                        title="Copy Property Name"
+                                      >
+                                        <Copy size={11} />
+                                      </button>
+                                    </div>
+
+                                    {/* Property Values list */}
+                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                      {property.values.split(/\s*\|\s*/).map((valueItem, vIdx) => {
+                                        const trimmedValue = valueItem.trim();
+                                        const isCopied = copiedText === trimmedValue;
+                                        return (
+                                          <button
+                                            key={vIdx}
+                                            type="button"
+                                            onClick={() => handleCopy(trimmedValue)}
+                                            style={{ touchAction: "manipulation" }}
+                                            className={`px-2 py-0.5 h-6 text-[10px] font-mono rounded-lg border flex items-center gap-1 transition-all duration-150 cursor-pointer select-none ${
+                                              isCopied
+                                                ? "bg-emerald-50 border-emerald-300 text-emerald-700 font-bold shadow-sm"
+                                                : "bg-white hover:bg-stone-50 border-stone-200/50 text-stone-600 hover:text-stone-800"
+                                            }`}
+                                          >
+                                            <span>{trimmedValue}</span>
+                                            {isCopied && <Check size={10} className="text-emerald-600" />}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Micro Quick Notes Footer Tip */}
+            <div className="bg-purple-50/50 border border-purple-100/50 rounded-2xl p-4 space-y-1.5 text-[11px] text-stone-600 leading-relaxed font-sans shadow-inner">
+              <p className="font-bold text-purple-700 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                <Sparkles size={11} />
+                <span>Reference Notation Guide:</span>
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-stone-500 text-[10.5px]">
+                <li><code className="font-mono text-purple-600 font-semibold">&lt;length&gt;</code>: Units like <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">px</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">rem</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">em</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">vw</code>, etc.</li>
+                <li><code className="font-mono text-purple-600 font-semibold">&lt;time&gt;</code>: Transition and animation time like <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">s</code> or <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">ms</code>.</li>
+                <li>Pills are interactive: **tapping copies values** instantly to clipboard.</li>
+              </ul>
             </div>
           </div>
         )}

@@ -9,7 +9,8 @@ import { InspectorSection } from "./InspectorPanel";
 import { 
   setGroupClass, getActiveGroupClass, 
   setPrefixedClass, getPrefixedClass, 
-  setColorClass 
+  setColorClass,
+  STYLE_GROUPS
 } from "../styleUtils";
 
 const tabsInfo = [
@@ -17,7 +18,8 @@ const tabsInfo = [
   { id: "typography", label: "Text", icon: Type },
   { id: "visuals", label: "Visuals", icon: Palette },
   { id: "motion", label: "Motion", icon: Play },
-  { id: "core", label: "Code", icon: Sparkles }
+  { id: "core", label: "Code", icon: Sparkles },
+  { id: "help", label: "Guide", icon: HelpCircle }
 ];
 
 export function MobileToolControls() {
@@ -28,17 +30,16 @@ export function MobileToolControls() {
     updateTree,
     deleteElement,
     duplicateElement,
-    mobileActiveView,
-    isMobileDrawerOpen,
-    setIsMobileDrawerOpen
+    mobileActiveView
   } = designer;
 
   const getInitialSubCategory = (section: string) => {
-    if (section === "layout") return "width";
-    if (section === "typography") return "sizes";
-    if (section === "visuals") return "color";
-    if (section === "motion") return "hover";
-    return "content";
+    if (section === "layout") return "boxModel";
+    if (section === "typography") return "typographyStyles";
+    if (section === "visuals") return "colors";
+    if (section === "motion") return "transitions";
+    if (section === "help") return "guide";
+    return "contentDetails";
   };
 
   const [subCategory, setSubCategory] = React.useState<string>(() => getInitialSubCategory(inspectorSection));
@@ -57,87 +58,210 @@ export function MobileToolControls() {
 
   const classes = selectedElement.classes || "";
 
-  // Dynamic Subcategories Map based on Active Tab
+  // Dynamic Subcategories Map based on Active Tab aligning exactly with desktop
   const subCategoriesConfig: Record<string, { id: string; label: string; icon: any }[]> = {
     layout: [
-      { id: "width", label: "Sizing", icon: Grid },
-      { id: "padding", label: "Padding", icon: Compass },
-      { id: "display", label: "Flex & Grid", icon: Cpu }
+      { id: "boxModel", label: "Box Model", icon: Grid },
+      { id: "positioning", label: "Positioning", icon: Move },
+      { id: "flexbox", label: "Flexbox Layout", icon: Cpu },
+      { id: "grid", label: "Grid Layout", icon: Sliders },
+      { id: "overflow", label: "Overflow & Scroll", icon: Compass }
     ],
     typography: [
-      { id: "sizes", label: "Sizes", icon: Type },
-      { id: "align", label: "Alignment", icon: AlignCenter }
+      { id: "typographyStyles", label: "Font Styling", icon: Type },
+      { id: "typographySpacing", label: "Text Spacing", icon: AlignCenter }
     ],
     visuals: [
-      { id: "color", label: "Colors", icon: Palette },
-      { id: "rounded", label: "Curves", icon: Layers }
+      { id: "colors", label: "Color Palettes", icon: Palette },
+      { id: "borders", label: "Borders & Effects", icon: Layers }
     ],
     motion: [
-      { id: "hover", label: "Hovers", icon: Play },
-      { id: "static", label: "Effects", icon: Sparkles }
+      { id: "transitions", label: "CSS Transitions", icon: Play },
+      { id: "animations", label: "Interactive Animations", icon: Sparkles }
     ],
     core: [
-      { id: "content", label: "Content", icon: Sparkles }
+      { id: "contentDetails", label: "Content Details", icon: Sparkles },
+      { id: "utilityClasses", label: "Utility Classes", icon: Code }
+    ],
+    help: [
+      { id: "guide", label: "Guide", icon: HelpCircle }
     ]
+  };
+
+  const isClassActive = (item: { class: string; group?: string; prefix?: string }) => {
+    const isGroupKey = item.group && (item.group in STYLE_GROUPS);
+    if (isGroupKey) {
+      return getActiveGroupClass(classes, item.group as any) === item.class;
+    } else if (item.prefix) {
+      return classes.split(/\s+/).includes(item.class);
+    }
+    return classes.split(/\s+/).includes(item.class);
+  };
+
+  const handleApplyClass = (item: { class: string; group?: string; prefix?: string }) => {
+    updateTree((node) => {
+      let nextClasses = node.classes || "";
+      const isGroupKey = item.group && (item.group in STYLE_GROUPS);
+      
+      if (isGroupKey) {
+        nextClasses = setGroupClass(nextClasses, item.group as any, item.class);
+      } else if (item.prefix) {
+        // If already exists exactly, toggle it off
+        if (nextClasses.split(/\s+/).includes(item.class)) {
+          nextClasses = nextClasses.split(/\s+/).filter(t => t !== item.class).join(" ");
+        } else {
+          nextClasses = setPrefixedClass(nextClasses, item.prefix, item.class);
+        }
+      } else {
+        // Standard arbitrary class toggle
+        const tokens = nextClasses.split(/\s+/).filter(Boolean);
+        if (tokens.includes(item.class)) {
+          nextClasses = tokens.filter(t => t !== item.class).join(" ");
+        } else {
+          nextClasses = [...tokens, item.class].join(" ");
+        }
+      }
+      return { classes: nextClasses };
+    });
   };
 
   const renderMiddleControls = () => {
     switch (inspectorSection) {
       case "layout": {
-        // Quick layout presets (Dimension + Spacing shorthand)
-        let layoutItems = [
-          { label: "Full-W", class: "w-full", group: "width" },
-          { label: "Half-W", class: "w-1/2", group: "width" },
-          { label: "Auto-W", class: "w-auto", group: "width" },
-          { label: "p-2", class: "p-2", group: "padding" },
-          { label: "p-4", class: "p-4", group: "padding" },
-          { label: "p-6", class: "p-6", group: "padding" },
-          { label: "p-8", class: "p-8", group: "padding" },
-          { label: "Flex", class: "flex", group: "display" },
-          { label: "Column", class: "flex-col", group: "flexDirection" },
-          { label: "Row", class: "flex-row", group: "flexDirection" }
-        ];
-
-        // Apply sub-category filters
-        if (subCategory === "width") {
-          layoutItems = layoutItems.filter(item => item.group === "width");
-        } else if (subCategory === "padding") {
-          layoutItems = layoutItems.filter(item => item.group === "padding");
-        } else if (subCategory === "display") {
-          layoutItems = layoutItems.filter(item => item.group === "display" || item.group === "flexDirection");
+        let layoutItems: { label: string; class: string; group: string; prefix?: string }[] = [];
+        if (subCategory === "boxModel") {
+          layoutItems = [
+            { label: "Auto-W", class: "w-auto", group: "width" },
+            { label: "Full-W", class: "w-full", group: "width" },
+            { label: "Half-W", class: "w-1/2", group: "width" },
+            { label: "1/3-W", class: "w-1/3", group: "width" },
+            { label: "2/3-W", class: "w-2/3", group: "width" },
+            { label: "1/4-W", class: "w-1/4", group: "width" },
+            { label: "3/4-W", class: "w-3/4", group: "width" },
+            { label: "Small-W", class: "w-32", group: "width" },
+            { label: "Mid-W", class: "w-48", group: "width" },
+            { label: "Large-W", class: "w-64", group: "width" },
+            { label: "XLarge-W", class: "w-96", group: "width" },
+            { label: "Auto-H", class: "h-auto", group: "height" },
+            { label: "Full-H", class: "h-full", group: "height" },
+            { label: "Small-H", class: "h-12", group: "height" },
+            { label: "Tabs-H", class: "h-16", group: "height" },
+            { label: "Box-H", class: "h-32", group: "height" },
+            { label: "Card-H", class: "h-48", group: "height" },
+            { label: "Hero-H", class: "h-64", group: "height" },
+            { label: "p-0", class: "p-0", group: "padding", prefix: "p-" },
+            { label: "p-1", class: "p-1", group: "padding", prefix: "p-" },
+            { label: "p-2", class: "p-2", group: "padding", prefix: "p-" },
+            { label: "p-4", class: "p-4", group: "padding", prefix: "p-" },
+            { label: "p-6", class: "p-6", group: "padding", prefix: "p-" },
+            { label: "p-8", class: "p-8", group: "padding", prefix: "p-" },
+            { label: "p-10", class: "p-10", group: "padding", prefix: "p-" },
+            { label: "m-0", class: "m-0", group: "margin", prefix: "m-" },
+            { label: "m-1", class: "m-1", group: "margin", prefix: "m-" },
+            { label: "m-2", class: "m-2", group: "margin", prefix: "m-" },
+            { label: "m-4", class: "m-4", group: "margin", prefix: "m-" },
+            { label: "m-6", class: "m-6", group: "margin", prefix: "m-" },
+            { label: "m-8", class: "m-8", group: "margin", prefix: "m-" },
+            { label: "aspect-auto", class: "aspect-auto", group: "aspectRatio" },
+            { label: "aspect-1/1", class: "aspect-square", group: "aspectRatio" },
+            { label: "aspect-16/9", class: "aspect-video", group: "aspectRatio" },
+            { label: "box-border", class: "box-border", group: "boxSizing" },
+            { label: "box-content", class: "box-content", group: "boxSizing" }
+          ];
+        } else if (subCategory === "positioning") {
+          layoutItems = [
+            { label: "static", class: "static", group: "position" },
+            { label: "relative", class: "relative", group: "position" },
+            { label: "absolute", class: "absolute", group: "position" },
+            { label: "fixed", class: "fixed", group: "position" },
+            { label: "sticky", class: "sticky", group: "position" },
+            { label: "inset-0", class: "inset-0", group: "inset", prefix: "inset-" },
+            { label: "inset-2", class: "inset-2", group: "inset", prefix: "inset-" },
+            { label: "inset-4", class: "inset-4", group: "inset", prefix: "inset-" },
+            { label: "z-0", class: "z-0", group: "z", prefix: "z-" },
+            { label: "z-10", class: "z-10", group: "z", prefix: "z-" },
+            { label: "z-20", class: "z-20", group: "z", prefix: "z-" },
+            { label: "z-50", class: "z-50", group: "z", prefix: "z-" },
+            { label: "top-0", class: "top-0", group: "top", prefix: "top-" },
+            { label: "top-2", class: "top-2", group: "top", prefix: "top-" },
+            { label: "top-4", class: "top-4", group: "top", prefix: "top-" },
+            { label: "-top-2", class: "-top-2", group: "top", prefix: "top-" },
+            { label: "right-0", class: "right-0", group: "right", prefix: "right-" },
+            { label: "right-2", class: "right-2", group: "right", prefix: "right-" },
+            { label: "bottom-0", class: "bottom-0", group: "bottom", prefix: "bottom-" },
+            { label: "bottom-2", class: "bottom-2", group: "bottom", prefix: "bottom-" },
+            { label: "left-0", class: "left-0", group: "left", prefix: "left-" },
+            { label: "left-2", class: "left-2", group: "left", prefix: "left-" }
+          ];
+        } else if (subCategory === "flexbox") {
+          layoutItems = [
+            { label: "flex", class: "flex", group: "display" },
+            { label: "inline-flex", class: "inline-flex", group: "display" },
+            { label: "flex-col", class: "flex-col", group: "flexDirection" },
+            { label: "flex-row", class: "flex-row", group: "flexDirection" },
+            { label: "flex-wrap", class: "flex-wrap", group: "flexDirection" },
+            { label: "items-start", class: "items-start", group: "alignment" },
+            { label: "items-center", class: "items-center", group: "alignment" },
+            { label: "items-end", class: "items-end", group: "alignment" },
+            { label: "items-stretch", class: "items-stretch", group: "alignment" },
+            { label: "justify-start", class: "justify-start", group: "justify" },
+            { label: "justify-center", class: "justify-center", group: "justify" },
+            { label: "justify-end", class: "justify-end", group: "justify" },
+            { label: "justify-between", class: "justify-between", group: "justify" },
+            { label: "justify-around", class: "justify-around", group: "justify" },
+            { label: "justify-evenly", class: "justify-evenly", group: "justify" },
+            { label: "self-auto", class: "self-auto", group: "alignSelf" },
+            { label: "self-center", class: "self-center", group: "alignSelf" },
+            { label: "self-stretch", class: "self-stretch", group: "alignSelf" },
+            { label: "gap-0", class: "gap-0", group: "gap" },
+            { label: "gap-1", class: "gap-1", group: "gap" },
+            { label: "gap-2", class: "gap-2", group: "gap" },
+            { label: "gap-4", class: "gap-4", group: "gap" },
+            { label: "gap-6", class: "gap-6", group: "gap" },
+            { label: "gap-8", class: "gap-8", group: "gap" }
+          ];
+        } else if (subCategory === "grid") {
+          layoutItems = [
+            { label: "grid", class: "grid", group: "display" },
+            { label: "cols-1", class: "grid-cols-1", group: "gridCols", prefix: "grid-cols-" },
+            { label: "cols-2", class: "grid-cols-2", group: "grid-cols-2" },
+            { label: "cols-3", class: "grid-cols-3", group: "grid-cols-3" },
+            { label: "cols-4", class: "grid-cols-4", group: "grid-cols-4" },
+            { label: "cols-6", class: "grid-cols-6", group: "grid-cols-6" },
+            { label: "cols-12", class: "grid-cols-12", group: "grid-cols-12" },
+            { label: "rows-1", class: "grid-rows-1", group: "gridRows", prefix: "grid-rows-" },
+            { label: "rows-2", class: "grid-rows-2", group: "grid-rows-2" },
+            { label: "rows-3", class: "grid-rows-3", group: "grid-rows-3" },
+            { label: "gap-0", class: "gap-0", group: "gap" },
+            { label: "gap-2", class: "gap-2", group: "gap" },
+            { label: "gap-4", class: "gap-4", group: "gap" },
+            { label: "gap-6", class: "gap-6", group: "gap" }
+          ];
+        } else if (subCategory === "overflow") {
+          layoutItems = [
+            { label: "overflow-auto", class: "overflow-auto", group: "overflow" },
+            { label: "overflow-hidden", class: "overflow-hidden", group: "overflow" },
+            { label: "overflow-scroll", class: "overflow-scroll", group: "overflow" },
+            { label: "overflow-visible", class: "overflow-visible", group: "overflow" },
+            { label: "overflow-x-auto", class: "overflow-x-auto", group: "overflowX" },
+            { label: "overflow-x-hidden", class: "overflow-x-hidden", group: "overflowX" },
+            { label: "overflow-y-auto", class: "overflow-y-auto", group: "overflowY" },
+            { label: "overflow-y-hidden", class: "overflow-y-hidden", group: "overflowY" },
+            { label: "scroll-smooth", class: "scroll-smooth", group: "scrollBehavior" },
+            { label: "scroll-auto", class: "scroll-auto", group: "scrollBehavior" }
+          ];
         }
 
         return (
           <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
             {layoutItems.map((item) => {
-              let isSelected = false;
-              if (item.group === "width") {
-                isSelected = getActiveGroupClass(classes, "width") === item.class;
-              } else if (item.group === "display") {
-                isSelected = getActiveGroupClass(classes, "display") === item.class;
-              } else if (item.group === "flexDirection") {
-                isSelected = classes.includes(item.class);
-              } else {
-                isSelected = classes.includes(item.class);
-              }
-
+              const active = isClassActive(item);
               return (
                 <button
                   key={item.label}
-                  onClick={() => {
-                    if (item.group === "width") {
-                      updateTree((n) => ({ classes: setGroupClass(n.classes, "width", item.class) }));
-                    } else if (item.group === "display") {
-                      updateTree((n) => ({ classes: setGroupClass(n.classes, "display", item.class) }));
-                    } else if (item.group === "flexDirection") {
-                      updateTree((n) => ({ classes: setGroupClass(n.classes, "flexDirection", item.class) }));
-                    } else {
-                      // padding
-                      updateTree((n) => ({ classes: setPrefixedClass(n.classes, "p-", item.class) }));
-                    }
-                  }}
+                  onClick={() => handleApplyClass(item)}
                   className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
-                    isSelected 
+                    active 
                       ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
                       : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
                   }`}
@@ -151,105 +275,114 @@ export function MobileToolControls() {
       }
 
       case "typography": {
-        const sizePresets = [
-          { label: "xs", value: "text-xs" },
-          { label: "sm", value: "text-sm" },
-          { label: "base", value: "text-base" },
-          { label: "lg", value: "text-lg" },
-          { label: "xl", value: "text-xl" },
-          { label: "2xl", value: "text-2xl" },
-          { label: "3xl", value: "text-3xl" }
-        ];
-        const aligns = [
-          { key: "text-left", icon: AlignLeft },
-          { key: "text-center", icon: AlignCenter },
-          { key: "text-right", icon: AlignRight },
-          { key: "text-justify", icon: AlignJustify }
-        ];
-        const activeSize = getActiveGroupClass(classes, "textSize");
-        const activeAlign = getActiveGroupClass(classes, "textAlign") || "text-left";
-
-        const showSizes = subCategory === "sizes";
-        const showAligns = subCategory === "align";
+        let typographyItems: { label: string; class: string; group: string; prefix?: string }[] = [];
+        if (subCategory === "typographyStyles") {
+          typographyItems = [
+            { label: "xs", class: "text-xs", group: "textSize" },
+            { label: "sm", class: "text-sm", group: "textSize" },
+            { label: "base", class: "text-base", group: "textSize" },
+            { label: "lg", class: "text-lg", group: "textSize" },
+            { label: "xl", class: "text-xl", group: "textSize" },
+            { label: "2xl", class: "text-2xl", group: "textSize" },
+            { label: "3xl", class: "text-3xl", group: "textSize" },
+            { label: "4xl", class: "text-4xl", group: "textSize" },
+            { label: "5xl", class: "text-5xl", group: "textSize" },
+            { label: "sans", class: "font-sans", group: "fontFamily" },
+            { label: "serif", class: "font-serif", group: "fontFamily" },
+            { label: "mono", class: "font-mono", group: "fontFamily" },
+            { label: "light", class: "font-light", group: "fontWeight" },
+            { label: "normal", class: "font-normal", group: "fontWeight" },
+            { label: "medium", class: "font-medium", group: "fontWeight" },
+            { label: "semibold", class: "font-semibold", group: "fontWeight" },
+            { label: "bold", class: "font-bold", group: "fontWeight" },
+            { label: "leading-none", class: "leading-none", group: "leading" },
+            { label: "leading-tight", class: "leading-tight", group: "leading" },
+            { label: "leading-normal", class: "leading-normal", group: "leading" },
+            { label: "leading-relaxed", class: "leading-relaxed", group: "leading" },
+            { label: "italic", class: "italic", group: "fontStyle", prefix: "italic" },
+            { label: "not-italic", class: "not-italic", group: "fontStyle", prefix: "not-italic" }
+          ];
+        } else if (subCategory === "typographySpacing") {
+          typographyItems = [
+            { label: "align-left", class: "text-left", group: "textAlign" },
+            { label: "align-center", class: "text-center", group: "textAlign" },
+            { label: "align-right", class: "text-right", group: "textAlign" },
+            { label: "align-justify", class: "text-justify", group: "textAlign" },
+            { label: "underline", class: "underline", group: "decoration", prefix: "underline" },
+            { label: "line-through", class: "line-through", group: "decoration", prefix: "line-through" },
+            { label: "no-underline", class: "no-underline", group: "decoration", prefix: "no-underline" },
+            { label: "uppercase", class: "uppercase", group: "transform", prefix: "uppercase" },
+            { label: "lowercase", class: "lowercase", group: "transform", prefix: "lowercase" },
+            { label: "capitalize", class: "capitalize", group: "transform", prefix: "capitalize" },
+            { label: "normal-case", class: "normal-case", group: "transform", prefix: "normal-case" },
+            { label: "spacing-tighter", class: "tracking-tighter", group: "tracking" },
+            { label: "spacing-tight", class: "tracking-tight", group: "tracking" },
+            { label: "spacing-normal", class: "tracking-normal", group: "tracking" },
+            { label: "spacing-wide", class: "tracking-wide", group: "tracking" },
+            { label: "spacing-widest", class: "tracking-widest", group: "tracking" }
+          ];
+        }
 
         return (
-          <div className="flex-1 min-w-0 flex items-center justify-between gap-2.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {showSizes && (
-              <div className="flex items-center gap-1 shrink-0 overflow-x-auto scrollbar-hide">
-                {sizePresets.map((sz) => {
-                  const isSelected = activeSize === sz.value;
-                  return (
-                    <button
-                      key={sz.label}
-                      onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "textSize", sz.value) }))}
-                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg transition shrink-0 border cursor-pointer ${
-                        isSelected 
-                          ? "bg-purple-600 border-purple-500 text-white font-bold" 
-                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                      }`}
-                    >
-                      {sz.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            
-            {showSizes && showAligns && <div className="h-4 w-px bg-stone-200 shrink-0"></div>}
-
-            {showAligns && (
-              <div className="flex items-center gap-1 shrink-0">
-                {aligns.map((align) => {
-                  const isSelected = activeAlign === align.key;
-                  return (
-                    <button
-                      key={align.key}
-                      onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "textAlign", align.key) }))}
-                      className={`p-1.5 rounded-lg transition border cursor-pointer ${
-                        isSelected 
-                          ? "bg-purple-100 border-purple-200 text-purple-600" 
-                          : "bg-stone-50 border-stone-200 text-stone-500 hover:text-stone-800"
-                      }`}
-                    >
-                      <align.icon size={11} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
+            {typographyItems.map((item) => {
+              const active = isClassActive(item);
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleApplyClass(item)}
+                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
+                    active 
+                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
+                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         );
       }
 
       case "visuals": {
-        const shadingColors = [
-          { label: "Clear", bg: "bg-transparent", text: "text-stone-400", class: "bg-transparent" },
-          { label: "White", bg: "bg-white", class: "bg-white border border-stone-200" },
-          { label: "Dark", bg: "bg-stone-900 border border-stone-800", class: "bg-stone-900" },
-          { label: "Stone", bg: "bg-stone-100", class: "bg-stone-100 border border-stone-200" },
-          { label: "Amber", bg: "bg-amber-50", class: "bg-amber-100 border border-amber-200" },
-          { label: "Indigo", bg: "bg-indigo-950", class: "bg-indigo-950" },
-          { label: "Purple", bg: "bg-purple-100", class: "bg-purple-100" },
-          { label: "Teal", bg: "bg-emerald-900", class: "bg-emerald-900" }
-        ];
-        const activeBg = getPrefixedClass(classes, "bg-") || "bg-transparent";
+        if (subCategory === "colors") {
+          const selectColors = [
+            { label: "Clear", bg: "bg-transparent", class: "bg-transparent" },
+            { label: "White", bg: "bg-white", class: "bg-white border border-stone-200" },
+            { label: "Dark", bg: "bg-stone-900 border border-stone-800", class: "bg-stone-900" },
+            { label: "Stone", bg: "bg-stone-100", class: "bg-stone-100 border border-stone-200" },
+            { label: "Amber", bg: "bg-amber-100", class: "bg-amber-100 border border-amber-200" },
+            { label: "Indigo", bg: "bg-indigo-950", class: "bg-indigo-950" },
+            { label: "Purple", bg: "bg-purple-100", class: "bg-purple-100" },
+            { label: "Teal", bg: "bg-emerald-950", class: "bg-emerald-950" }
+          ];
 
-        const roundingPresets = [
-          { label: "Flat", value: "rounded-none" },
-          { label: "MD", value: "rounded-md" },
-          { label: "XL", value: "rounded-xl" },
-          { label: "Pill", value: "rounded-full" }
-        ];
-        const activeRounding = getActiveGroupClass(classes, "rounding") || "rounded-none";
+          const textColors = [
+            { label: "Text-White", class: "text-white", prefix: "text-" },
+            { label: "Text-Dark", class: "text-stone-900", prefix: "text-" },
+            { label: "Text-Stone", class: "text-stone-550", prefix: "text-" },
+            { label: "Text-Amber", class: "text-amber-700", prefix: "text-" },
+            { label: "Text-Indigo", class: "text-indigo-600", prefix: "text-" },
+            { label: "Text-Purple", class: "text-purple-600", prefix: "text-" }
+          ];
 
-        const showColors = subCategory === "color";
-        const showRounding = subCategory === "rounded";
+          const opacities = [
+            { label: "op-100", class: "opacity-100", prefix: "opacity-" },
+            { label: "op-90", class: "opacity-90", prefix: "opacity-" },
+            { label: "op-75", class: "opacity-75", prefix: "opacity-" },
+            { label: "op-50", class: "opacity-50", prefix: "opacity-" },
+            { label: "op-25", class: "opacity-25", prefix: "opacity-" },
+            { label: "op-10", class: "opacity-10", prefix: "opacity-" }
+          ];
 
-        return (
-          <div className="flex-1 min-w-0 flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {showColors && (
-              <div className="flex items-center gap-2 shrink-0 py-1">
-                {shadingColors.map((color) => {
+          const activeBg = getPrefixedClass(classes, "bg-") || "bg-transparent";
+
+          return (
+            <div className="flex-1 min-w-0 flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
+              {/* Bg Colors circles list */}
+              <div className="flex items-center gap-1.5 shrink-0 py-1 border-r border-stone-200 pr-2">
+                {selectColors.map((color) => {
                   const isSelected = activeBg === (color.class?.split(" ")[0] || color.bg);
                   return (
                     <button
@@ -263,102 +396,196 @@ export function MobileToolControls() {
                   );
                 })}
               </div>
-            )}
 
-            {showColors && showRounding && <div className="h-4 w-px bg-stone-200 shrink-0"></div>}
-
-            {showRounding && (
-              <div className="flex items-center gap-1 shrink-0">
-                {roundingPresets.map((r) => {
-                  const isSelected = activeRounding === r.value;
+              {/* Text Colors & Opacity presets */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {textColors.map((item) => {
+                  const active = classes.split(/\s+/).includes(item.class);
                   return (
                     <button
-                      key={r.label}
-                      onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "rounding", r.value) }))}
-                      className={`px-2 py-0.5 text-[9px] font-semibold rounded-md transition shrink-0 border cursor-pointer ${
-                        isSelected 
+                      key={item.label}
+                      onClick={() => updateTree((n) => ({ classes: setColorClass(n.classes, "text-", item.class) }))}
+                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition cursor-pointer ${
+                        active 
+                          ? "bg-purple-600 border-purple-500 text-white" 
+                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+
+                <div className="h-4 w-px bg-stone-200 shrink-0"></div>
+
+                {opacities.map((item) => {
+                  const active = classes.split(/\s+/).includes(item.class);
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => updateTree((n) => ({ classes: setPrefixedClass(n.classes, item.prefix, item.class) }))}
+                      className={`px-2 py-0.5 text-[9px] font-mono rounded-md border transition shrink-0 cursor-pointer ${
+                        active 
                           ? "bg-purple-600 border-purple-500 text-white" 
                           : "bg-stone-50 border-stone-200 text-stone-500 hover:bg-stone-100"
                       }`}
                     >
-                      {r.label}
+                      {item.label}
                     </button>
                   );
                 })}
               </div>
-            )}
-          </div>
-        );
-      }
-
-      case "motion": {
-        let animations = [
-          { label: "Zoom Hover", class: "transition-all duration-300 hover:scale-[1.03]" },
-          { label: "Rotate Hover", class: "transition-transform duration-300 hover:rotate-3" },
-          { label: "Fade-in", class: "animate-fade-in" },
-          { label: "Pulse", class: "animate-pulse" },
-          { label: "Bounce", class: "animate-bounce" }
-        ];
-
-        if (subCategory === "hover") {
-          animations = animations.filter(anim => anim.label.includes("Hover"));
-        } else if (subCategory === "static") {
-          animations = animations.filter(anim => !anim.label.includes("Hover"));
+            </div>
+          );
         }
+
+        // borders subcategory
+        let borderStyleItems = [
+          { label: "rounded-none", class: "rounded-none", group: "rounding" },
+          { label: "rounded-sm", class: "rounded-sm", group: "rounding" },
+          { label: "rounded", class: "rounded", group: "rounding" },
+          { label: "rounded-md", class: "rounded-md", group: "rounding" },
+          { label: "rounded-lg", class: "rounded-lg", group: "rounding" },
+          { label: "rounded-xl", class: "rounded-xl", group: "rounding" },
+          { label: "rounded-2xl", class: "rounded-2xl", group: "rounding" },
+          { label: "rounded-3xl", class: "rounded-3xl", group: "rounding" },
+          { label: "rounded-full", class: "rounded-full", group: "rounding" },
+          { label: "border-0", class: "border-0", group: "borderWidth" },
+          { label: "border-1", class: "border", group: "borderWidth" },
+          { label: "border-2", class: "border-2", group: "borderWidth" },
+          { label: "border-4", class: "border-4", group: "borderWidth" },
+          { label: "border-8", class: "border-8", group: "borderWidth" },
+          { label: "border-solid", class: "border-solid", group: "borderStyle", prefix: "border-" },
+          { label: "border-dashed", class: "border-dashed", group: "borderStyle", prefix: "border-" },
+          { label: "border-dotted", class: "border-dotted", group: "borderStyle", prefix: "border-" },
+          { label: "shadow-none", class: "shadow-none", group: "shadow" },
+          { label: "shadow-sm", class: "shadow-sm", group: "shadow" },
+          { label: "shadow", class: "shadow", group: "shadow" },
+          { label: "shadow-md", class: "shadow-md", group: "shadow" },
+          { label: "shadow-lg", class: "shadow-lg", group: "shadow" },
+          { label: "shadow-xl", class: "shadow-xl", group: "shadow" },
+          { label: "shadow-2xl", class: "shadow-2xl", group: "shadow" }
+        ];
 
         return (
           <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {animations.map((anim) => {
-               const active = classes.includes(anim.class.split(" ")[0]);
-               return (
-                 <button
-                   key={anim.label}
-                   onClick={() => {
-                     updateTree((node) => {
-                       const tokens = node.classes?.split(/\s+/) || [];
-                       let nextClasses = "";
-                       if (active) {
-                         nextClasses = tokens.filter(t => !anim.class.includes(t)).join(" ");
-                       } else {
-                         nextClasses = [...tokens, anim.class].join(" ");
-                       }
-                       return { classes: nextClasses };
-                     });
-                   }}
-                   className={`px-2.5 py-1 text-[10px] rounded-lg border transition shrink-0 cursor-pointer ${
-                     active 
-                       ? "bg-purple-600 border-purple-500 text-white font-bold" 
-                       : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                   }`}
-                 >
-                   {anim.label}
-                 </button>
-               );
+            {borderStyleItems.map((item) => {
+              const active = isClassActive(item);
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleApplyClass(item)}
+                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
+                    active 
+                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
+                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
             })}
           </div>
         );
       }
 
-      case "core":
+      case "motion": {
+        let motionItems: { label: string; class: string; group: string; prefix?: string }[] = [];
+        if (subCategory === "transitions") {
+          motionItems = [
+            { label: "transition-none", class: "transition-none", group: "transition", prefix: "transition-" },
+            { label: "transition-all", class: "transition-all", group: "transition", prefix: "transition-" },
+            { label: "transition-colors", class: "transition-colors", group: "transition", prefix: "transition-" },
+            { label: "transition-transform", class: "transition-transform", group: "transition", prefix: "transition-" },
+            { label: "duration-75", class: "duration-75", group: "duration", prefix: "duration-" },
+            { label: "duration-100", class: "duration-100", group: "duration", prefix: "duration-" },
+            { label: "duration-150", class: "duration-150", group: "duration", prefix: "duration-" },
+            { label: "duration-200", class: "duration-200", group: "duration", prefix: "duration-" },
+            { label: "duration-300", class: "duration-300", group: "duration", prefix: "duration-" },
+            { label: "duration-500", class: "duration-500", group: "duration", prefix: "duration-" },
+            { label: "duration-700", class: "duration-700", group: "duration", prefix: "duration-" },
+            { label: "duration-1000", class: "duration-1000", group: "duration", prefix: "duration-" },
+            { label: "ease-linear", class: "ease-linear", group: "easing", prefix: "ease-" },
+            { label: "ease-in", class: "ease-in", group: "easing", prefix: "ease-" },
+            { label: "ease-out", class: "ease-out", group: "easing", prefix: "ease-" },
+            { label: "ease-in-out", class: "ease-in-out", group: "easing", prefix: "ease-" },
+            { label: "hover:scale-105", class: "hover:scale-[1.05]", group: "hoverScale", prefix: "hover:scale-" },
+            { label: "hover:scale-110", class: "hover:scale-[1.10]", group: "hoverScale", prefix: "hover:scale-" },
+            { label: "hover:scale-95", class: "hover:scale-[0.95]", group: "hoverScale", prefix: "hover:scale-" },
+            { label: "hover:rotate-1", class: "hover:rotate-1", group: "hoverRotate", prefix: "hover:rotate-" },
+            { label: "hover:rotate-3", class: "hover:rotate-3", group: "hoverRotate", prefix: "hover:rotate-" }
+          ];
+        } else if (subCategory === "animations") {
+          motionItems = [
+            { label: "animate-none", class: "animate-none", group: "animation", prefix: "animate-" },
+            { label: "animate-fade-in", class: "animate-fade-in", group: "animation", prefix: "animate-" },
+            { label: "animate-pulse", class: "animate-pulse", group: "animation", prefix: "animate-" },
+            { label: "animate-bounce", class: "animate-bounce", group: "animation", prefix: "animate-" },
+            { label: "animate-spin", class: "animate-spin", group: "animation", prefix: "animate-" },
+            { label: "animate-ping", class: "animate-ping", group: "animation", prefix: "animate-" },
+            { label: "hover:shadow-lg", class: "hover:shadow-lg", group: "hoverShadow", prefix: "hover:shadow-" },
+            { label: "hover:opacity-90", class: "hover:bg-opacity-90", group: "hoverOpacity", prefix: "hover:bg-opacity-" }
+          ];
+        }
+
         return (
-          <div className="flex-1 flex items-center pr-1 animate-fade-in select-none gap-2">
-            {selectedElement.content !== undefined ? (
-              <input 
-                type="text" 
-                value={selectedElement.content || ""} 
-                onChange={(e) => updateTree(() => ({ content: e.target.value }))}
-                className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-purple-500 font-sans text-stone-800"
-                placeholder="Text content..."
-              />
-            ) : (
-              <input 
-                type="text" 
-                value={selectedElement.classes || ""} 
-                onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
-                className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-purple-500 font-mono text-stone-800"
-                placeholder="Utilities list..."
-              />
-            )}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
+            {motionItems.map((item) => {
+              const active = isClassActive(item);
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleApplyClass(item)}
+                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
+                    active 
+                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
+                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        );
+      }
+
+      case "core": {
+        if (subCategory === "contentDetails") {
+          return (
+            <div className="flex-1 flex items-center pr-1 animate-fade-in gap-2 select-none">
+              {selectedElement.content !== undefined ? (
+                <input 
+                  type="text" 
+                  value={selectedElement.content || ""} 
+                  onChange={(e) => updateTree(() => ({ content: e.target.value }))}
+                  className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-purple-500 font-sans text-stone-800"
+                  placeholder="Text content..."
+                />
+              ) : (
+                <span className="text-[10px] text-stone-400 font-mono italic">No direct content (container element)</span>
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex-1 flex items-center pr-1 animate-fade-in gap-2 select-none">
+            <input 
+              type="text" 
+              value={selectedElement.classes || ""} 
+              onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
+              className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-purple-500 font-mono text-stone-800"
+              placeholder="Utilities classes list write..."
+            />
+          </div>
+        );
+      }
+
+      case "help":
+        return (
+          <div className="flex-1 flex items-center pr-1 animate-fade-in text-[10px] text-stone-500 font-mono italic">
+            <span>Scroll drawer up to browse full list</span>
           </div>
         );
 
@@ -383,7 +610,8 @@ export function MobileToolControls() {
             e.stopPropagation();
             setIsDropdownOpen(!isDropdownOpen);
           }}
-          className="flex items-center gap-1.5 shrink-0 text-stone-800 font-bold uppercase font-mono tracking-wider text-[8.5px] bg-stone-50 hover:bg-stone-100 active:scale-95 px-2.5 py-1.5 rounded-full border border-stone-250 transition cursor-pointer select-none"
+          className="flex items-center gap-1.5 shrink-0 text-stone-800 font-bold uppercase font-mono tracking-wider text-[8.5px] bg-stone-50 hover:bg-stone-100 active:scale-95 px-2.5 py-1.5 rounded-full border transition cursor-pointer select-none"
+          style={{ borderColor: "#e8dddc" }}
         >
           {(() => {
             const currentSub = subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory);
@@ -391,7 +619,7 @@ export function MobileToolControls() {
             return <IconComponent size={11} className="text-purple-600 shrink-0" />;
           })()}
           <span className="max-w-[75px] truncate">
-            {subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory)?.label || "Sizing"}
+            {subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory)?.label || "Box Model"}
           </span>
           <ChevronDown size={9} className="text-stone-500 shrink-0 ml-0.5" />
         </button>
@@ -409,7 +637,7 @@ export function MobileToolControls() {
             {/* Sub-categories Dropdown popover floating above category block */}
             <div 
               className="absolute bottom-full left-0 mb-3 bg-white/95 backdrop-blur-md border border-stone-250/90 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] rounded-2xl p-2 w-[170px] z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left"
-              style={{ maxHeight: "320px", overflowY: "auto" }}
+              style={{ maxHeight: "320px", overflowY: "auto", borderWidth: "0px" }}
             >
               <div className="px-2 py-1 text-[8px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1.5 mb-1 text-left">
                 Sub-Categories
@@ -484,7 +712,7 @@ export function MobileToolControls() {
             <div 
               id="mobile-element-actions-menu"
               className="absolute bottom-full right-0 mb-3 bg-white/95 backdrop-blur-md border border-stone-250/90 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] rounded-2xl p-1.5 w-[140px] z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left"
-              style={{ borderRadius: "15px" }}
+              style={{ borderRadius: "15px", borderWidth: "0px" }}
             >
               <div className="px-2.5 py-1 text-[8.5px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1.5 mb-0.5 text-left select-none">
                 Actions
