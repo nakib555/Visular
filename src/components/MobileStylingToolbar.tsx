@@ -2,7 +2,7 @@ import React from "react";
 import { 
   Sparkles, Palette, Maximize, Type, Layers, Play, Code, 
   HelpCircle, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  MousePointer, Grid, Compass, Cpu, Move, Wand2, Sliders, ChevronDown
+  MousePointer, Grid, Compass, Cpu, Move, Wand2, Sliders, ChevronDown, MoreVertical
 } from "lucide-react";
 import { useDesigner } from "../contexts/DesignerContext";
 import { InspectorSection } from "./InspectorPanel";
@@ -43,11 +43,13 @@ export function MobileToolControls() {
 
   const [subCategory, setSubCategory] = React.useState<string>(() => getInitialSubCategory(inspectorSection));
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [isActionsDropdownOpen, setIsActionsDropdownOpen] = React.useState(false);
 
   // Sync / Reset when active element or tab category changes
   React.useEffect(() => {
     setSubCategory(getInitialSubCategory(inspectorSection));
     setIsDropdownOpen(false);
+    setIsActionsDropdownOpen(false);
   }, [selectedElement?.id, inspectorSection]);
 
   // Render ONLY when inside inspector view and we have a selected element
@@ -449,24 +451,72 @@ export function MobileToolControls() {
       {/* Divider */}
       <div className="h-4 w-px bg-stone-200 shrink-0"></div>
 
-      {/* Right Actions: Duplicate & Delete */}
-      <div className="flex items-center gap-1 shrink-0">
+      {/* Right Actions: Combined Dropdown */}
+      <div className="relative shrink-0 flex items-center">
         <button 
+          id="mobile-actions-dropdown-trigger"
           type="button"
-          onClick={(e) => { e.stopPropagation(); duplicateElement(selectedElement.id); }}
-          className="w-7 h-7 rounded-full bg-stone-50 hover:bg-stone-100 flex items-center justify-center text-stone-500 transition border border-stone-200/50 cursor-pointer"
-          title="Duplicate Element"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setIsActionsDropdownOpen(!isActionsDropdownOpen); 
+          }}
+          className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition border cursor-pointer ${
+            isActionsDropdownOpen 
+              ? "bg-purple-50 text-purple-600 border-purple-200 shadow-sm" 
+              : "bg-stone-50 hover:bg-stone-100 text-stone-500 border-stone-200/50"
+          }`}
+          title="Element Actions"
         >
-          <Copy size={12} />
+          <MoreVertical size={13} />
         </button>
-        <button 
-          type="button"
-          onClick={(e) => { e.stopPropagation(); deleteElement(selectedElement.id); }}
-          className="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center text-rose-500 transition border border-rose-200/60 cursor-pointer"
-          title="Delete Element"
-        >
-          <Trash2 size={12} />
-        </button>
+
+        {isActionsDropdownOpen && (
+          <>
+            {/* Click-away overlay */}
+            <div 
+              className="fixed inset-0 z-50 bg-transparent" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsActionsDropdownOpen(false);
+              }}
+            />
+            {/* Action Dropdown popover floating above */}
+            <div 
+              id="mobile-element-actions-menu"
+              className="absolute bottom-full right-0 mb-3 bg-white/95 backdrop-blur-md border border-stone-250/90 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] rounded-2xl p-1.5 w-[140px] z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left"
+            >
+              <div className="px-2.5 py-1 text-[8.5px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1.5 mb-0.5 text-left select-none">
+                Actions
+              </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  duplicateElement(selectedElement.id);
+                  setIsActionsDropdownOpen(false);
+                }}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left text-[11px] font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition cursor-pointer"
+              >
+                <Copy size={11.5} className="text-stone-400 shrink-0" />
+                <span>Duplicate</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteElement(selectedElement.id);
+                  setIsActionsDropdownOpen(false);
+                }}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left text-[11px] font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-750 transition cursor-pointer"
+              >
+                <Trash2 size={11.5} className="text-rose-400 shrink-0" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

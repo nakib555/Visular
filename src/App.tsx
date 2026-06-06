@@ -640,36 +640,36 @@ function DesignerApp() {
           </AnimatePresence>
 
           {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
-          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] p-3 px-4 mb-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs select-none z-10 box-border">
+          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] p-2.5 px-3 mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-3 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap">
             
             {/* Left Column: Landscape vs Portrait (Only when non-desktop viewports) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
               {canvasViewport !== "desktop" && (
-                <div className="flex items-center gap-1.5 bg-stone-50 p-1 rounded-[14px] border border-stone-100">
+                <div className="flex items-center gap-1 bg-stone-50 p-1 rounded-[14px] border border-stone-100 shrink-0">
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("portrait")}
                     title="Vertical Mode"
-                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
+                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold shrink-0 ${
                       canvasOrientation === "portrait"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={13} className={`transition-transform duration-300 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={13} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Portrait</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("landscape")}
                     title="Landscape Mode"
-                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
+                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold shrink-0 ${
                       canvasOrientation === "landscape"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={13} className={`rotate-90 transition-transform duration-300 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={13} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Landscape</span>
                   </button>
                 </div>
@@ -677,18 +677,18 @@ function DesignerApp() {
             </div>
 
             {/* Middle Column: Auto Layout Adjustments Quick Actions */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <div className="flex items-center gap-1 text-purple-600 font-semibold px-2">
-                <Zap size={14} className="animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Auto-Structure</span>
+            <div className="flex flex-nowrap items-center gap-2 md:gap-3 shrink-0">
+              <div className="flex items-center gap-1 text-purple-600 font-semibold px-1 shrink-0">
+                <Zap size={14} className="animate-pulse shrink-0" />
+                <span className="text-[10px] font-bold uppercase tracking-wider font-mono shrink-0">Auto-Structure</span>
               </div>
               
-              <div className="flex items-center gap-1 flex-wrap bg-stone-50 p-1 border border-stone-100 rounded-[14px]">
+              <div className="flex items-center gap-1 bg-stone-50 p-1 border border-stone-100 rounded-[14px] shrink-0">
                 <button
                   type="button"
                   onClick={() => runAutoOptimize("columns")}
                   title="Force wide grid columns and tables to stack on mobile viewports seamlessly"
-                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm"
+                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0"
                 >
                   Stack Columns
                 </button>
@@ -696,7 +696,7 @@ function DesignerApp() {
                   type="button"
                   onClick={() => runAutoOptimize("padding")}
                   title="Make huge density padding spacing fully adaptive instead of static"
-                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm"
+                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0"
                 >
                   Fluid Spacing
                 </button>
@@ -704,7 +704,7 @@ function DesignerApp() {
                   type="button"
                   onClick={() => runAutoOptimize("typography")}
                   title="Convert flat title sizes (like text-6xl) to fluid display sizing"
-                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm"
+                  className="px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-xl text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0"
                 >
                   Responsive Text
                 </button>
@@ -715,21 +715,20 @@ function DesignerApp() {
                 onClick={runAIResponsiveAudit}
                 disabled={!hasApiKey}
                 title={hasApiKey ? "Rewrite styles for outstanding mobile/tablet layout presentation" : "Active Gemini API key is required"}
-                className={`ml-1 px-3 py-1.5 text-[11px] font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition cursor-pointer active:scale-95 border ${
+                className={`px-3 py-1.5 text-[11px] font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition cursor-pointer active:scale-95 border shrink-0 ${
                   hasApiKey 
                     ? "bg-purple-600 hover:bg-purple-700 text-white border-purple-700" 
                     : "bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200"
                 }`}
               >
-                <Sparkles size={12} className={hasApiKey ? "text-purple-200" : "text-stone-300"} />
-                <span className="hidden xl:inline">AI Responsive Audit</span>
-                <span className="xl:hidden">AI Audit</span>
+                <Sparkles size={12} className={hasApiKey ? "text-purple-200 shrink-0" : "text-stone-300 shrink-0"} />
+                <span>AI Audit</span>
               </button>
             </div>
 
             {/* Right Column: Custom Scaling Slider with click Adjustments */}
-            <div className="flex items-center gap-2">
-              <div className="flex bg-stone-50 p-1 rounded-xl border border-stone-100 items-center justify-center gap-1.5">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex bg-stone-50 p-1 rounded-xl border border-stone-100 items-center justify-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -740,9 +739,9 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom Out (-10%)"
-                  className="p-1.5 px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
+                  className="p-1.5 px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0"
                 >
-                  <ZoomOut size={13} />
+                  <ZoomOut size={13} className="shrink-0" />
                 </button>
                 
                 <input 
@@ -752,7 +751,7 @@ function DesignerApp() {
                   step="0.05"
                   value={zoomScale === "auto" ? 1.0 : zoomScale}
                   onChange={(e) => setZoomScale(parseFloat(e.target.value))}
-                  className="w-20 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1"
+                  className="w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
                   title="Drag zoom level"
                 />
 
@@ -766,18 +765,18 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom In (+10%)"
-                  className="p-1.5 px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
+                  className="p-1.5 px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0"
                 >
-                  <ZoomIn size={13} />
+                  <ZoomIn size={13} className="shrink-0" />
                 </button>
 
-                <div className="h-4 w-px bg-stone-200 mx-0.5" />
+                <div className="h-4 w-px bg-stone-200 mx-0.5 shrink-0" />
 
                 <button
                   type="button"
                   onClick={() => setZoomScale(zoomScale === "auto" ? 1.0 : "auto")}
                   title="Toggle container boundaries Auto Fit"
-                  className={`px-3 py-1.5 rounded-lg text-[10px] uppercase transition cursor-pointer min-w-[50px] text-center ${
+                  className={`px-3 py-1.5 rounded-lg text-[10px] uppercase transition cursor-pointer min-w-[50px] text-center shrink-0 ${
                     zoomScale === "auto" 
                       ? "bg-stone-800 text-white font-bold shadow-sm" 
                       : "bg-white text-stone-600 hover:bg-stone-50 font-semibold shadow-sm border border-stone-200/60"
