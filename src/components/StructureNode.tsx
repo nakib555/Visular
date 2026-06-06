@@ -25,6 +25,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
   } = designer;
 
   const isSelected = selectedId === node.id;
+  const isCurrentlyDragged = draggedId === node.id;
   
   const getTreeNodeIcon = (type: string, tag: string) => {
     switch (type) {
@@ -101,7 +102,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
           isSelected 
             ? "bg-stone-900 border-stone-800 text-white shadow-md shadow-stone-900/10" 
             : "border-transparent text-stone-600 hover:bg-stone-100/80 hover:text-stone-900"
-        } ${dragDropTargetId === node.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset bg-purple-50" : ""} ${dragDropTargetId === node.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === node.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
+        } ${isCurrentlyDragged ? "opacity-30 border-dashed border-stone-300 grayscale select-none pointer-events-none scale-95" : ""} ${dragDropTargetId === node.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset bg-purple-50" : ""} ${dragDropTargetId === node.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === node.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
         style={{ paddingLeft: `${depth * 10 + 6}px`, paddingRight: '6px', paddingTop: '6px', paddingBottom: '6px' }}
       >
         <div className="flex flex-row items-center gap-2 overflow-hidden pr-2">
@@ -138,14 +139,40 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
       </div>
       
       {node.children && node.children.length > 0 && (
-        <div className="flex flex-col relative w-full space-y-0.5 mt-0.5">
+        <div className="flex flex-col relative w-full space-y-0.5 mt-0.5" style={{ contentVisibility: "auto" }}>
           {/* Subtle connecting parent-child depth line */}
           <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-stone-200/60 z-0 pointer-events-none" style={{ left: `${depth * 10 + 11}px` }}></div>
-          {node.children.map(child => (
-            <div key={child.id} className="relative z-10 w-full">
-              <StructureNode node={child} depth={depth + 1} />
-            </div>
-          ))}
+          {node.children.map(child => {
+            const isChildTarget = dragDropTargetId === child.id;
+            const showBefore = isChildTarget && dragDropPosition === "before";
+            const showAfter = isChildTarget && dragDropPosition === "after";
+
+            return (
+              <React.Fragment key={child.id}>
+                {showBefore && (
+                  <div 
+                    style={{ marginLeft: `${(depth + 1) * 10 + 11}px` }}
+                    className="h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
+                  >
+                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-purple-600 border border-white shadow shadow-purple-500/50" />
+                  </div>
+                )}
+                
+                <div className="relative z-10 w-full animate-in fade-in slide-in-from-top-1 duration-150">
+                  <StructureNode node={child} depth={depth + 1} />
+                </div>
+                
+                {showAfter && (
+                  <div 
+                    style={{ marginLeft: `${(depth + 1) * 10 + 11}px` }}
+                    className="h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
+                  >
+                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-purple-600 border border-white shadow shadow-purple-500/50" />
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       )}
     </div>

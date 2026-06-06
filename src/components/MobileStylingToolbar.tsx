@@ -484,6 +484,7 @@ export function MobileToolControls() {
             <div 
               id="mobile-element-actions-menu"
               className="absolute bottom-full right-0 mb-3 bg-white/95 backdrop-blur-md border border-stone-250/90 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] rounded-2xl p-1.5 w-[140px] z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left"
+              style={{ borderRadius: "15px" }}
             >
               <div className="px-2.5 py-1 text-[8.5px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1.5 mb-0.5 text-left select-none">
                 Actions

@@ -78,3 +78,23 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Custom layout adjustments and fixes for the canvas responsiveness bar to remain constant size */
+#canvas_responsiveness_bar {
+  height: 46px !important;
+  min-height: 46px !important;
+  flex-shrink: 0 !important;
+  border-radius: 9999px !important;
+}
+
+@media (max-width: 767px) {
+  #canvas_responsiveness_bar {
+    height: 42px !important; /* Elegant constant height fix for mobile */
+    min-height: 42px !important;
+    border-radius: 9999px !important; /* Fully rounded capsule */
+    padding: 4px 6px !important; /* Snug vertical padding to prevent clipping of scroll view container */
+    gap: 8px !important; /* Adjusted gap to save width */
+    flex-shrink: 0 !important;
+  }
+}
+

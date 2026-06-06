@@ -31,6 +31,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
   } = designer;
 
   const isSelected = selectedId === elem.id;
+  const isCurrentlyDragged = draggedId === elem.id;
   const isDoubleClicked = doubleClickId === elem.id;
   const TagName = elem.tag || "div";
 
@@ -66,7 +67,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
   const customClassList = `max-w-full ${elem.classes || ""} ${
     isSelected ? "selected-element-outline" : "hover-element-outline"
-  } relative transition-all duration-200`;
+  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
   if (isDoubleClicked && elem.content !== undefined) {
     return (
@@ -88,9 +89,38 @@ export function VisualNode({ elem }: VisualNodeProps) {
       <div
         id={elem.id}
         onClick={handleClick}
+        onDragOver={(e: any) => {
+          if (!draggedId || draggedId === elem.id) return;
+          e.preventDefault();
+          e.stopPropagation();
+          setDragDropTargetId(elem.id);
+          
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          const y = e.clientY - rect.top;
+          
+          if (y < rect.height / 2) setDragDropPosition("before");
+          else setDragDropPosition("after");
+        }}
+        onDragLeave={(e: any) => {
+          e.stopPropagation();
+          if (dragDropTargetId === elem.id) {
+            setDragDropTargetId(null);
+            setDragDropPosition(null);
+          }
+        }}
+        onDrop={(e: any) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (draggedId && dragDropTargetId === elem.id && dragDropPosition) {
+            moveElement(draggedId, elem.id, dragDropPosition);
+          }
+          setDraggedId(null);
+          setDragDropTargetId(null);
+          setDragDropPosition(null);
+        }}
         className={`relative inline-block ${elem.classes || ""} ${
           isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
-        } transition-all duration-200 cursor-pointer`}
+        } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""} transition-all duration-200 cursor-pointer`}
       >
         <img
           src={imgSrc}
@@ -159,10 +189,62 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
   const hasChildren = elem.children && elem.children.length > 0;
 
+  const renderChildrenWithDropIndicators = () => {
+    if (!elem.children) return null;
+    
+    return elem.children.map((child) => {
+      const isChildTarget = dragDropTargetId === child.id;
+      const showBefore = isChildTarget && dragDropPosition === "before";
+      const showAfter = isChildTarget && dragDropPosition === "after";
+      
+      return (
+        <React.Fragment key={child.id}>
+          {showBefore && (
+            <div 
+              className="w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
+              style={{ contentVisibility: "auto" }}
+            >
+              {/* Pulsing Horizontal Gradient Line */}
+              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.85)]" />
+              {/* Point Indicator Dot */}
+              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-purple-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              </div>
+              {/* Ghost Indicator Label Badge */}
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-purple-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-purple-900/20 flex items-center gap-1">
+                <span>Insert here</span>
+              </div>
+            </div>
+          )}
+          
+          <VisualNode elem={child} />
+          
+          {showAfter && (
+            <div 
+              className="w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
+              style={{ contentVisibility: "auto" }}
+            >
+              {/* Pulsing Horizontal Gradient Line */}
+              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.85)]" />
+              {/* Point Indicator Dot */}
+              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-purple-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              </div>
+              {/* Ghost Indicator Label Badge */}
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-purple-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-purple-900/20 flex items-center gap-1">
+                <span>Insert here</span>
+              </div>
+            </div>
+          )}
+        </React.Fragment>
+      );
+    });
+  };
+
   // Append !overflow-visible on select so corner anchors and toolbar never clip
   const updatedClassList = `max-w-full ${elem.classes || ""} ${
     isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
-  } relative transition-all duration-200`;
+  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
   return (
     <TagName
@@ -176,9 +258,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
         e.stopPropagation();
         setDragDropTargetId(elem.id);
         
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         const y = e.clientY - rect.top;
-        const x = e.clientX - rect.left;
         
         if (elem.type === "container") {
           if (y < rect.height * 0.25) setDragDropPosition("before");
@@ -206,7 +287,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         setDragDropTargetId(null);
         setDragDropPosition(null);
       }}
-      className={`${updatedClassList} transition-all ${dragDropTargetId === elem.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset opacity-80" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
+      className={`${updatedClassList} transition-all ${dragDropTargetId === elem.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset opacity-80 bg-purple-500/5" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
     >
       {isSelected && (
         <motion.span
@@ -265,7 +346,22 @@ export function VisualNode({ elem }: VisualNodeProps) {
       )}
 
       {elem.content}
-      {hasChildren && elem.children?.map((child) => <VisualNode key={child.id} elem={child} />)}
+      
+      {/* Recursively mapping children with active line placeholders */}
+      {hasChildren ? renderChildrenWithDropIndicators() : null}
+      
+      {/* Highlight inside container placeholder area */}
+      {dragDropTargetId === elem.id && dragDropPosition === "inside" && (
+        <div className="w-full min-h-[50px] border-2 border-dashed border-purple-500/70 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl flex items-center justify-center p-4 my-2 pointer-events-none animate-pulse transition-all">
+          <span className="text-[10px] sm:text-xs font-semibold text-purple-700 uppercase tracking-widest font-mono flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+            </span>
+            Nest inside {elem.tag}
+          </span>
+        </div>
+      )}
     </TagName>
   );
 }
