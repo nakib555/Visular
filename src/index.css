@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom scrollbar styling for a premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 120, 0.3);
+}
+
+/* Selected layout bounding box animation */
+@keyframes select-pulse {
+  0%, 100% { box-shadow: 0 0 0 2.5px rgba(168, 85, 247, 0.95), 0 0 16px rgba(168, 85, 247, 0.35) !important; }
+  50% { box-shadow: 0 0 0 2.5px rgba(168, 85, 247, 0.8), 0 0 22px rgba(168, 85, 247, 0.5) !important; }
+}
+
+.selected-element-outline {
+  position: relative !important;
+  cursor: pointer;
+  --outline-offset: 1px;
+  outline-offset: var(--outline-offset);
+  animation: select-scale-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes select-scale-pop {
+  0% {
+    transform: scale(0.975);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hover-element-outline {
+  position: relative;
+}
+
+.hover-element-outline:hover {
+  outline: 1.5px dashed rgba(168, 85, 247, 0.5);
+  outline-offset: 1px;
+}
+
+/* Glass panel background utilities */
+.glass-panel-dark {
+  background: rgba(23, 23, 23, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Hide default horizontal scrollbar on property docks */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

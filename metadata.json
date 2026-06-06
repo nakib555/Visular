@@ -1,0 +1,6 @@
+{
+  "name": "Visual Component Editor",
+  "description": "An aesthetic visual component editor to design, customize, and export Tailwind CSS components using reactive styling controls and inline Gemini AI assistants.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
