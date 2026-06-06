@@ -22,6 +22,133 @@ const tabsInfo = [
   { id: "help", label: "Guide", icon: HelpCircle }
 ];
 
+const BOX_MODEL_PROPS = [
+  { id: "width", label: "width", prefix: "w-", group: "width", values: ["auto", "full", "1/2", "1/3", "2/3", "1/4", "3/4", "12", "24", "32", "48", "64", "96"] },
+  { id: "height", label: "height", prefix: "h-", group: "height", values: ["auto", "full", "12", "16", "20", "24", "32", "40", "48", "56", "64", "80", "96"] },
+  { id: "min-width", label: "min-width", prefix: "min-w-", values: ["0", "[100px]", "[200px]", "[300px]", "full"] },
+  { id: "max-width", label: "max-width", prefix: "max-w-", values: ["none", "xs", "sm", "md", "lg", "xl", "2xl", "full"] },
+  { id: "min-height", label: "min-height", prefix: "min-h-", values: ["0", "[50px]", "[100px]", "[200px]", "full"] },
+  { id: "max-height", label: "max-height", prefix: "max-h-", values: ["full", "[300px]", "[500px]", "screen"] },
+  { id: "margin", label: "margin", prefix: "m-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "32", "48", "64", "auto"] },
+  { id: "margin-top", label: "margin-top", prefix: "mt-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
+  { id: "margin-right", label: "margin-right", prefix: "mr-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
+  { id: "margin-bottom", label: "margin-bottom", prefix: "mb-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
+  { id: "margin-left", label: "margin-left", prefix: "ml-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
+  { id: "padding", label: "padding", prefix: "p-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "32", "48", "64"] },
+  { id: "padding-top", label: "padding-top", prefix: "pt-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
+  { id: "padding-right", label: "padding-right", prefix: "pr-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
+  { id: "padding-bottom", label: "padding-bottom", prefix: "pb-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
+  { id: "padding-left", label: "padding-left", prefix: "pl-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
+  { id: "box-sizing", label: "box-sizing", prefix: "box-", group: "boxSizing", values: ["border", "content"] },
+  { id: "aspect-ratio", label: "aspect-ratio", prefix: "aspect-", group: "aspectRatio", values: ["auto", "square", "video"] }
+];
+
+const POSITION_PROPS = [
+  { id: "position", label: "position", prefix: "", group: "position", values: ["static", "relative", "absolute", "fixed", "sticky"] },
+  { id: "z-index", label: "z-index", prefix: "z-", values: ["auto", "0", "10", "20", "30", "40", "50", "999"] },
+  { id: "inset", label: "inset", prefix: "inset-", values: ["auto", "0", "1", "2", "4", "8", "12", "16"] },
+  { id: "top", label: "top", prefix: "top-", values: ["auto", "0", "1", "2", "4", "8", "12", "16"] },
+  { id: "right", label: "right", prefix: "right-", values: ["auto", "0", "1", "2", "4", "8", "12", "16"] },
+  { id: "bottom", label: "bottom", prefix: "bottom-", values: ["auto", "0", "1", "2", "4", "8", "12", "16"] },
+  { id: "left", label: "left", prefix: "left-", values: ["auto", "0", "1", "2", "4", "8", "12", "16"] }
+];
+
+const FLEXBOX_PROPS = [
+  { id: "display", label: "display", prefix: "", group: "display", values: ["flex", "inline-flex"] },
+  { id: "direction", label: "direction", prefix: "", group: "flexDirection", values: ["flex-row", "flex-col", "flex-wrap"] },
+  { id: "align-items", label: "align-items", prefix: "", group: "alignment", values: ["items-start", "items-center", "items-end", "items-baseline", "items-stretch"] },
+  { id: "justify", label: "justify-content", prefix: "", group: "justify", values: ["justify-start", "justify-center", "justify-end", "justify-between", "justify-around", "justify-evenly"] },
+  { id: "align-self", label: "align-self", prefix: "", group: "alignSelf", values: ["self-auto", "self-start", "self-end", "self-center", "self-stretch", "self-baseline"] },
+  { id: "gap", label: "gap", prefix: "", group: "gap", values: ["gap-0", "gap-1", "gap-2", "gap-3", "gap-4", "gap-5", "gap-6", "gap-8", "gap-10", "gap-12", "gap-16"] },
+  { id: "flex-grow", label: "flex grow", prefix: "", group: "flexGrow", values: ["grow-0", "grow"] },
+  { id: "flex-shrink", label: "flex shrink", prefix: "", group: "flexShrink", values: ["shrink-0", "shrink"] }
+];
+
+const GRID_PROPS = [
+  { id: "display", label: "display", prefix: "", group: "display", values: ["grid"] },
+  { id: "cols", label: "columns", prefix: "grid-cols-", values: ["1", "2", "3", "4", "5", "6", "12"] },
+  { id: "rows", label: "rows", prefix: "grid-rows-", values: ["1", "2", "3"] },
+  { id: "gap", label: "gap", prefix: "", group: "gap", values: ["gap-0", "gap-1", "gap-2", "gap-4", "gap-6", "gap-8", "gap-10", "gap-12", "gap-16"] },
+  { id: "col-span", label: "column span", prefix: "col-span-", values: ["1", "2", "3", "4", "5", "6", "12", "full"] },
+  { id: "row-span", label: "row span", prefix: "row-span-", values: ["1", "2", "3", "4", "5", "6", "full"] }
+];
+
+const OVERFLOW_PROPS = [
+  { id: "overflow", label: "overflow", prefix: "", group: "overflow", values: ["overflow-auto", "overflow-hidden", "overflow-scroll", "overflow-visible", "overflow-clip"] },
+  { id: "overflow-x", label: "overflow-x", prefix: "", group: "overflowX", values: ["overflow-x-auto", "overflow-x-hidden", "overflow-x-scroll", "overflow-x-visible", "overflow-x-clip"] },
+  { id: "overflow-y", label: "overflow-y", prefix: "", group: "overflowY", values: ["overflow-y-auto", "overflow-y-hidden", "overflow-y-scroll", "overflow-y-visible", "overflow-y-clip"] },
+  { id: "scroll-behavior", label: "scroll-behavior", prefix: "", group: "scrollBehavior", values: ["scroll-smooth", "scroll-auto"] },
+  { id: "scroll-snap-type", label: "scroll-snap-type", prefix: "", group: "scrollSnapType", values: ["snap-none", "snap-x", "snap-y", "snap-both"] }
+];
+
+const TYPOGRAPHY_STYLES_PROPS = [
+  { id: "text-size", label: "text-size", prefix: "", group: "textSize", values: ["text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-7xl"] },
+  { id: "font-family", label: "font-family", prefix: "", group: "fontFamily", values: ["font-sans", "font-serif", "font-mono"] },
+  { id: "font-weight", label: "font-weight", prefix: "", group: "fontWeight", values: ["font-light", "font-normal", "font-medium", "font-semibold", "font-bold"] },
+  { id: "line-height", label: "line-height", prefix: "", group: "leading", values: ["leading-none", "leading-tight", "leading-snug", "leading-normal", "leading-relaxed", "leading-loose"] },
+  { id: "font-style", label: "font-style", prefix: "", values: ["italic", "not-italic"] }
+];
+
+const TYPOGRAPHY_SPACING_PROPS = [
+  { id: "text-align", label: "text-align", prefix: "", group: "textAlign", values: ["text-left", "text-center", "text-right", "text-justify"] },
+  { id: "decoration", label: "text-decoration", prefix: "", values: ["underline", "line-through", "no-underline"] },
+  { id: "transform", label: "text-transform", prefix: "", values: ["uppercase", "lowercase", "capitalize", "normal-case"] },
+  { id: "tracking", label: "tracking", prefix: "", group: "tracking", values: ["tracking-tighter", "tracking-tight", "tracking-normal", "tracking-wide", "tracking-widest"] }
+];
+
+const COLOR_PROPS = [
+  { id: "background-color", label: "background color", prefix: "bg-", values: ["transparent", "white", "stone-50", "stone-100", "stone-200", "stone-900", "stone-950", "purple-100", "purple-600", "indigo-950", "indigo-600", "emerald-50", "emerald-950", "amber-100", "amber-700", "rose-50", "rose-600"] },
+  { id: "text-color", label: "text color", prefix: "text-", values: ["white", "black", "stone-800", "stone-100", "purple-600", "indigo-600", "emerald-600", "amber-600", "rose-600"] },
+  { id: "border-color", label: "border color", prefix: "border-", values: ["transparent", "stone-200", "stone-300", "stone-800", "purple-200", "purple-600", "indigo-600", "amber-600", "rose-600"] },
+  { id: "opacity", label: "opacity", prefix: "opacity-", values: ["0", "10", "20", "25", "30", "40", "50", "60", "70", "75", "80", "90", "95", "100"] }
+];
+
+const BORDER_PROPS = [
+  { id: "rounding", label: "rounding/radius", prefix: "", group: "rounding", values: ["rounded-none", "rounded-sm", "rounded", "rounded-md", "rounded-lg", "rounded-xl", "rounded-2xl", "rounded-3xl", "rounded-full"] },
+  { id: "border-width", label: "border-width", prefix: "", group: "borderWidth", values: ["border-0", "border", "border-2", "border-4", "border-8"] },
+  { id: "border-style", label: "border-style", prefix: "", values: ["border-solid", "border-dashed", "border-dotted"] },
+  { id: "shadow", label: "box-shadow", prefix: "", group: "shadow", values: ["shadow-none", "shadow-sm", "shadow", "shadow-md", "shadow-lg", "shadow-xl", "shadow-2xl"] }
+];
+
+const TRANSITION_PROPS = [
+  { id: "transition", label: "transition", prefix: "", values: ["transition-none", "transition-all", "transition-colors", "transition-opacity", "transition-transform"] },
+  { id: "duration", label: "duration", prefix: "", values: ["duration-75", "duration-100", "duration-150", "duration-200", "duration-300", "duration-500", "duration-700", "duration-1000"] },
+  { id: "easing", label: "easing", prefix: "", values: ["ease-linear", "ease-in", "ease-out", "ease-in-out"] }
+];
+
+const ANIMATION_PROPS = [
+  { id: "animation", label: "keyframe animation", prefix: "animate-", values: ["none", "fade-in", "pulse", "bounce", "spin", "ping"] },
+  { id: "hover-scale", label: "hover scale", prefix: "", values: ["hover:scale-[1.03]", "hover:scale-[1.05]", "hover:scale-[1.10]"] },
+  { id: "hover-rotate", label: "hover rotate", prefix: "", values: ["hover:rotate-1", "hover:rotate-3", "hover:rotate-6"] },
+  { id: "hover-shadow", label: "hover shadow", prefix: "", values: ["hover:shadow-sm", "hover:shadow", "hover:shadow-md", "hover:shadow-lg", "hover:shadow-xl", "hover:shadow-2xl"] },
+  { id: "hover-opacity", label: "hover opacity", prefix: "", values: ["hover:opacity-10", "hover:opacity-25", "hover:opacity-50", "hover:opacity-75", "hover:opacity-90", "hover:opacity-100"] }
+];
+
+interface StylePropertyConfig {
+  id: string;
+  label: string;
+  prefix: string;
+  values: string[];
+  group?: string;
+}
+
+const getPropsForSubCategory = (subCat: string): StylePropertyConfig[] => {
+  switch (subCat) {
+    case "boxModel": return BOX_MODEL_PROPS as StylePropertyConfig[];
+    case "positioning": return POSITION_PROPS as StylePropertyConfig[];
+    case "flexbox": return FLEXBOX_PROPS as StylePropertyConfig[];
+    case "grid": return GRID_PROPS as StylePropertyConfig[];
+    case "overflow": return OVERFLOW_PROPS as StylePropertyConfig[];
+    case "typographyStyles": return TYPOGRAPHY_STYLES_PROPS as StylePropertyConfig[];
+    case "typographySpacing": return TYPOGRAPHY_SPACING_PROPS as StylePropertyConfig[];
+    case "colors": return COLOR_PROPS as StylePropertyConfig[];
+    case "borders": return BORDER_PROPS as StylePropertyConfig[];
+    case "transitions": return TRANSITION_PROPS as StylePropertyConfig[];
+    case "animations": return ANIMATION_PROPS as StylePropertyConfig[];
+    default: return [];
+  }
+};
+
 export function MobileToolControls() {
   const designer = useDesigner();
   const {
@@ -46,17 +173,159 @@ export function MobileToolControls() {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isActionsDropdownOpen, setIsActionsDropdownOpen] = React.useState(false);
 
+  // Property & Value select dropdown menus
+  const [selectedSubpropMap, setSelectedSubpropMap] = React.useState<Record<string, string>>({
+    boxModel: "width",
+    positioning: "position",
+    flexbox: "display",
+    grid: "display",
+    overflow: "overflow",
+    typographyStyles: "text-size",
+    typographySpacing: "text-align",
+    colors: "background-color",
+    borders: "rounding",
+    transitions: "transition",
+    animations: "animation"
+  });
+  const [isPropDropdownOpen, setIsPropDropdownOpen] = React.useState(false);
+  const [isValDropdownOpen, setIsValDropdownOpen] = React.useState(false);
+
   // Sync / Reset when active element or tab category changes
   React.useEffect(() => {
     setSubCategory(getInitialSubCategory(inspectorSection));
     setIsDropdownOpen(false);
     setIsActionsDropdownOpen(false);
+    setIsPropDropdownOpen(false);
+    setIsValDropdownOpen(false);
   }, [selectedElement?.id, inspectorSection]);
+
+  // Reset dropdown when subCategory changes
+  React.useEffect(() => {
+    setIsPropDropdownOpen(false);
+    setIsValDropdownOpen(false);
+  }, [subCategory]);
 
   // Render ONLY when inside inspector view and we have a selected element
   if (mobileActiveView !== "inspector" || !selectedElement) return null;
 
   const classes = selectedElement.classes || "";
+
+  const getActiveValueForProp = (prop: StylePropertyConfig, subCat: string) => {
+    const tokens = classes.split(/\s+/).filter(Boolean);
+    
+    // 1. If it belongs to a style group in STYLE_GROUPS
+    if (prop.group && (prop.group in STYLE_GROUPS)) {
+      const activeClass = getActiveGroupClass(classes, prop.group as any);
+      if (!activeClass) return "";
+      
+      // If we have a prefix, extract the value after it
+      if (prop.prefix) {
+        if (activeClass.startsWith(prop.prefix)) {
+          return activeClass.slice(prop.prefix.length);
+        }
+      } else {
+        // Find inside prop.values that matches activeClass (or if value matches activeClass exactly)
+        return prop.values.find(v => v === activeClass) || "";
+      }
+    }
+    
+    // 2. If it is a prefixed style property
+    if (prop.prefix) {
+      const match = tokens.find(t => t.startsWith(prop.prefix));
+      if (match) {
+        return match.slice(prop.prefix.length);
+      }
+    } else {
+      // 3. No prefix, no group. It is an arbitrary class list toggle (like hover:scale-[1.05] or scroll-smooth)
+      return prop.values.find(v => tokens.includes(v)) || "";
+    }
+    
+    return "";
+  };
+
+  const handleApplyStyle = (propId: string, val: string, subCat: string) => {
+    const props = getPropsForSubCategory(subCat);
+    const prop = props.find(p => p.id === propId);
+    if (!prop) return;
+
+    updateTree((node) => {
+      let nextClasses = node.classes || "";
+      let tokens = nextClasses.split(/\s+/).filter(Boolean);
+      const classToApply = prop.prefix ? `${prop.prefix}${val}` : val;
+
+      if (!val || val === "none" || val === "") {
+        // Clear/Remove style
+        if (subCat === "colors") {
+          if (prop.id === "background-color") {
+            return { classes: setColorClass(nextClasses, "bg-", "") };
+          }
+          if (prop.id === "text-color") {
+            return { classes: setColorClass(nextClasses, "text-", "") };
+          }
+          if (prop.id === "border-color") {
+            return { classes: setColorClass(nextClasses, "border-", "") };
+          }
+        }
+
+        if (prop.group && (prop.group in STYLE_GROUPS)) {
+          nextClasses = setGroupClass(nextClasses, prop.group as any, "");
+        } else if (prop.prefix) {
+          nextClasses = tokens.filter(t => !t.startsWith(prop.prefix)).join(" ");
+        } else {
+          // No prefix, remove any of the values in the set
+          nextClasses = tokens.filter(t => !prop.values.includes(t)).join(" ");
+        }
+        return { classes: nextClasses };
+      }
+
+      // Special cases for color prefixes to use correct setColorClass helper
+      if (subCat === "colors") {
+        if (prop.id === "background-color") {
+          return { classes: setColorClass(nextClasses, "bg-", classToApply) };
+        }
+        if (prop.id === "text-color") {
+          return { classes: setColorClass(nextClasses, "text-", classToApply) };
+        }
+        if (prop.id === "border-color") {
+          return { classes: setColorClass(nextClasses, "border-", classToApply) };
+        }
+      }
+
+      if (prop.group && (prop.group in STYLE_GROUPS)) {
+        nextClasses = setGroupClass(nextClasses, prop.group as any, classToApply);
+      } else {
+        if (prop.prefix) {
+          // Remove existing with same prefix
+          let filtered = tokens.filter(t => !t.startsWith(prop.prefix));
+
+          // Box model padding clear logic
+          if (prop.id === "padding") {
+            filtered = filtered.filter(t => !t.startsWith("pt-") && !t.startsWith("pb-") && !t.startsWith("pl-") && !t.startsWith("pr-") && !t.startsWith("px-") && !t.startsWith("py-"));
+          }
+          if (["padding-top", "padding-right", "padding-bottom", "padding-left"].includes(prop.id)) {
+            filtered = filtered.filter(t => !t.startsWith("p-"));
+          }
+          // Box model margin clear logic
+          if (prop.id === "margin") {
+            filtered = filtered.filter(t => !t.startsWith("mt-") && !t.startsWith("mb-") && !t.startsWith("ml-") && !t.startsWith("mr-") && !t.startsWith("mx-") && !t.startsWith("my-"));
+          }
+          if (["margin-top", "margin-right", "margin-bottom", "margin-left"].includes(prop.id)) {
+            filtered = filtered.filter(t => !t.startsWith("m-"));
+          }
+
+          filtered.push(classToApply);
+          nextClasses = filtered.join(" ");
+        } else {
+          // No prefix, no group. It is a plain toggle of values in prop.values.
+          // First, filter out any of other values in this prop.values to avoid conflicts
+          let filtered = tokens.filter(t => !prop.values.includes(t));
+          filtered.push(classToApply);
+          nextClasses = filtered.join(" ");
+        }
+      }
+      return { classes: nextClasses };
+    });
+  };
 
   // Dynamic Subcategories Map based on Active Tab aligning exactly with desktop
   const subCategoriesConfig: Record<string, { id: string; label: string; icon: any }[]> = {
@@ -126,430 +395,127 @@ export function MobileToolControls() {
   };
 
   const renderMiddleControls = () => {
+    const props = getPropsForSubCategory(subCategory);
+    if (props.length > 0) {
+      const selectedPropId = selectedSubpropMap[subCategory] || props[0].id;
+      const activeProp = props.find(p => p.id === selectedPropId) || props[0];
+      const activeVal = getActiveValueForProp(activeProp, subCategory);
+
+      return (
+        <div className="flex-1 min-w-0 flex items-center gap-1.5 py-1 animate-fade-in select-none">
+          {/* Property Select Dropdown */}
+          <div className="relative flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPropDropdownOpen(!isPropDropdownOpen);
+                setIsValDropdownOpen(false);
+              }}
+              className="w-full h-8 flex items-center justify-between gap-1 text-[10px] font-mono font-bold text-stone-700 bg-stone-50 border border-stone-200 hover:bg-stone-100 px-2.5 rounded-xl transition cursor-pointer"
+            >
+              <span className="truncate">{activeProp.label}</span>
+              <ChevronDown size={10} className="text-stone-400 shrink-0" />
+            </button>
+
+            {isPropDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-50 bg-transparent" onClick={() => setIsPropDropdownOpen(false)} />
+                <div className="absolute bottom-full left-0 mb-2 bg-white/95 backdrop-blur-md border border-stone-200 shadow-xl rounded-2xl p-1.5 w-[145px] z-55 flex flex-col gap-0.5 max-h-[200px] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
+                  <div className="px-2 py-1 text-[8px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1 mb-1">
+                    Property
+                  </div>
+                  {props.map((p) => {
+                    const isSel = p.id === selectedPropId;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSubpropMap(prev => ({ ...prev, [subCategory]: p.id }));
+                          setIsPropDropdownOpen(false);
+                        }}
+                        className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
+                          isSel 
+                            ? "bg-purple-600 text-white font-bold" 
+                            : "text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Value Select Dropdown */}
+          <div className="relative flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsValDropdownOpen(!isValDropdownOpen);
+                setIsPropDropdownOpen(false);
+              }}
+              className="w-full h-8 flex items-center justify-between gap-1 text-[10px] font-mono font-bold text-stone-700 bg-stone-50 border border-stone-200 hover:bg-stone-100 px-2.5 rounded-xl transition cursor-pointer"
+            >
+              <span className="truncate">{activeVal ? `${activeProp.prefix || ""}${activeVal}` : "none"}</span>
+              <ChevronDown size={10} className="text-stone-400 shrink-0" />
+            </button>
+
+            {isValDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-50 bg-transparent" onClick={() => setIsValDropdownOpen(false)} />
+                <div className="absolute bottom-full right-0 mb-2 bg-white/95 backdrop-blur-md border border-stone-200 shadow-xl rounded-2xl p-1.5 w-[145px] z-55 flex flex-col gap-0.5 max-h-[200px] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
+                  <div className="px-2 py-1 text-[8px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1 mb-1">
+                    Value
+                  </div>
+                  
+                  {/* Clear / None Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleApplyStyle(activeProp.id, "", subCategory);
+                      setIsValDropdownOpen(false);
+                    }}
+                    className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
+                      !activeVal 
+                        ? "bg-purple-600 text-white font-bold" 
+                        : "text-rose-500 hover:bg-stone-50 font-semibold"
+                    }`}
+                  >
+                    (none)
+                  </button>
+
+                  {activeProp.values.map((v) => {
+                    const isSel = v === activeVal;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => {
+                          handleApplyStyle(activeProp.id, v, subCategory);
+                          setIsValDropdownOpen(false);
+                        }}
+                        className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
+                          isSel 
+                            ? "bg-purple-600 text-white font-bold" 
+                            : "text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {activeProp.prefix || ""}{v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     switch (inspectorSection) {
-      case "layout": {
-        let layoutItems: { label: string; class: string; group: string; prefix?: string }[] = [];
-        if (subCategory === "boxModel") {
-          layoutItems = [
-            { label: "Auto-W", class: "w-auto", group: "width" },
-            { label: "Full-W", class: "w-full", group: "width" },
-            { label: "Half-W", class: "w-1/2", group: "width" },
-            { label: "1/3-W", class: "w-1/3", group: "width" },
-            { label: "2/3-W", class: "w-2/3", group: "width" },
-            { label: "1/4-W", class: "w-1/4", group: "width" },
-            { label: "3/4-W", class: "w-3/4", group: "width" },
-            { label: "Small-W", class: "w-32", group: "width" },
-            { label: "Mid-W", class: "w-48", group: "width" },
-            { label: "Large-W", class: "w-64", group: "width" },
-            { label: "XLarge-W", class: "w-96", group: "width" },
-            { label: "Auto-H", class: "h-auto", group: "height" },
-            { label: "Full-H", class: "h-full", group: "height" },
-            { label: "Small-H", class: "h-12", group: "height" },
-            { label: "Tabs-H", class: "h-16", group: "height" },
-            { label: "Box-H", class: "h-32", group: "height" },
-            { label: "Card-H", class: "h-48", group: "height" },
-            { label: "Hero-H", class: "h-64", group: "height" },
-            { label: "p-0", class: "p-0", group: "padding", prefix: "p-" },
-            { label: "p-1", class: "p-1", group: "padding", prefix: "p-" },
-            { label: "p-2", class: "p-2", group: "padding", prefix: "p-" },
-            { label: "p-4", class: "p-4", group: "padding", prefix: "p-" },
-            { label: "p-6", class: "p-6", group: "padding", prefix: "p-" },
-            { label: "p-8", class: "p-8", group: "padding", prefix: "p-" },
-            { label: "p-10", class: "p-10", group: "padding", prefix: "p-" },
-            { label: "m-0", class: "m-0", group: "margin", prefix: "m-" },
-            { label: "m-1", class: "m-1", group: "margin", prefix: "m-" },
-            { label: "m-2", class: "m-2", group: "margin", prefix: "m-" },
-            { label: "m-4", class: "m-4", group: "margin", prefix: "m-" },
-            { label: "m-6", class: "m-6", group: "margin", prefix: "m-" },
-            { label: "m-8", class: "m-8", group: "margin", prefix: "m-" },
-            { label: "aspect-auto", class: "aspect-auto", group: "aspectRatio" },
-            { label: "aspect-1/1", class: "aspect-square", group: "aspectRatio" },
-            { label: "aspect-16/9", class: "aspect-video", group: "aspectRatio" },
-            { label: "box-border", class: "box-border", group: "boxSizing" },
-            { label: "box-content", class: "box-content", group: "boxSizing" }
-          ];
-        } else if (subCategory === "positioning") {
-          layoutItems = [
-            { label: "static", class: "static", group: "position" },
-            { label: "relative", class: "relative", group: "position" },
-            { label: "absolute", class: "absolute", group: "position" },
-            { label: "fixed", class: "fixed", group: "position" },
-            { label: "sticky", class: "sticky", group: "position" },
-            { label: "inset-0", class: "inset-0", group: "inset", prefix: "inset-" },
-            { label: "inset-2", class: "inset-2", group: "inset", prefix: "inset-" },
-            { label: "inset-4", class: "inset-4", group: "inset", prefix: "inset-" },
-            { label: "z-0", class: "z-0", group: "z", prefix: "z-" },
-            { label: "z-10", class: "z-10", group: "z", prefix: "z-" },
-            { label: "z-20", class: "z-20", group: "z", prefix: "z-" },
-            { label: "z-50", class: "z-50", group: "z", prefix: "z-" },
-            { label: "top-0", class: "top-0", group: "top", prefix: "top-" },
-            { label: "top-2", class: "top-2", group: "top", prefix: "top-" },
-            { label: "top-4", class: "top-4", group: "top", prefix: "top-" },
-            { label: "-top-2", class: "-top-2", group: "top", prefix: "top-" },
-            { label: "right-0", class: "right-0", group: "right", prefix: "right-" },
-            { label: "right-2", class: "right-2", group: "right", prefix: "right-" },
-            { label: "bottom-0", class: "bottom-0", group: "bottom", prefix: "bottom-" },
-            { label: "bottom-2", class: "bottom-2", group: "bottom", prefix: "bottom-" },
-            { label: "left-0", class: "left-0", group: "left", prefix: "left-" },
-            { label: "left-2", class: "left-2", group: "left", prefix: "left-" }
-          ];
-        } else if (subCategory === "flexbox") {
-          layoutItems = [
-            { label: "flex", class: "flex", group: "display" },
-            { label: "inline-flex", class: "inline-flex", group: "display" },
-            { label: "flex-col", class: "flex-col", group: "flexDirection" },
-            { label: "flex-row", class: "flex-row", group: "flexDirection" },
-            { label: "flex-wrap", class: "flex-wrap", group: "flexDirection" },
-            { label: "items-start", class: "items-start", group: "alignment" },
-            { label: "items-center", class: "items-center", group: "alignment" },
-            { label: "items-end", class: "items-end", group: "alignment" },
-            { label: "items-stretch", class: "items-stretch", group: "alignment" },
-            { label: "justify-start", class: "justify-start", group: "justify" },
-            { label: "justify-center", class: "justify-center", group: "justify" },
-            { label: "justify-end", class: "justify-end", group: "justify" },
-            { label: "justify-between", class: "justify-between", group: "justify" },
-            { label: "justify-around", class: "justify-around", group: "justify" },
-            { label: "justify-evenly", class: "justify-evenly", group: "justify" },
-            { label: "self-auto", class: "self-auto", group: "alignSelf" },
-            { label: "self-center", class: "self-center", group: "alignSelf" },
-            { label: "self-stretch", class: "self-stretch", group: "alignSelf" },
-            { label: "gap-0", class: "gap-0", group: "gap" },
-            { label: "gap-1", class: "gap-1", group: "gap" },
-            { label: "gap-2", class: "gap-2", group: "gap" },
-            { label: "gap-4", class: "gap-4", group: "gap" },
-            { label: "gap-6", class: "gap-6", group: "gap" },
-            { label: "gap-8", class: "gap-8", group: "gap" }
-          ];
-        } else if (subCategory === "grid") {
-          layoutItems = [
-            { label: "grid", class: "grid", group: "display" },
-            { label: "cols-1", class: "grid-cols-1", group: "gridCols", prefix: "grid-cols-" },
-            { label: "cols-2", class: "grid-cols-2", group: "grid-cols-2" },
-            { label: "cols-3", class: "grid-cols-3", group: "grid-cols-3" },
-            { label: "cols-4", class: "grid-cols-4", group: "grid-cols-4" },
-            { label: "cols-6", class: "grid-cols-6", group: "grid-cols-6" },
-            { label: "cols-12", class: "grid-cols-12", group: "grid-cols-12" },
-            { label: "rows-1", class: "grid-rows-1", group: "gridRows", prefix: "grid-rows-" },
-            { label: "rows-2", class: "grid-rows-2", group: "grid-rows-2" },
-            { label: "rows-3", class: "grid-rows-3", group: "grid-rows-3" },
-            { label: "gap-0", class: "gap-0", group: "gap" },
-            { label: "gap-2", class: "gap-2", group: "gap" },
-            { label: "gap-4", class: "gap-4", group: "gap" },
-            { label: "gap-6", class: "gap-6", group: "gap" }
-          ];
-        } else if (subCategory === "overflow") {
-          layoutItems = [
-            { label: "overflow-auto", class: "overflow-auto", group: "overflow" },
-            { label: "overflow-hidden", class: "overflow-hidden", group: "overflow" },
-            { label: "overflow-scroll", class: "overflow-scroll", group: "overflow" },
-            { label: "overflow-visible", class: "overflow-visible", group: "overflow" },
-            { label: "overflow-x-auto", class: "overflow-x-auto", group: "overflowX" },
-            { label: "overflow-x-hidden", class: "overflow-x-hidden", group: "overflowX" },
-            { label: "overflow-y-auto", class: "overflow-y-auto", group: "overflowY" },
-            { label: "overflow-y-hidden", class: "overflow-y-hidden", group: "overflowY" },
-            { label: "scroll-smooth", class: "scroll-smooth", group: "scrollBehavior" },
-            { label: "scroll-auto", class: "scroll-auto", group: "scrollBehavior" }
-          ];
-        }
-
-        return (
-          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {layoutItems.map((item) => {
-              const active = isClassActive(item);
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleApplyClass(item)}
-                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
-                    active 
-                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
-                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        );
-      }
-
-      case "typography": {
-        let typographyItems: { label: string; class: string; group: string; prefix?: string }[] = [];
-        if (subCategory === "typographyStyles") {
-          typographyItems = [
-            { label: "xs", class: "text-xs", group: "textSize" },
-            { label: "sm", class: "text-sm", group: "textSize" },
-            { label: "base", class: "text-base", group: "textSize" },
-            { label: "lg", class: "text-lg", group: "textSize" },
-            { label: "xl", class: "text-xl", group: "textSize" },
-            { label: "2xl", class: "text-2xl", group: "textSize" },
-            { label: "3xl", class: "text-3xl", group: "textSize" },
-            { label: "4xl", class: "text-4xl", group: "textSize" },
-            { label: "5xl", class: "text-5xl", group: "textSize" },
-            { label: "sans", class: "font-sans", group: "fontFamily" },
-            { label: "serif", class: "font-serif", group: "fontFamily" },
-            { label: "mono", class: "font-mono", group: "fontFamily" },
-            { label: "light", class: "font-light", group: "fontWeight" },
-            { label: "normal", class: "font-normal", group: "fontWeight" },
-            { label: "medium", class: "font-medium", group: "fontWeight" },
-            { label: "semibold", class: "font-semibold", group: "fontWeight" },
-            { label: "bold", class: "font-bold", group: "fontWeight" },
-            { label: "leading-none", class: "leading-none", group: "leading" },
-            { label: "leading-tight", class: "leading-tight", group: "leading" },
-            { label: "leading-normal", class: "leading-normal", group: "leading" },
-            { label: "leading-relaxed", class: "leading-relaxed", group: "leading" },
-            { label: "italic", class: "italic", group: "fontStyle", prefix: "italic" },
-            { label: "not-italic", class: "not-italic", group: "fontStyle", prefix: "not-italic" }
-          ];
-        } else if (subCategory === "typographySpacing") {
-          typographyItems = [
-            { label: "align-left", class: "text-left", group: "textAlign" },
-            { label: "align-center", class: "text-center", group: "textAlign" },
-            { label: "align-right", class: "text-right", group: "textAlign" },
-            { label: "align-justify", class: "text-justify", group: "textAlign" },
-            { label: "underline", class: "underline", group: "decoration", prefix: "underline" },
-            { label: "line-through", class: "line-through", group: "decoration", prefix: "line-through" },
-            { label: "no-underline", class: "no-underline", group: "decoration", prefix: "no-underline" },
-            { label: "uppercase", class: "uppercase", group: "transform", prefix: "uppercase" },
-            { label: "lowercase", class: "lowercase", group: "transform", prefix: "lowercase" },
-            { label: "capitalize", class: "capitalize", group: "transform", prefix: "capitalize" },
-            { label: "normal-case", class: "normal-case", group: "transform", prefix: "normal-case" },
-            { label: "spacing-tighter", class: "tracking-tighter", group: "tracking" },
-            { label: "spacing-tight", class: "tracking-tight", group: "tracking" },
-            { label: "spacing-normal", class: "tracking-normal", group: "tracking" },
-            { label: "spacing-wide", class: "tracking-wide", group: "tracking" },
-            { label: "spacing-widest", class: "tracking-widest", group: "tracking" }
-          ];
-        }
-
-        return (
-          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {typographyItems.map((item) => {
-              const active = isClassActive(item);
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleApplyClass(item)}
-                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
-                    active 
-                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
-                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        );
-      }
-
-      case "visuals": {
-        if (subCategory === "colors") {
-          const selectColors = [
-            { label: "Clear", bg: "bg-transparent", class: "bg-transparent" },
-            { label: "White", bg: "bg-white", class: "bg-white border border-stone-200" },
-            { label: "Dark", bg: "bg-stone-900 border border-stone-800", class: "bg-stone-900" },
-            { label: "Stone", bg: "bg-stone-100", class: "bg-stone-100 border border-stone-200" },
-            { label: "Amber", bg: "bg-amber-100", class: "bg-amber-100 border border-amber-200" },
-            { label: "Indigo", bg: "bg-indigo-950", class: "bg-indigo-950" },
-            { label: "Purple", bg: "bg-purple-100", class: "bg-purple-100" },
-            { label: "Teal", bg: "bg-emerald-950", class: "bg-emerald-950" }
-          ];
-
-          const textColors = [
-            { label: "Text-White", class: "text-white", prefix: "text-" },
-            { label: "Text-Dark", class: "text-stone-900", prefix: "text-" },
-            { label: "Text-Stone", class: "text-stone-550", prefix: "text-" },
-            { label: "Text-Amber", class: "text-amber-700", prefix: "text-" },
-            { label: "Text-Indigo", class: "text-indigo-600", prefix: "text-" },
-            { label: "Text-Purple", class: "text-purple-600", prefix: "text-" }
-          ];
-
-          const opacities = [
-            { label: "op-100", class: "opacity-100", prefix: "opacity-" },
-            { label: "op-90", class: "opacity-90", prefix: "opacity-" },
-            { label: "op-75", class: "opacity-75", prefix: "opacity-" },
-            { label: "op-50", class: "opacity-50", prefix: "opacity-" },
-            { label: "op-25", class: "opacity-25", prefix: "opacity-" },
-            { label: "op-10", class: "opacity-10", prefix: "opacity-" }
-          ];
-
-          const activeBg = getPrefixedClass(classes, "bg-") || "bg-transparent";
-
-          return (
-            <div className="flex-1 min-w-0 flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-              {/* Bg Colors circles list */}
-              <div className="flex items-center gap-1.5 shrink-0 py-1 border-r border-stone-200 pr-2">
-                {selectColors.map((color) => {
-                  const isSelected = activeBg === (color.class?.split(" ")[0] || color.bg);
-                  return (
-                    <button
-                      key={color.label}
-                      onClick={() => updateTree((n) => ({ classes: setColorClass(n.classes, "bg-", color.class || color.bg) }))}
-                      className={`w-5 h-5 rounded-full shrink-0 transition-all ${color.bg} ${
-                        isSelected ? "ring-2 ring-purple-500 ring-offset-2 scale-110" : "hover:scale-105 active:scale-95 cursor-pointer"
-                      }`}
-                      title={color.label}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Text Colors & Opacity presets */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                {textColors.map((item) => {
-                  const active = classes.split(/\s+/).includes(item.class);
-                  return (
-                    <button
-                      key={item.label}
-                      onClick={() => updateTree((n) => ({ classes: setColorClass(n.classes, "text-", item.class) }))}
-                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition cursor-pointer ${
-                        active 
-                          ? "bg-purple-600 border-purple-500 text-white" 
-                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-
-                <div className="h-4 w-px bg-stone-200 shrink-0"></div>
-
-                {opacities.map((item) => {
-                  const active = classes.split(/\s+/).includes(item.class);
-                  return (
-                    <button
-                      key={item.label}
-                      onClick={() => updateTree((n) => ({ classes: setPrefixedClass(n.classes, item.prefix, item.class) }))}
-                      className={`px-2 py-0.5 text-[9px] font-mono rounded-md border transition shrink-0 cursor-pointer ${
-                        active 
-                          ? "bg-purple-600 border-purple-500 text-white" 
-                          : "bg-stone-50 border-stone-200 text-stone-500 hover:bg-stone-100"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        }
-
-        // borders subcategory
-        let borderStyleItems = [
-          { label: "rounded-none", class: "rounded-none", group: "rounding" },
-          { label: "rounded-sm", class: "rounded-sm", group: "rounding" },
-          { label: "rounded", class: "rounded", group: "rounding" },
-          { label: "rounded-md", class: "rounded-md", group: "rounding" },
-          { label: "rounded-lg", class: "rounded-lg", group: "rounding" },
-          { label: "rounded-xl", class: "rounded-xl", group: "rounding" },
-          { label: "rounded-2xl", class: "rounded-2xl", group: "rounding" },
-          { label: "rounded-3xl", class: "rounded-3xl", group: "rounding" },
-          { label: "rounded-full", class: "rounded-full", group: "rounding" },
-          { label: "border-0", class: "border-0", group: "borderWidth" },
-          { label: "border-1", class: "border", group: "borderWidth" },
-          { label: "border-2", class: "border-2", group: "borderWidth" },
-          { label: "border-4", class: "border-4", group: "borderWidth" },
-          { label: "border-8", class: "border-8", group: "borderWidth" },
-          { label: "border-solid", class: "border-solid", group: "borderStyle", prefix: "border-" },
-          { label: "border-dashed", class: "border-dashed", group: "borderStyle", prefix: "border-" },
-          { label: "border-dotted", class: "border-dotted", group: "borderStyle", prefix: "border-" },
-          { label: "shadow-none", class: "shadow-none", group: "shadow" },
-          { label: "shadow-sm", class: "shadow-sm", group: "shadow" },
-          { label: "shadow", class: "shadow", group: "shadow" },
-          { label: "shadow-md", class: "shadow-md", group: "shadow" },
-          { label: "shadow-lg", class: "shadow-lg", group: "shadow" },
-          { label: "shadow-xl", class: "shadow-xl", group: "shadow" },
-          { label: "shadow-2xl", class: "shadow-2xl", group: "shadow" }
-        ];
-
-        return (
-          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {borderStyleItems.map((item) => {
-              const active = isClassActive(item);
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleApplyClass(item)}
-                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
-                    active 
-                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
-                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        );
-      }
-
-      case "motion": {
-        let motionItems: { label: string; class: string; group: string; prefix?: string }[] = [];
-        if (subCategory === "transitions") {
-          motionItems = [
-            { label: "transition-none", class: "transition-none", group: "transition", prefix: "transition-" },
-            { label: "transition-all", class: "transition-all", group: "transition", prefix: "transition-" },
-            { label: "transition-colors", class: "transition-colors", group: "transition", prefix: "transition-" },
-            { label: "transition-transform", class: "transition-transform", group: "transition", prefix: "transition-" },
-            { label: "duration-75", class: "duration-75", group: "duration", prefix: "duration-" },
-            { label: "duration-100", class: "duration-100", group: "duration", prefix: "duration-" },
-            { label: "duration-150", class: "duration-150", group: "duration", prefix: "duration-" },
-            { label: "duration-200", class: "duration-200", group: "duration", prefix: "duration-" },
-            { label: "duration-300", class: "duration-300", group: "duration", prefix: "duration-" },
-            { label: "duration-500", class: "duration-500", group: "duration", prefix: "duration-" },
-            { label: "duration-700", class: "duration-700", group: "duration", prefix: "duration-" },
-            { label: "duration-1000", class: "duration-1000", group: "duration", prefix: "duration-" },
-            { label: "ease-linear", class: "ease-linear", group: "easing", prefix: "ease-" },
-            { label: "ease-in", class: "ease-in", group: "easing", prefix: "ease-" },
-            { label: "ease-out", class: "ease-out", group: "easing", prefix: "ease-" },
-            { label: "ease-in-out", class: "ease-in-out", group: "easing", prefix: "ease-" },
-            { label: "hover:scale-105", class: "hover:scale-[1.05]", group: "hoverScale", prefix: "hover:scale-" },
-            { label: "hover:scale-110", class: "hover:scale-[1.10]", group: "hoverScale", prefix: "hover:scale-" },
-            { label: "hover:scale-95", class: "hover:scale-[0.95]", group: "hoverScale", prefix: "hover:scale-" },
-            { label: "hover:rotate-1", class: "hover:rotate-1", group: "hoverRotate", prefix: "hover:rotate-" },
-            { label: "hover:rotate-3", class: "hover:rotate-3", group: "hoverRotate", prefix: "hover:rotate-" }
-          ];
-        } else if (subCategory === "animations") {
-          motionItems = [
-            { label: "animate-none", class: "animate-none", group: "animation", prefix: "animate-" },
-            { label: "animate-fade-in", class: "animate-fade-in", group: "animation", prefix: "animate-" },
-            { label: "animate-pulse", class: "animate-pulse", group: "animation", prefix: "animate-" },
-            { label: "animate-bounce", class: "animate-bounce", group: "animation", prefix: "animate-" },
-            { label: "animate-spin", class: "animate-spin", group: "animation", prefix: "animate-" },
-            { label: "animate-ping", class: "animate-ping", group: "animation", prefix: "animate-" },
-            { label: "hover:shadow-lg", class: "hover:shadow-lg", group: "hoverShadow", prefix: "hover:shadow-" },
-            { label: "hover:opacity-90", class: "hover:bg-opacity-90", group: "hoverOpacity", prefix: "hover:bg-opacity-" }
-          ];
-        }
-
-        return (
-          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 animate-fade-in select-none">
-            {motionItems.map((item) => {
-              const active = isClassActive(item);
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleApplyClass(item)}
-                  className={`px-3 py-1.5 text-[10px] font-mono rounded-xl shrink-0 transition border cursor-pointer ${
-                    active 
-                      ? "bg-purple-600 border-purple-500 text-white font-bold animate-pulse-subtle" 
-                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        );
-      }
-
       case "core": {
         if (subCategory === "contentDetails") {
           return (
