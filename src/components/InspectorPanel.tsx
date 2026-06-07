@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { 
   Settings, Sparkles, Palette, Maximize, Type, Layers, Play, Code, 
   HelpCircle, AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown, Trash2, Copy,
-  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight, Sliders
+  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight, Sliders, Anchor
 } from "lucide-react";
 import { PropertyControl } from "./PropertyControl";
 import { VisualElement } from "../types";
 import { setGroupClass, getActiveGroupClass, setPrefixedClass, getPrefixedClass, setColorClass } from "../styleUtils";
 
-export type InspectorSection = "layout" | "spacing" | "typography" | "visuals" | "motion" | "core" | "help";
+export type InspectorSection = "layout" | "spacing" | "sizing" | "position" | "typography" | "visuals" | "motion" | "core" | "help";
 
 interface CSSProperty {
   name: string;
@@ -74,15 +74,6 @@ const CSS_HIERARCHY_DATA: CSSCategory[] = [
           { name: "grid-row", values: "auto | <integer> | <custom-ident> | <integer> / <integer> | span <integer> | span <custom-ident>" },
           { name: "grid-area", values: "auto | <custom-name> | <row-start> / <column-start> / <row-end> / <column-end>" }
         ]
-      },
-      {
-        name: "Box Model & Positioning (Legacy)",
-        properties: [
-          { name: "width", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
-          { name: "height", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
-          { name: "position", values: "static | relative | absolute | fixed | sticky" },
-          { name: "inset", values: "auto | <length> | <percentage>" }
-        ]
       }
     ]
   },
@@ -93,49 +84,131 @@ const CSS_HIERARCHY_DATA: CSSCategory[] = [
       {
         name: "Outer Spacing (Physical Dimension)",
         properties: [
-          { name: "margin", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>", note: "e.g. 10px, 1.5rem, 50vw, 10cqw, 5%, calc(100% - 20px)" },
-          { name: "margin-top", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-right", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-bottom", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-left", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+          {
+            name: "margin",
+            values: "auto | <absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          },
+          {
+            name: "margin-top / margin-right / margin-bottom / margin-left",
+            values: "auto | <absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          }
         ]
       },
       {
         name: "Inner Spacing (Physical Dimension)",
         properties: [
-          { name: "padding", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>", note: "e.g. 10px, 1.5rem, 50vw, 10cqw, 5%, clamp(1rem, 2vw, 3rem)" },
-          { name: "padding-top", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-right", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-bottom", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-left", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+          {
+            name: "padding",
+            values: "<absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          },
+          {
+            name: "padding-top / padding-right / padding-bottom / padding-left",
+            values: "<absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          }
         ]
       },
       {
         name: "Logical Outer Spacing (Writing-System Agnostic)",
         properties: [
-          { name: "margin-block", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-inline", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-block-start", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-block-end", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-inline-start", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "margin-inline-end", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+          {
+            name: "margin-block / margin-inline",
+            values: "auto | <absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          },
+          {
+            name: "margin-block-start / margin-block-end / margin-inline-start / margin-inline-end",
+            values: "auto | <absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          }
         ]
       },
       {
         name: "Logical Inner Spacing (Writing-System Agnostic)",
         properties: [
-          { name: "padding-block", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-inline", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-block-start", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-block-end", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-inline-start", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
-          { name: "padding-inline-end", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+          {
+            name: "padding-block / padding-inline",
+            values: "<absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-length> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          },
+          {
+            name: "padding-block-start / padding-block-end / padding-inline-start / padding-inline-end",
+            values: "<absolute-length> (e.g. 10px, 1cm, 10mm, 0.25in, 12pt, 1pc, 40Q) | <relative-font-length> (e.g. 1em, 1.5rem, 2ex, 3ch, 1ic, 1lh, 1rlh, 1cap, 1rcap) | <viewport-length> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100dvh, 100svh, 100lvh, 50dvw, 50svw, 50lvw, 10vi, 10vb) | <container-query> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 5%, 100%) | <math-function> (e.g. calc(100% - 20px), clamp(1rem, 2vw, 3rem), min(50px, 10vw), max(10px, 2em)) | <css-variable> (e.g. var(--spacing-base)) | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          }
         ]
       },
       {
         name: "Spacing Trim (Next-Gen Container Spacing Controls)",
         properties: [
-          { name: "margin-trim", values: "none | all | block | block-start | block-end | inline | inline-start | inline-end | <global-value>" }
+          {
+            name: "margin-trim",
+            values: "none | all | block | block-start | block-end | inline | inline-start | inline-end | <global-value> (e.g. inherit, initial, unset, revert, revert-layer)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    name: "SIZING",
+    icon: Sliders,
+    subCategories: [
+      {
+        name: "Dimensions",
+        properties: [
+          { name: "width / height", values: "auto | max-content | min-content | fit-content | stretch | <length-absolute> (e.g. px, cm, mm, in, pc, pt, Q) | <length-font-relative> (e.g. em, rem, ex, ch, cap, ic, lh, rlh) | <length-viewport> (e.g. vw, vh, vmin, vmax, vi, vb) | <length-container-query> (e.g. cqw, cqh, cqi, cqb, cqmin, cqmax) | <percentage> (e.g. 0%, 50%, 100%) | <math-function> (e.g. calc(), min(), max(), clamp())" },
+          { name: "min-width / min-height", values: "auto | max-content | min-content | fit-content | stretch | <length-absolute> (e.g. px, cm, mm, in, pc, pt, Q) | <length-font-relative> (e.g. em, rem, ex, ch, cap, ic, lh, rlh) | <length-viewport> (e.g. vw, vh, vmin, vmax, vi, vb) | <length-container-query> (e.g. cqw, cqh, cqi, cqb, cqmin, cqmax) | <percentage> (e.g. 0%, 50%, 100%) | <math-function> (e.g. calc(), min(), max(), clamp())" },
+          { name: "max-width / max-height", values: "none | max-content | min-content | fit-content | stretch | <length-absolute> (e.g. px, cm, mm, in, pc, pt, Q) | <length-font-relative> (e.g. em, rem, ex, ch, cap, ic, lh, rlh) | <length-viewport> (e.g. vw, vh, vmin, vmax, vi, vb) | <length-container-query> (e.g. cqw, cqh, cqi, cqb, cqmin, cqmax) | <percentage> (e.g. 0%, 50%, 100%) | <math-function> (e.g. calc(), min(), max(), clamp())" },
+          { name: "aspect-ratio", values: "auto | <ratio> (e.g. 1 / 1, 16 / 9, 4 / 3, 1.5) | auto <ratio> (e.g. auto 16 / 9) | <ratio> auto (e.g. 1 / 1 auto)" }
+        ]
+      },
+      {
+        name: "Box Sizing System",
+        properties: [
+          { name: "box-sizing", values: "content-box | border-box" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "POSITION",
+    icon: Compass,
+    subCategories: [
+      {
+        name: "Document Flow Position",
+        properties: [
+          { name: "position", values: "static | relative | absolute | fixed | sticky" },
+          { name: "top / right / bottom / left", values: "auto | <length: absolute> (e.g. 10px, 2cm, 5mm, 0.25in, 12pt, 1pc, 40Q) | <length: relative-font> (e.g. 1.5em, 2rem, 3ex, 5ch, 2lh, 2rlh) | <length: viewport> (e.g. 50vw, 100vh, 10vmin, 20vmax, 100svh, 100lvh, 100dvh) | <length: container-query> (e.g. 10cqw, 5cqh, 10cqi, 10cqb, 5cqmin, 5cqmax) | <percentage> (e.g. 50%, 100%) | <math-function> (e.g. calc(100% - 50px), min(10vw, 20px), max(2rem, 30px), clamp(10px, 5vw, 50px)) | <environment-variable> (e.g. env(safe-area-inset-top)) | <anchor-function> (e.g. anchor(top), anchor(--my-anchor bottom), anchor-size(width))" },
+          { name: "inset", values: "auto | <length> (e.g. 10px, 1rem 2rem, 10px 5px 15px 20px) | <percentage> (e.g. 10% 5%) | <math-function> (e.g. calc(100svh - 20px))" }
+        ]
+      },
+      {
+        name: "Logical Document Flow Position (Writing-Mode Agnostic)",
+        properties: [
+          { name: "inset-block / inset-block-start / inset-block-end", values: "auto | <length> (all absolute, relative, viewport, container units e.g. 1rem, 50svh) | <percentage> | <math-function> | <anchor-function>" },
+          { name: "inset-inline / inset-inline-start / inset-inline-end", values: "auto | <length> (all absolute, relative, viewport, container units e.g. 20px, 100dvw) | <percentage> | <math-function> | <anchor-function>" }
+        ]
+      },
+      {
+        name: "Stack Order",
+        properties: [
+          { name: "z-index", values: "auto | <integer> (e.g. 1, 999, -10, 999999) | <math-function> (e.g. calc(3 + 2))" }
+        ]
+      },
+      {
+        name: "Anchor Definition & Attachment (Modern Overlay Positioning)",
+        properties: [
+          { name: "anchor-name", values: "none | <dashed-ident> (e.g. --tooltip-trigger, --nav-menu)" },
+          { name: "position-anchor", values: "implicit | <dashed-ident> (e.g. --tooltip-trigger)" }
+        ]
+      },
+      {
+        name: "Advanced Anchor Area Placement",
+        properties: [
+          { name: "position-area", values: "none | top | bottom | left | right | center | span-all | block-start | block-end | inline-start | inline-end | <combinations> (e.g. top left, center right, block-start inline-end)" }
+        ]
+      },
+      {
+        name: "Position Fallbacks & Visibility",
+        properties: [
+          { name: "position-try-fallbacks", values: "none | flip-block | flip-inline | flip-start | top | bottom | left | right | <dashed-ident> (e.g. --my-fallback-option) | <combinations> (e.g. flip-block, flip-inline)" },
+          { name: "position-try-order", values: "normal | most-width | most-height | most-block-size | most-inline-size" },
+          { name: "position-visibility", values: "always | anchors-visible | no-overflow" }
         ]
       }
     ]
@@ -364,6 +437,8 @@ export function InspectorPanel({
         {[
           { id: "layout", label: "Layout", icon: Maximize },
           { id: "spacing", label: "Spacing", icon: Move },
+          { id: "sizing", label: "Sizing", icon: Sliders },
+          { id: "position", label: "Position", icon: Compass },
           { id: "typography", label: "Typography & Text", icon: Type },
           { id: "visuals", label: "Appearance & Visuals", icon: Palette },
           { id: "motion", label: "Motion & Effects", icon: Play },
@@ -396,149 +471,13 @@ export function InspectorPanel({
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
               <Move size={15} className="text-rose-600" />
-              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Box Model & Spacing</span>
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Spacing Settings</span>
             </div>
 
-            {/* Sub-Category: Box Model (Element Spacing & Sizing) */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
               <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Grid size={11} />
-                <span>Box Model (Spacing & Sizing)</span>
-              </div>
-              
-              {/* Properties: Width & Height */}
-              <div className="grid grid-cols-2 gap-3">
-                <PropertyControl
-                  label="Width"
-                  type="number"
-                  value={getActiveGroupClass(selectedElement.classes, "width")}
-                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "width", val) }))}
-                  placeholder="Auto"
-                />
-
-                <PropertyControl
-                  label="Height"
-                  type="number"
-                  value={getActiveGroupClass(selectedElement.classes, "height")}
-                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "height", val) }))}
-                  placeholder="Auto"
-                />
-              </div>
-
-              {/* Min/Max Sizing select configurations */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Min Width</label>
-                  <div className="relative">
-                    <select
-                      value={getPrefixedClass(selectedElement.classes, "min-w-")}
-                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "min-w-", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">None (min-w-0)</option>
-                      <option value="min-w-0">min-w-0</option>
-                      <option value="min-w-[100px]">100px</option>
-                      <option value="min-w-[200px]">200px</option>
-                      <option value="min-w-[300px]">300px</option>
-                      <option value="min-w-full">100% (min-w-full)</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Max Width</label>
-                  <div className="relative">
-                    <select
-                      value={getPrefixedClass(selectedElement.classes, "max-w-")}
-                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "max-w-", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">None</option>
-                      <option value="max-w-xs">X Small (max-w-xs)</option>
-                      <option value="max-w-sm">Small (max-w-sm)</option>
-                      <option value="max-w-md">Medium (max-w-md)</option>
-                      <option value="max-w-lg">Large (max-w-lg)</option>
-                      <option value="max-w-xl">X Large (max-w-xl)</option>
-                      <option value="max-w-2xl">2X Large (max-w-2xl)</option>
-                      <option value="max-w-full">Full (max-w-full)</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Min Height</label>
-                  <div className="relative">
-                    <select
-                      value={getPrefixedClass(selectedElement.classes, "min-h-")}
-                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "min-h-", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">None (min-h-0)</option>
-                      <option value="min-h-0">min-h-0</option>
-                      <option value="min-h-[50px]">50px</option>
-                      <option value="min-h-[100px]">100px</option>
-                      <option value="min-h-[200px]">200px</option>
-                      <option value="min-h-full">100% (min-h-full)</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Max Height</label>
-                  <div className="relative">
-                    <select
-                      value={getPrefixedClass(selectedElement.classes, "max-h-")}
-                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "max-h-", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">None</option>
-                      <option value="max-h-full">100% (max-h-full)</option>
-                      <option value="max-h-[300px]">300px</option>
-                      <option value="max-h-[500px]">500px</option>
-                      <option value="max-h-screen">Screen height</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Box Sizing & Aspect Ratio */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Box Sizing</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "boxSizing")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "boxSizing", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default (Border Box)</option>
-                      <option value="box-border">box-border</option>
-                      <option value="box-content">box-content</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Aspect Ratio</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "aspectRatio")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "aspectRatio", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default (aspect-auto)</option>
-                      <option value="aspect-auto">aspect-auto</option>
-                      <option value="aspect-square">Square (1:1 / aspect-square)</option>
-                      <option value="aspect-video">Video (16:9 / aspect-video)</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
+                <Move size={11} />
+                <span>Margin & Padding Controls</span>
               </div>
 
               {/* Spacing Controls: Margin & Padding */}
@@ -740,6 +679,482 @@ export function InspectorPanel({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ==================== 1.5 SIZING ==================== */}
+        {inspectorSection === "sizing" && (
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <Sliders size={15} className="text-rose-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Sizing Settings</span>
+            </div>
+
+            {/* Sub-Category: Dimensions */}
+            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
+                <Grid size={11} />
+                <span>Dimensions</span>
+              </div>
+              
+              {/* Properties: Width & Height */}
+              <div className="grid grid-cols-2 gap-3">
+                <PropertyControl
+                  label="Width"
+                  type="number"
+                  value={getActiveGroupClass(selectedElement.classes, "width")}
+                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "width", val) }))}
+                  placeholder="Auto"
+                />
+
+                <PropertyControl
+                  label="Height"
+                  type="number"
+                  value={getActiveGroupClass(selectedElement.classes, "height")}
+                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "height", val) }))}
+                  placeholder="Auto"
+                />
+              </div>
+
+              {/* Min/Max Sizing select configurations */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Min Width</label>
+                  <div className="relative">
+                    <select
+                      value={getPrefixedClass(selectedElement.classes, "min-w-")}
+                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "min-w-", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">None (min-w-0)</option>
+                      <option value="min-w-0">min-w-0</option>
+                      <option value="min-w-[100px]">100px</option>
+                      <option value="min-w-[200px]">200px</option>
+                      <option value="min-w-[300px]">300px</option>
+                      <option value="min-w-full">100% (min-w-full)</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Max Width</label>
+                  <div className="relative">
+                    <select
+                      value={getPrefixedClass(selectedElement.classes, "max-w-")}
+                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "max-w-", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">None</option>
+                      <option value="max-w-xs">X Small (max-w-xs)</option>
+                      <option value="max-w-sm">Small (max-w-sm)</option>
+                      <option value="max-w-md">Medium (max-w-md)</option>
+                      <option value="max-w-lg">Large (max-w-lg)</option>
+                      <option value="max-w-xl">X Large (max-w-xl)</option>
+                      <option value="max-w-2xl">2X Large (max-w-2xl)</option>
+                      <option value="max-w-full">Full (max-w-full)</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Min Height</label>
+                  <div className="relative">
+                    <select
+                      value={getPrefixedClass(selectedElement.classes, "min-h-")}
+                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "min-h-", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">None (min-h-0)</option>
+                      <option value="min-h-0">min-h-0</option>
+                      <option value="min-h-[50px]">50px</option>
+                      <option value="min-h-[100px]">100px</option>
+                      <option value="min-h-[200px]">200px</option>
+                      <option value="min-h-full">100% (min-h-full)</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Max Height</label>
+                  <div className="relative">
+                    <select
+                      value={getPrefixedClass(selectedElement.classes, "max-h-")}
+                      onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "max-h-", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">None</option>
+                      <option value="max-h-full">100% (max-h-full)</option>
+                      <option value="max-h-[300px]">300px</option>
+                      <option value="max-h-[500px]">500px</option>
+                      <option value="max-h-screen">Screen height</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Box Sizing & Aspect Ratio */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Box Sizing</label>
+                  <div className="relative">
+                    <select
+                      value={getActiveGroupClass(selectedElement.classes, "boxSizing")}
+                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "boxSizing", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">Default (Border Box)</option>
+                      <option value="box-border">box-border</option>
+                      <option value="box-content">box-content</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Aspect Ratio</label>
+                  <div className="relative">
+                    <select
+                      value={getActiveGroupClass(selectedElement.classes, "aspectRatio")}
+                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "aspectRatio", e.target.value) }))}
+                      className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                    >
+                      <option value="">Default (aspect-auto)</option>
+                      <option value="aspect-auto">aspect-auto</option>
+                      <option value="aspect-square">Square (1:1 / aspect-square)</option>
+                      <option value="aspect-video">Video (16:9 / aspect-video)</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 1.25 POSITION ==================== */}
+        {inspectorSection === "position" && (
+          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <Compass size={15} className="text-rose-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">CSS Positioning & Anchors</span>
+            </div>
+
+            {(() => {
+              const parseArbitraryValue = (className: string, prefix: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)${prefix.replace(/[-\[\]()]/g, '\\$&')}\\[([^\\]]+)\\](?:$|\\s)`));
+                if (match) return match[1].replace(/_/g, " ");
+                const active = className.split(/\s+/).find((c) => c.startsWith(prefix) && !c.includes("["));
+                return active ? active.substring(prefix.length) : "";
+              };
+
+              const encodeArbitraryValue = (prefix: string, value: string): string => {
+                if (!value || !value.trim()) return "";
+                return `${prefix}[${value.trim().replace(/\s+/g, "_")}]`;
+              };
+
+              const updateArbitraryClass = (prefix: string, value: string) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(prefix));
+                if (value && value.trim()) {
+                  filtered.push(encodeArbitraryValue(prefix, value));
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1] : "";
+              };
+
+              const updateArbitraryProperty = (propName: string, value: string) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              return (
+                <div className="space-y-4">
+                  {/* Category 1: Document Flow Position */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3.5 shadow-sm">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                      <Move size={12} />
+                      <span>Document Flow Position</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">Scheme (position)</label>
+                      <div className="relative">
+                        <select
+                          value={getActiveGroupClass(selectedElement.classes, "position")}
+                          onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "position", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 font-medium focus:outline-none cursor-pointer"
+                        >
+                          <option value="">default (static)</option>
+                          <option value="relative">relative</option>
+                          <option value="absolute">absolute</option>
+                          <option value="fixed">fixed (viewport relative)</option>
+                          <option value="sticky">sticky (scroll relative)</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Coordinates Grid */}
+                    <div className="grid grid-cols-2 gap-3.5 pt-1">
+                      {["top", "right", "bottom", "left"].map((dir) => {
+                        const prefix = `${dir}-`;
+                        const currentVal = getPrefixedClass(selectedElement.classes, prefix);
+
+                        return (
+                          <div key={dir} className="flex flex-col gap-1.5 p-2 bg-white border border-stone-100 rounded-xl shadow-xs">
+                            <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">{dir}</label>
+                            
+                            <div className="relative">
+                              <select
+                                value={currentVal}
+                                onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, prefix, e.target.value) }))}
+                                className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg pl-2 pr-6 py-1 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                              >
+                                <option value="">Auto</option>
+                                <option value={`${prefix}0`}>0px</option>
+                                <option value={`${prefix}1`}>4px (0.25rem)</option>
+                                <option value={`${prefix}2`}>8px (0.5rem)</option>
+                                <option value={`${prefix}4`}>16px (1rem)</option>
+                                <option value={`${prefix}8`}>32px (2rem)</option>
+                                <option value={`${prefix}auto`}>auto</option>
+                                <option value={`-${prefix}2`}>-8px (-0.5rem)</option>
+                                <option value={`-${prefix}4`}>-16px (-1rem)</option>
+                              </select>
+                              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                            </div>
+
+                            <input
+                              type="text"
+                              placeholder="e.g. 50% or 100vh"
+                              value={parseArbitraryValue(selectedElement.classes, prefix)}
+                              onChange={(e) => updateArbitraryClass(prefix, e.target.value)}
+                              className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-[11px] text-stone-700 focus:outline-none focus:bg-white placeholder-stone-400 font-mono"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Shorthand Inset */}
+                    <div className="flex flex-col gap-1.5 p-2 bg-white border border-stone-100 rounded-xl shadow-xs">
+                      <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">inset (all sides)</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="relative">
+                          <select
+                            value={getPrefixedClass(selectedElement.classes, "inset-")}
+                            onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "inset-", e.target.value) }))}
+                            className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Auto (none)</option>
+                            <option value="inset-0">0px (inset-0)</option>
+                            <option value="inset-2">8px (inset-2)</option>
+                            <option value="inset-4">16px (inset-4)</option>
+                            <option value="inset-auto">inset-auto</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. 10px or 5%"
+                          value={parseArbitraryValue(selectedElement.classes, "inset-")}
+                          onChange={(e) => updateArbitraryClass("inset-", e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2.5 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white placeholder-stone-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Category 2: Logical Document Flow Position (Writing-Mode Agnostic) */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3.5 shadow-sm">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                      <Compass size={12} />
+                      <span>Logical Direction offsets</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* Inset Block */}
+                      <div className="p-2.5 bg-white border border-stone-100 rounded-xl space-y-2">
+                        <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider font-mono">inset-block (vertical inline equivalent)</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            placeholder="block start/end"
+                            value={parseArbitraryValue(selectedElement.classes, "inset-block-")}
+                            onChange={(e) => updateArbitraryClass("inset-block-", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                          <input
+                            type="text"
+                            placeholder="block-start (top)"
+                            value={parseArbitraryValue(selectedElement.classes, "inset-block-start-")}
+                            onChange={(e) => updateArbitraryClass("inset-block-start-", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Inset Inline */}
+                      <div className="p-2.5 bg-white border border-stone-100 rounded-xl space-y-2">
+                        <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider font-mono">inset-inline (horizontal inline equivalent)</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            placeholder="inline start/end"
+                            value={parseArbitraryValue(selectedElement.classes, "inset-inline-")}
+                            onChange={(e) => updateArbitraryClass("inset-inline-", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                          <input
+                            type="text"
+                            placeholder="inline-start (left)"
+                            value={parseArbitraryValue(selectedElement.classes, "inset-inline-start-")}
+                            onChange={(e) => updateArbitraryClass("inset-inline-start-", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Category 3: Stack Order */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                      <Layers size={12} />
+                      <span>Stack Order</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "z-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "z-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer font-medium"
+                        >
+                          <option value="">auto</option>
+                          <option value="z-0">z-0 (base)</option>
+                          <option value="z-10">z-10 (header/nav)</option>
+                          <option value="z-20">z-20 (dropdown)</option>
+                          <option value="z-30">z-30 (sticky)</option>
+                          <option value="z-40">z-40 (drawer)</option>
+                          <option value="z-50">z-50 (modal/tooltip)</option>
+                          <option value="z-auto">z-auto</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="custom index e.g. 9999"
+                        value={parseArbitraryValue(selectedElement.classes, "z-")}
+                        onChange={(e) => updateArbitraryClass("z-", e.target.value)}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Category 4: Anchor Definition & Attachment */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3.5 shadow-sm">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                      <Anchor size={12} />
+                      <span>CSS Anchor Positioning</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">anchor-name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. --tooltip-trigger"
+                          value={parseArbitraryProperty(selectedElement.classes, "anchor-name")}
+                          onChange={(e) => updateArbitraryProperty("anchor-name", e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">position-anchor</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. --tooltip-trigger"
+                          value={parseArbitraryProperty(selectedElement.classes, "position-anchor")}
+                          onChange={(e) => updateArbitraryProperty("position-anchor", e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Category 5 & 6: Advanced Anchor Area & Try Fallbacks */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3.5 shadow-sm">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                      <HelpCircle size={12} />
+                      <span>Fallback & Area Controls</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">position-area</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. top left, center right"
+                          value={parseArbitraryProperty(selectedElement.classes, "position-area")}
+                          onChange={(e) => updateArbitraryProperty("position-area", e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">position-try-fallbacks</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. flip-block, flip-inline"
+                          value={parseArbitraryProperty(selectedElement.classes, "position-try-fallbacks")}
+                          onChange={(e) => updateArbitraryProperty("position-try-fallbacks", e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10.5px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">try-order</label>
+                          <input
+                            type="text"
+                            placeholder="most-width"
+                            value={parseArbitraryProperty(selectedElement.classes, "position-try-order")}
+                            onChange={(e) => updateArbitraryProperty("position-try-order", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2.5 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10.5px] text-stone-500 font-semibold uppercase tracking-wider pl-0.5">visibility</label>
+                          <input
+                            type="text"
+                            placeholder="anchors-visible"
+                            value={parseArbitraryProperty(selectedElement.classes, "position-visibility")}
+                            onChange={(e) => updateArbitraryProperty("position-visibility", e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg px-2.5 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1449,131 +1864,6 @@ export function InspectorPanel({
                               }}
                               className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 shadow-xs focus:outline-none placeholder-stone-400 focus:border-rose-400 font-medium"
                             />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* --- 4. POSITIONING --- */}
-                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-1 shadow-sm">
-                    {sectionHeader("position", "Positioning Scheme & Offsets", Move)}
-                    {expandedLayoutSections.position && (
-                      <div className="space-y-4 animate-in fade-in duration-200 pt-3">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] text-stone-505 font-semibold uppercase tracking-wider pl-1">Positioning Scheme</label>
-                          <div className="relative">
-                            <select
-                              value={getActiveGroupClass(selectedElement.classes, "position")}
-                              onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "position", e.target.value) }))}
-                              className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
-                            >
-                              <option value="">default (static)</option>
-                              <option value="relative">relative</option>
-                              <option value="absolute">absolute</option>
-                              <option value="fixed">fixed (viewport stick)</option>
-                              <option value="sticky">sticky (scroll offset stick)</option>
-                            </select>
-                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                          </div>
-                        </div>
-
-                        {/* Coordinates Offset Detail */}
-                        <div className="space-y-4 pt-1">
-                          <div className="grid grid-cols-2 gap-3">
-                            {["top", "right", "bottom", "left"].map((dir) => {
-                              const prefix = `${dir}-`;
-                              const currentVal = getPrefixedClass(selectedElement.classes, prefix);
-                              return (
-                                <div key={dir} className="flex flex-col gap-1">
-                                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{dir}</label>
-                                  <div className="grid grid-cols-1 gap-1">
-                                    <div className="relative">
-                                      <select
-                                        value={currentVal}
-                                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, prefix, e.target.value) }))}
-                                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2 pr-6 py-1 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
-                                      >
-                                        <option value="">auto</option>
-                                        <option value={`${prefix}0`}>{prefix}0</option>
-                                        <option value={`${prefix}1`}>{prefix}1</option>
-                                        <option value={`${prefix}2`}>{prefix}2</option>
-                                        <option value={`${prefix}4`}>{prefix}4</option>
-                                        <option value={`${prefix}8`}>{prefix}8</option>
-                                        <option value={`${prefix}12`}>{prefix}12</option>
-                                        <option value={`${prefix}16`}>{prefix}16</option>
-                                        <option value={`-${prefix}2`}>-{prefix}2</option>
-                                        <option value={`-${prefix}4`}>-{prefix}4</option>
-                                      </select>
-                                      <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                                    </div>
-                                    <input
-                                      type="text"
-                                      placeholder="custompx"
-                                      value={parseArbitraryValue(selectedElement.classes, prefix)}
-                                      onChange={(e) => updateArbitraryClass(prefix, e.target.value)}
-                                      className="w-full bg-white border border-stone-200 rounded-lg px-2 py-1 text-[11px] text-stone-700 focus:outline-none placeholder-stone-400"
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Shorthand Inset */}
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">inset</label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="relative">
-                                <select
-                                  value={getPrefixedClass(selectedElement.classes, "inset-")}
-                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "inset-", e.target.value) }))}
-                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
-                                >
-                                  <option value="">none (auto)</option>
-                                  <option value="inset-0">inset-0</option>
-                                  <option value="inset-2">inset-2 (8px)</option>
-                                  <option value="inset-4">inset-4 (16px)</option>
-                                  <option value="inset-auto">inset-auto</option>
-                                </select>
-                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                              </div>
-                              <input
-                                type="text"
-                                placeholder="custom e.g. 10%"
-                                value={parseArbitraryValue(selectedElement.classes, "inset-")}
-                                onChange={(e) => updateArbitraryClass("inset-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          {/* z-index */}
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-mono">z-index</label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="relative">
-                                <select
-                                  value={getPrefixedClass(selectedElement.classes, "z-")}
-                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "z-", e.target.value) }))}
-                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
-                                >
-                                  <option value="">auto</option>
-                                  <option value="z-0">z-0</option>
-                                  <option value="z-10">z-10</option>
-                                  <option value="z-20">z-30</option>
-                                  <option value="z-50">z-50</option>
-                                </select>
-                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                              </div>
-                              <input
-                                type="text"
-                                placeholder="custom index e.g. 99"
-                                value={parseArbitraryValue(selectedElement.classes, "z-")}
-                                onChange={(e) => updateArbitraryClass("z-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
-                              />
-                            </div>
                           </div>
                         </div>
                       </div>

@@ -17,6 +17,8 @@ import {
 const tabsInfo = [
   { id: "layout", label: "Layout", icon: Maximize },
   { id: "spacing", label: "Spacing", icon: Move },
+  { id: "sizing", label: "Sizing", icon: Sliders },
+  { id: "position", label: "Position", icon: Compass },
   { id: "typography", label: "Text", icon: Type },
   { id: "visuals", label: "Visuals", icon: Palette },
   { id: "motion", label: "Motion", icon: Play },
@@ -24,13 +26,7 @@ const tabsInfo = [
   { id: "help", label: "Guide", icon: HelpCircle }
 ];
 
-const BOX_MODEL_PROPS = [
-  { id: "width", label: "width", prefix: "w-", group: "width", values: ["auto", "full", "1/2", "1/3", "2/3", "1/4", "3/4", "12", "24", "32", "48", "64", "96"] },
-  { id: "height", label: "height", prefix: "h-", group: "height", values: ["auto", "full", "12", "16", "20", "24", "32", "40", "48", "56", "64", "80", "96"] },
-  { id: "min-width", label: "min-width", prefix: "min-w-", values: ["0", "[100px]", "[200px]", "[300px]", "full"] },
-  { id: "max-width", label: "max-width", prefix: "max-w-", values: ["none", "xs", "sm", "md", "lg", "xl", "2xl", "full"] },
-  { id: "min-height", label: "min-height", prefix: "min-h-", values: ["0", "[50px]", "[100px]", "[200px]", "full"] },
-  { id: "max-height", label: "max-height", prefix: "max-h-", values: ["full", "[300px]", "[500px]", "screen"] },
+const SPACING_PROPS = [
   { id: "margin", label: "margin", prefix: "m-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "32", "48", "64", "auto"] },
   { id: "margin-top", label: "margin-top", prefix: "mt-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
   { id: "margin-right", label: "margin-right", prefix: "mr-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "auto"] },
@@ -40,7 +36,16 @@ const BOX_MODEL_PROPS = [
   { id: "padding-top", label: "padding-top", prefix: "pt-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
   { id: "padding-right", label: "padding-right", prefix: "pr-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
   { id: "padding-bottom", label: "padding-bottom", prefix: "pb-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
-  { id: "padding-left", label: "padding-left", prefix: "pl-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
+  { id: "padding-left", label: "padding-left", prefix: "pl-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] }
+];
+
+const SIZING_PROPS = [
+  { id: "width", label: "width", prefix: "w-", group: "width", values: ["auto", "full", "1/2", "1/3", "2/3", "1/4", "3/4", "12", "24", "32", "48", "64", "96"] },
+  { id: "height", label: "height", prefix: "h-", group: "height", values: ["auto", "full", "12", "16", "20", "24", "32", "40", "48", "56", "64", "80", "96"] },
+  { id: "min-width", label: "min-width", prefix: "min-w-", values: ["0", "[100px]", "[200px]", "[300px]", "full"] },
+  { id: "max-width", label: "max-width", prefix: "max-w-", values: ["none", "xs", "sm", "md", "lg", "xl", "2xl", "full"] },
+  { id: "min-height", label: "min-height", prefix: "min-h-", values: ["0", "[50px]", "[100px]", "[200px]", "full"] },
+  { id: "max-height", label: "max-height", prefix: "max-h-", values: ["full", "[300px]", "[500px]", "screen"] },
   { id: "box-sizing", label: "box-sizing", prefix: "box-", group: "boxSizing", values: ["border", "content"] },
   { id: "aspect-ratio", label: "aspect-ratio", prefix: "aspect-", group: "aspectRatio", values: ["auto", "square", "video"] }
 ];
@@ -141,7 +146,8 @@ interface StylePropertyConfig {
 const getPropsForSubCategory = (subCat: string): StylePropertyConfig[] => {
   switch (subCat) {
     case "display": return DISPLAY_PROPS as StylePropertyConfig[];
-    case "boxModel": return BOX_MODEL_PROPS as StylePropertyConfig[];
+    case "spacingModel": return SPACING_PROPS as StylePropertyConfig[];
+    case "sizingModel": return SIZING_PROPS as StylePropertyConfig[];
     case "positioning": return POSITION_PROPS as StylePropertyConfig[];
     case "flexbox": return FLEXBOX_PROPS as StylePropertyConfig[];
     case "grid": return GRID_PROPS as StylePropertyConfig[];
@@ -169,7 +175,8 @@ export function MobileToolControls() {
 
   const getInitialSubCategory = (section: string) => {
     if (section === "layout") return "display";
-    if (section === "spacing") return "boxModel";
+    if (section === "spacing") return "spacingModel";
+    if (section === "sizing") return "sizingModel";
     if (section === "typography") return "typographyStyles";
     if (section === "visuals") return "colors";
     if (section === "motion") return "transitions";
@@ -185,7 +192,8 @@ export function MobileToolControls() {
   // Property & Value select dropdown menus
   const [selectedSubpropMap, setSelectedSubpropMap] = React.useState<Record<string, string>>({
     display: "display-mode",
-    boxModel: "width",
+    spacingModel: "margin",
+    sizingModel: "width",
     positioning: "position",
     flexbox: "display",
     grid: "display",
@@ -349,7 +357,10 @@ export function MobileToolControls() {
       { id: "overflow", label: "Overflow & Scroll", icon: Compass }
     ],
     spacing: [
-      { id: "boxModel", label: "Box Model", icon: Grid }
+      { id: "spacingModel", label: "Spacing Controls", icon: Move }
+    ],
+    sizing: [
+      { id: "sizingModel", label: "Sizing Controls", icon: Sliders }
     ],
     typography: [
       { id: "typographyStyles", label: "Font Styling", icon: Type },
@@ -760,7 +771,7 @@ export function MobileToolControls() {
     <div 
       id="mobile_tool_controls" 
       className="md:hidden fixed bottom-[138px] left-1/2 -translate-x-1/2 bg-white border border-stone-200/50 p-2 px-3 shadow-[0_12px_45px_rgba(0,0,0,0.18)] flex items-center justify-between gap-2 w-[94vw] max-w-[390px] backdrop-blur-md z-45 animate-fade-in"
-      style={{ marginBottom: "-12px", borderRadius: "50px", height: "46px", borderWidth: "3.5px" }}
+      style={{ marginBottom: "-12px", borderRadius: "50px", height: "46px", borderWidth: "0px" }}
     >
       {/* Dynamic Sub-categories drop list on Layout & tab written area */}
       <div className="relative shrink-0 flex items-center">
@@ -942,7 +953,7 @@ export function MobileStylingTabs() {
         id="mobile_styling_tabs_root"
         className="md:hidden fixed bottom-[84px] left-1/2 -translate-x-1/2 bg-stone-900 border border-stone-800 text-white shadow-2xl flex items-center justify-center px-4 py-2 w-[92vw] max-w-[390px] z-40 select-none animate-fade-in"
         style={{ 
-          height: "44.5px", 
+          height: "41.4805px", 
           borderRadius: "50px", 
           marginBottom: "-12px",
           textAlign: "center",
@@ -964,7 +975,7 @@ export function MobileStylingTabs() {
       id="mobile_styling_tabs_root"
       className="md:hidden fixed bottom-[84px] left-1/2 -translate-x-1/2 bg-stone-900 border border-stone-800 text-white shadow-2xl flex items-center justify-start overflow-x-auto scrollbar-hide px-3.5 py-1 gap-2 shrink-0 z-40 touch-pan-x max-w-[390px] w-[92vw]"
       style={{ 
-        height: "44.5px", 
+        height: "41.4805px", 
         borderRadius: "50px", 
         marginBottom: "-12px",
         textAlign: "center",
