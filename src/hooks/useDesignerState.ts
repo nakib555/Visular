@@ -31,7 +31,7 @@ export function useDesignerState() {
   const [aiGoal, setAiGoal] = useState("Make it sound incredibly premium and engaging");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [mobileActiveView, setMobileActiveView] = useState<"library" | "canvas" | "inspector">("canvas");
-  const [inspectorSection, setInspectorSection] = useState<"layout" | "typography" | "visuals" | "motion" | "core" | "help">("layout");
+  const [inspectorSection, setInspectorSection] = useState<"layout" | "spacing" | "typography" | "visuals" | "motion" | "core" | "help">("layout");
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   
   const [draggedId, setDraggedId] = useState<string | null>(null);

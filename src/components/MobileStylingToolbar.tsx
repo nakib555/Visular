@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useDesigner } from "../contexts/DesignerContext";
 import { InspectorSection } from "./InspectorPanel";
+import { PropertyControl } from "./PropertyControl";
 import { 
   setGroupClass, getActiveGroupClass, 
   setPrefixedClass, getPrefixedClass, 
@@ -15,6 +16,7 @@ import {
 
 const tabsInfo = [
   { id: "layout", label: "Layout", icon: Maximize },
+  { id: "spacing", label: "Spacing", icon: Move },
   { id: "typography", label: "Text", icon: Type },
   { id: "visuals", label: "Visuals", icon: Palette },
   { id: "motion", label: "Motion", icon: Play },
@@ -41,6 +43,10 @@ const BOX_MODEL_PROPS = [
   { id: "padding-left", label: "padding-left", prefix: "pl-", values: ["0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"] },
   { id: "box-sizing", label: "box-sizing", prefix: "box-", group: "boxSizing", values: ["border", "content"] },
   { id: "aspect-ratio", label: "aspect-ratio", prefix: "aspect-", group: "aspectRatio", values: ["auto", "square", "video"] }
+];
+
+const DISPLAY_PROPS = [
+  { id: "display-mode", label: "display", prefix: "", group: "display", values: ["block", "inline-block", "inline", "flex", "grid", "none"] }
 ];
 
 const POSITION_PROPS = [
@@ -134,6 +140,7 @@ interface StylePropertyConfig {
 
 const getPropsForSubCategory = (subCat: string): StylePropertyConfig[] => {
   switch (subCat) {
+    case "display": return DISPLAY_PROPS as StylePropertyConfig[];
     case "boxModel": return BOX_MODEL_PROPS as StylePropertyConfig[];
     case "positioning": return POSITION_PROPS as StylePropertyConfig[];
     case "flexbox": return FLEXBOX_PROPS as StylePropertyConfig[];
@@ -161,7 +168,8 @@ export function MobileToolControls() {
   } = designer;
 
   const getInitialSubCategory = (section: string) => {
-    if (section === "layout") return "boxModel";
+    if (section === "layout") return "display";
+    if (section === "spacing") return "boxModel";
     if (section === "typography") return "typographyStyles";
     if (section === "visuals") return "colors";
     if (section === "motion") return "transitions";
@@ -176,6 +184,7 @@ export function MobileToolControls() {
 
   // Property & Value select dropdown menus
   const [selectedSubpropMap, setSelectedSubpropMap] = React.useState<Record<string, string>>({
+    display: "display-mode",
     boxModel: "width",
     positioning: "position",
     flexbox: "display",
@@ -333,11 +342,14 @@ export function MobileToolControls() {
   // Dynamic Subcategories Map based on Active Tab aligning exactly with desktop
   const subCategoriesConfig: Record<string, { id: string; label: string; icon: any }[]> = {
     layout: [
-      { id: "boxModel", label: "Box Model", icon: Grid },
+      { id: "display", label: "Display Mode", icon: Sliders },
       { id: "positioning", label: "Positioning", icon: Move },
       { id: "flexbox", label: "Flexbox Layout", icon: Cpu },
-      { id: "grid", label: "Grid Layout", icon: Sliders },
+      { id: "grid", label: "Grid Layout", icon: Grid },
       { id: "overflow", label: "Overflow & Scroll", icon: Compass }
+    ],
+    spacing: [
+      { id: "boxModel", label: "Box Model", icon: Grid }
     ],
     typography: [
       { id: "typographyStyles", label: "Font Styling", icon: Type },
@@ -666,115 +678,32 @@ export function MobileToolControls() {
       const activeProp = props.find(p => p.id === selectedPropId) || props[0];
       const activeVal = getActiveValueForProp(activeProp, subCategory);
 
+      const lengthPropIds = ['width', 'height', 'min-width', 'max-width', 'min-height', 'max-height', 'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'gap', 'top', 'right', 'bottom', 'left', 'inset', 'cols', 'rows', 'text-size', 'border-width', 'rounding'];
+
       return (
         <div className="flex-1 min-w-0 flex items-center gap-1.5 py-1 animate-fade-in select-none">
           {/* Property Select Dropdown */}
-          <div className="relative flex-1 min-w-0">
-            <button
-              type="button"
-              onClick={() => {
-                setIsPropDropdownOpen(!isPropDropdownOpen);
-                setIsValDropdownOpen(false);
-              }}
-              className="w-full h-8 flex items-center justify-between gap-1 text-[10px] font-mono font-bold text-stone-700 bg-stone-50 border border-stone-200 hover:bg-stone-100 px-2.5 rounded-xl transition cursor-pointer"
-            >
-              <span className="truncate">{activeProp.label}</span>
-              <ChevronDown size={10} className="text-stone-400 shrink-0" />
-            </button>
-
-            {isPropDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-50 bg-transparent" onClick={() => setIsPropDropdownOpen(false)} />
-                <div className="absolute bottom-full left-0 mb-2 bg-white/95 backdrop-blur-md border border-stone-200 shadow-xl rounded-2xl p-1.5 w-[145px] z-55 flex flex-col gap-0.5 max-h-[200px] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
-                  <div className="px-2 py-1 text-[8px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1 mb-1">
-                    Property
-                  </div>
-                  {props.map((p) => {
-                    const isSel = p.id === selectedPropId;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSubpropMap(prev => ({ ...prev, [subCategory]: p.id }));
-                          setIsPropDropdownOpen(false);
-                        }}
-                        className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
-                          isSel 
-                            ? "bg-purple-600 text-white font-bold" 
-                            : "text-stone-600 hover:bg-stone-50"
-                        }`}
-                      >
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+          <div className="flex-1 min-w-0">
+             <PropertyControl
+                type="select"
+                value={selectedPropId}
+                onChange={(val) => {
+                  setSelectedSubpropMap(prev => ({ ...prev, [subCategory]: val }));
+                }}
+                options={props.map((p) => ({ value: p.id, label: p.label }))}
+             />
           </div>
 
           {/* Value Select Dropdown */}
-          <div className="relative flex-1 min-w-0">
-            <button
-              type="button"
-              onClick={() => {
-                setIsValDropdownOpen(!isValDropdownOpen);
-                setIsPropDropdownOpen(false);
-              }}
-              className="w-full h-8 flex items-center justify-between gap-1 text-[10px] font-mono font-bold text-stone-700 bg-stone-50 border border-stone-200 hover:bg-stone-100 px-2.5 rounded-xl transition cursor-pointer"
-            >
-              <span className="truncate">{activeVal ? `${activeProp.prefix || ""}${activeVal}` : "none"}</span>
-              <ChevronDown size={10} className="text-stone-400 shrink-0" />
-            </button>
-
-            {isValDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-50 bg-transparent" onClick={() => setIsValDropdownOpen(false)} />
-                <div className="absolute bottom-full right-0 mb-2 bg-white/95 backdrop-blur-md border border-stone-200 shadow-xl rounded-2xl p-1.5 w-[145px] z-55 flex flex-col gap-0.5 max-h-[200px] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
-                  <div className="px-2 py-1 text-[8px] text-stone-400 font-bold uppercase font-mono tracking-wider border-b border-stone-100 pb-1 mb-1">
-                    Value
-                  </div>
-                  
-                  {/* Clear / None Option */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleApplyStyle(activeProp.id, "", subCategory);
-                      setIsValDropdownOpen(false);
-                    }}
-                    className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
-                      !activeVal 
-                        ? "bg-purple-600 text-white font-bold" 
-                        : "text-rose-500 hover:bg-stone-50 font-semibold"
-                    }`}
-                  >
-                    (none)
-                  </button>
-
-                  {activeProp.values.map((v) => {
-                    const isSel = v === activeVal;
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => {
-                          handleApplyStyle(activeProp.id, v, subCategory);
-                          setIsValDropdownOpen(false);
-                        }}
-                        className={`px-2 py-1.5 rounded-lg text-left text-[10.5px] font-mono transition cursor-pointer ${
-                          isSel 
-                            ? "bg-purple-600 text-white font-bold" 
-                            : "text-stone-600 hover:bg-stone-50"
-                        }`}
-                      >
-                        {activeProp.prefix || ""}{v}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+          <div className="flex-1 min-w-0">
+             <PropertyControl
+                type={lengthPropIds.includes(activeProp.id) ? "number" : "select"}
+                value={activeVal || ""}
+                onChange={(val) => handleApplyStyle(activeProp.id, val, subCategory)}
+                placeholder="none"
+                options={activeProp.values.map(v => ({ value: v, label: `${activeProp.prefix || ""}${v}` }))}
+                unit={activeProp.id === 'rounding' ? 'px' : 'px'}
+             />
           </div>
         </div>
       );
@@ -911,7 +840,19 @@ export function MobileToolControls() {
       <div className="h-4 w-px bg-stone-200 shrink-0"></div>
 
       {/* Right Actions: Combined Dropdown */}
-      <div className="relative shrink-0 flex items-center">
+      <div className="relative shrink-0 flex items-center gap-1.5">
+        <button
+          type="button"
+          className="w-[30px] h-[30px] rounded-full flex items-center justify-center transition border cursor-pointer bg-stone-50 hover:bg-stone-100 text-stone-500 border-stone-200/50"
+          onClick={(e) => {
+             e.stopPropagation();
+             designer.setIsMobileDrawerOpen(true);
+          }}
+          title="Open Inspector Drawer"
+        >
+          <Sliders size={13} />
+        </button>
+
         <button 
           id="mobile-actions-dropdown-trigger"
           type="button"

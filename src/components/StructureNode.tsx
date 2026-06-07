@@ -1,5 +1,22 @@
 import React from "react";
-import { Copy, Trash2, Layout, Square, Type, Play, CheckCircle2, Image as ImageIcon } from "lucide-react";
+import { 
+  Copy, 
+  Trash2, 
+  Layout, 
+  Square, 
+  Type, 
+  Play, 
+  CheckCircle2, 
+  Image as ImageIcon,
+  Layers,
+  Heading,
+  MousePointer,
+  Link,
+  List,
+  FormInput,
+  Menu,
+  Sparkles
+} from "lucide-react";
 import { VisualElement } from "../types";
 import { useDesigner } from "../contexts/DesignerContext";
 
@@ -28,22 +45,55 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
   const isCurrentlyDragged = draggedId === node.id;
   
   const getTreeNodeIcon = (type: string, tag: string) => {
+    const t = tag.toLowerCase().trim();
+    if (t === "div") {
+      return <Layers size={11} className={isSelected ? "text-indigo-200 shrink-0" : "text-indigo-500/80 shrink-0"} />;
+    }
+    if (t === "section" || t === "main" || t === "header" || t === "footer" || t === "aside" || t === "article" || t.includes("grid")) {
+      return <Layout size={11} className={isSelected ? "text-violet-200 shrink-0" : "text-violet-500 shrink-0"} />;
+    }
+    if (/^h[1-6]$/.test(t) || t === "heading") {
+      return <Heading size={11} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-500 shrink-0"} />;
+    }
+    if (t === "button") {
+      return <MousePointer size={11} className={isSelected ? "text-rose-200 shrink-0" : "text-rose-500 shrink-0"} />;
+    }
+    if (t === "img" || t === "image" || t === "figure") {
+      return <ImageIcon size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
+    }
+    if (t === "a" || t === "link") {
+      return <Link size={11} className={isSelected ? "text-sky-200 shrink-0" : "text-sky-500 shrink-0"} />;
+    }
+    if (t === "ul" || t === "ol" || t === "li" || t === "list") {
+      return <List size={11} className={isSelected ? "text-teal-200 shrink-0" : "text-teal-500 shrink-0"} />;
+    }
+    if (t === "input" || t === "textarea" || t === "select" || t === "form" || t === "label") {
+      return <FormInput size={11} className={isSelected ? "text-orange-200 shrink-0" : "text-orange-500 shrink-0"} />;
+    }
+    if (t === "p" || t === "span" || t === "strong" || t === "em" || t === "b" || t === "i") {
+      return <Type size={11} className={isSelected ? "text-stone-300 shrink-0" : "text-stone-400 shrink-0"} />;
+    }
+    if (t === "nav" || t === "menu") {
+      return <Menu size={11} className={isSelected ? "text-indigo-200 shrink-0" : "text-indigo-600 shrink-0"} />;
+    }
+    if (t === "svg" || t === "icon" || t === "path") {
+      return <Sparkles size={11} className={isSelected ? "text-yellow-200 shrink-0" : "text-yellow-500 shrink-0"} />;
+    }
+
+    // Default fallback based on type
     switch (type) {
       case "container":
-        if (tag.includes("grid") || tag === "section") {
-          return <Layout size={12} className={isSelected ? "text-purple-200 shrink-0" : "text-purple-600 shrink-0"} />;
-        }
-        return <Square size={12} className={isSelected ? "text-indigo-100 fill-white/10 shrink-0" : "text-indigo-500 fill-indigo-50/20 shrink-0"} />;
+        return <Square size={11} className={isSelected ? "text-indigo-100 fill-white/10 shrink-0" : "text-indigo-500 fill-indigo-50/20 shrink-0"} />;
       case "text":
-        return <Type size={12} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-500 shrink-0"} />;
+        return <Type size={11} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-500 shrink-0"} />;
       case "image":
-        return <ImageIcon size={12} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
+        return <ImageIcon size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
       case "button":
-        return <Play size={12} className={isSelected ? "text-pink-200 shrink-0" : "text-pink-500 shrink-0"} />;
+        return <Play size={11} className={isSelected ? "text-pink-200 shrink-0" : "text-pink-500 shrink-0"} />;
       case "badge":
-        return <CheckCircle2 size={12} className={isSelected ? "text-sky-200 shrink-0" : "text-sky-500 shrink-0"} />;
+        return <CheckCircle2 size={11} className={isSelected ? "text-sky-200 shrink-0" : "text-sky-500 shrink-0"} />;
       default:
-        return <Square size={12} className="text-stone-400 shrink-0" />;
+        return <Square size={11} className="text-stone-400 shrink-0" />;
     }
   };
 

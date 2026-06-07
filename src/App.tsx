@@ -114,6 +114,20 @@ function DesignerApp() {
   // Workstation preferences (kept as local state to maintain correct tabs compatibility)
   const [activeTab, setActiveTab] = useState<"presets" | "structure" | "elements" | "styles" | "ai_assist">("presets");
 
+  // Synchronize desktop activeTab with mobileActiveView to ensure states carry over
+  useEffect(() => {
+    if (activeTab === "styles") setMobileActiveView("inspector");
+    else if (activeTab === "presets" || activeTab === "elements" || activeTab === "structure") setMobileActiveView("library");
+  }, [activeTab, setMobileActiveView]);
+
+  useEffect(() => {
+    if (mobileActiveView === "inspector") {
+      setActiveTab("styles");
+    } else if (mobileActiveView === "library") {
+      if (activeTab === "styles") setActiveTab("presets");
+    }
+  }, [mobileActiveView]);
+
   // Sync inline edit text field focus
   useEffect(() => {
     if (doubleClickId && inlineEditRef.current) {

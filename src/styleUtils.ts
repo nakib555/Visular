@@ -15,8 +15,9 @@ export const STYLE_GROUPS = {
     "text-6xl",
     "text-7xl",
   ],
-  display: ["block", "inline-block", "flex", "grid", "hidden"],
-  flexDirection: ["flex-row", "flex-col", "flex-wrap"],
+  display: ["block", "inline-block", "inline", "flex", "grid", "hidden"],
+  flexDirection: ["flex-row", "flex-row-reverse", "flex-col", "flex-col-reverse"],
+  flexWrap: ["flex-nowrap", "flex-wrap", "flex-wrap-reverse"],
   alignment: ["items-start", "items-center", "items-end", "items-baseline", "items-stretch"],
   justify: [
     "justify-start",

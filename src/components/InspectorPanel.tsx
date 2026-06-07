@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { 
   Settings, Sparkles, Palette, Maximize, Type, Layers, Play, Code, 
   HelpCircle, AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown, Trash2, Copy,
-  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight
+  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight, Sliders
 } from "lucide-react";
+import { PropertyControl } from "./PropertyControl";
 import { VisualElement } from "../types";
 import { setGroupClass, getActiveGroupClass, setPrefixedClass, getPrefixedClass, setColorClass } from "../styleUtils";
 
-export type InspectorSection = "layout" | "typography" | "visuals" | "motion" | "core" | "help";
+export type InspectorSection = "layout" | "spacing" | "typography" | "visuals" | "motion" | "core" | "help";
 
 interface CSSProperty {
   name: string;
@@ -264,6 +265,21 @@ export function InspectorPanel({
     "INTERACTIVITY & UI": true,
   });
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [layoutSubCategory, setLayoutSubCategory] = useState<"display" | "flex" | "grid" | "position" | "overflow">("display");
+  const [expandedLayoutSections, setExpandedLayoutSections] = useState<Record<string, boolean>>({
+    display: true,
+    flex: true,
+    grid: true,
+    position: true,
+    overflow: true,
+  });
+
+  const toggleLayoutSection = (section: string) => {
+    setExpandedLayoutSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -312,7 +328,8 @@ export function InspectorPanel({
         }}
       >
         {[
-          { id: "layout", label: "Layout & Spacing", icon: Maximize },
+          { id: "layout", label: "Layout", icon: Maximize },
+          { id: "spacing", label: "Spacing", icon: Move },
           { id: "typography", label: "Typography & Text", icon: Type },
           { id: "visuals", label: "Appearance & Visuals", icon: Palette },
           { id: "motion", label: "Motion & Effects", icon: Play },
@@ -340,12 +357,12 @@ export function InspectorPanel({
       {/* Main Properties Content Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-6 custom-scrollbar">
         
-        {/* ==================== 1. LAYOUT & SPACING ==================== */}
-        {inspectorSection === "layout" && (
+        {/* ==================== 1. SPACING ==================== */}
+        {inspectorSection === "spacing" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Maximize size={15} className="text-purple-600" />
-              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Layout & Structure</span>
+              <Move size={15} className="text-purple-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Box Model & Spacing</span>
             </div>
 
             {/* Sub-Category: Box Model (Element Spacing & Sizing) */}
@@ -357,52 +374,21 @@ export function InspectorPanel({
               
               {/* Properties: Width & Height */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Width</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "width")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "width", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default (Auto)</option>
-                      <option value="w-full">Full Width (w-full)</option>
-                      <option value="w-1/2">Half Width (50%)</option>
-                      <option value="w-1/3">1/3 Width (33.3%)</option>
-                      <option value="w-2/3">2/3 Width (66.6%)</option>
-                      <option value="w-1/4">1/4 Width (25%)</option>
-                      <option value="w-3/4">3/4 Width (75%)</option>
-                      <option value="w-32">Small (w-32)</option>
-                      <option value="w-48">Medium (w-48)</option>
-                      <option value="w-64">Large (w-64)</option>
-                      <option value="w-96">Extra Large (w-96)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
+                <PropertyControl
+                  label="Width"
+                  type="number"
+                  value={getActiveGroupClass(selectedElement.classes, "width")}
+                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "width", val) }))}
+                  placeholder="Auto"
+                />
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-sans">Height</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "height")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "height", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default (Auto)</option>
-                      <option value="h-full">Full Height (h-full)</option>
-                      <option value="h-12">Small (48px)</option>
-                      <option value="h-16">Header/Tabs (64px)</option>
-                      <option value="h-24">Compact Block (96px)</option>
-                      <option value="h-32">Box (128px)</option>
-                      <option value="h-48">Card Size (192px)</option>
-                      <option value="h-64">Hero Banner (256px)</option>
-                      <option value="h-80">Large Banner (320px)</option>
-                      <option value="h-96">Full Height Banner (384px)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
+                <PropertyControl
+                  label="Height"
+                  type="number"
+                  value={getActiveGroupClass(selectedElement.classes, "height")}
+                  onChange={(val) => updateTree((n) => ({ classes: setGroupClass(n.classes, "height", val) }))}
+                  placeholder="Auto"
+                />
               </div>
 
               {/* Min/Max Sizing select configurations */}
@@ -690,636 +676,634 @@ export function InspectorPanel({
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Sub-Category: Positioning */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
-                <Move size={11} />
-                <span>Move & Absolute Positioning</span>
-              </div>
+        {/* ==================== 1. LAYOUT ==================== */}
+        {inspectorSection === "layout" && (
+          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <Maximize size={15} className="text-purple-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Layout Settings</span>
+            </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Positioning Scheme</label>
-                <div className="relative">
-                  <select
-                    value={getActiveGroupClass(selectedElement.classes, "position")}
-                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "position", e.target.value) }))}
-                    className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
+            {(() => {
+              const parseArbitraryValue = (className: string, prefix: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)${prefix.replace(/[-\[\]()]/g, '\\$&')}\\[([^\\]]+)\\](?:$|\\s)`));
+                if (match) return match[1].replace(/_/g, " ");
+                const active = className.split(/\s+/).find((c) => c.startsWith(prefix) && !c.includes("["));
+                return active ? active.substring(prefix.length) : "";
+              };
+
+              const encodeArbitraryValue = (prefix: string, value: string): string => {
+                if (!value || !value.trim()) return "";
+                return `${prefix}[${value.trim().replace(/\s+/g, "_")}]`;
+              };
+
+              const updateArbitraryClass = (prefix: string, value: string) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(prefix));
+                if (value && value.trim()) {
+                  filtered.push(encodeArbitraryValue(prefix, value));
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const displayVal = getActiveGroupClass(selectedElement.classes, "display") || "";
+
+              const sectionHeader = (id: string, label: string, icon: any) => {
+                const isExpanded = expandedLayoutSections[id];
+                const IconComponent = icon;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => toggleLayoutSection(id)}
+                    className="w-full flex items-center justify-between pb-1 text-left cursor-pointer select-none font-sans"
                   >
-                    <option value="">default (static)</option>
-                    <option value="relative">relative (Relative coordinates offset)</option>
-                    <option value="absolute">absolute (Absolute pin coordinates)</option>
-                    <option value="fixed">fixed (Stuck to viewport window)</option>
-                    <option value="sticky">sticky (Follow scroll then stick)</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                </div>
-              </div>
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-700 font-mono flex items-center gap-1.5">
+                      <IconComponent size={11} className="text-purple-600" />
+                      <span>{label}</span>
+                    </div>
+                    <ChevronDown size={14} className={`text-stone-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                  </button>
+                );
+              };
 
-              {/* Reveal offset details only if position model is not static */}
-              {selectedElement.classes.match(/\b(relative|absolute|fixed|sticky)\b/) && (
-                <div className="space-y-3.5 animate-in fade-in duration-200">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Top</label>
-                      <div className="relative">
-                        <select
-                          value={getPrefixedClass(selectedElement.classes, "top-")}
-                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "top-", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                        >
-                          <option value="">auto</option>
-                          <option value="top-0">top-0</option>
-                          <option value="top-1">top-1 (4px)</option>
-                          <option value="top-2">top-2 (8px)</option>
-                          <option value="top-4">top-4</option>
-                          <option value="top-8">top-8</option>
-                          <option value="top-12">top-12</option>
-                          <option value="top-16">top-16</option>
-                          <option value="-top-2">-top-2</option>
-                          <option value="-top-4">-top-4</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+              return (
+                <div className="space-y-4">
+                  {/* --- 1. DISPLAY MODE --- */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm select-none">
+                    {sectionHeader("display", "Display Mode", Sliders)}
+                    {expandedLayoutSections.display && (
+                      <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
+                        <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1">display type</label>
+                        <div className="grid grid-cols-3 gap-1 bg-white p-1 rounded-xl border border-stone-200 shadow-xs">
+                          {[
+                            { key: "block", label: "Block" },
+                            { key: "inline-block", label: "Inline Blk" },
+                            { key: "inline", label: "Inline" },
+                            { key: "flex", label: "Flex" },
+                            { key: "grid", label: "Grid" },
+                            { key: "hidden", label: "None" }
+                          ].map((item) => {
+                            const isActive = displayVal === item.key;
+                            return (
+                              <button
+                                key={item.key}
+                                type="button"
+                                onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", item.key) }))}
+                                className={`py-1.5 rounded-lg text-[10px] font-semibold transition flex items-center justify-center cursor-pointer border ${
+                                  isActive
+                                    ? "bg-purple-600 border-purple-500 text-white shadow-xs"
+                                    : "bg-white border-transparent text-stone-500 hover:text-stone-880 hover:bg-stone-55"
+                                }`}
+                              >
+                                {item.label}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Right</label>
-                      <div className="relative">
-                        <select
-                          value={getPrefixedClass(selectedElement.classes, "right-")}
-                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "right-", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                        >
-                          <option value="">auto</option>
-                          <option value="right-0">right-0</option>
-                          <option value="right-1">right-1</option>
-                          <option value="right-2">right-2</option>
-                          <option value="right-4">right-4</option>
-                          <option value="right-8">right-8</option>
-                          <option value="right-12">right-12</option>
-                          <option value="-right-2">-right-2</option>
-                          <option value="-right-4">-right-4</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  {/* --- 2. FLEXBOX LAYOUT --- */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-1 shadow-sm">
+                    {sectionHeader("flex", "Flexbox container & items", Cpu)}
+                    {expandedLayoutSections.flex && (
+                      <div className="space-y-4 animate-in fade-in duration-200 pt-3">
+                        {displayVal !== "flex" ? (
+                          <div className="bg-purple-50/30 border border-purple-100 rounded-xl p-3.5 text-center space-y-2">
+                            <div className="text-purple-700 font-bold text-[11px] font-sans">Convert Layout to Flexbox</div>
+                            <p className="text-[10px] text-purple-600 leading-normal font-medium max-w-[210px] mx-auto">
+                              To edit direction, align, grow, and gap features, change layout display type.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", "flex") }))}
+                              className="w-full h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[#Fdfdfd] text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
+                            >
+                              <Cpu size={12} /> Convert to Flex
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3.5 animate-in fade-in duration-200">
+                            {[
+                              { id: "flexDirection", label: "flex-direction", options: [{ v: "", l: "row" }, { v: "flex-row", l: "row" }, { v: "flex-row-reverse", l: "row-reverse" }, { v: "flex-col", l: "column" }, { v: "flex-col-reverse", l: "column-reverse" }] },
+                              { id: "justify", label: "justify-content", options: [{ v: "", l: "flex-start" }, { v: "justify-start", l: "flex-start" }, { v: "justify-end", l: "flex-end" }, { v: "justify-center", l: "center" }, { v: "justify-between", l: "space-between" }, { v: "justify-around", l: "space-around" }, { v: "justify-evenly", l: "space-evenly" }] },
+                              { id: "alignment", label: "align-items", options: [{ v: "", l: "stretch" }, { v: "items-stretch", l: "stretch" }, { v: "items-start", l: "flex-start" }, { v: "items-end", l: "flex-end" }, { v: "items-center", l: "center" }, { v: "items-baseline", l: "baseline" }] },
+                              { id: "flexWrap", label: "flex-wrap", options: [{ v: "", l: "nowrap" }, { v: "flex-nowrap", l: "nowrap" }, { v: "flex-wrap", l: "wrap" }, { v: "flex-wrap-reverse", l: "wrap-reverse" }] }
+                            ].map((sel) => (
+                              <div key={sel.id} className="flex flex-col gap-1">
+                                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{sel.label}</label>
+                                <div className="relative">
+                                  <select
+                                    value={getActiveGroupClass(selectedElement.classes, sel.id as any)}
+                                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, sel.id as any, e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                  >
+                                    {sel.options.map((opt) => (
+                                      <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                    ))}
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Gap */}
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">item gap</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                  <select
+                                    value={getActiveGroupClass(selectedElement.classes, "gap")}
+                                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "gap", e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                  >
+                                    <option value="">default / custom option</option>
+                                    <option value="gap-0">0px</option>
+                                    <option value="gap-1">4px</option>
+                                    <option value="gap-2">8px</option>
+                                    <option value="gap-3">12px</option>
+                                    <option value="gap-4">16px</option>
+                                    <option value="gap-6">24px</option>
+                                    <option value="gap-8">32px</option>
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="custom e.g. 15px"
+                                  value={parseArbitraryValue(selectedElement.classes, "gap-")}
+                                  onChange={(e) => updateArbitraryClass("gap-", e.target.value)}
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Flexbox Items ALWAYS visible under Flex tag */}
+                        <div className="border-t border-stone-200/40 pt-3.5 space-y-4">
+                          <div className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono flex items-center gap-1.5">
+                            <Cpu size={11} className="opacity-70" />
+                            <span>Flexbox Items</span>
+                          </div>
+
+                          {/* flex-grow & shrink */}
+                          <div className="grid grid-cols-2 gap-3">
+                            {[
+                              { id: "flexGrow" as const, label: "flex-grow", options: [{ v: "", l: "default" }, { v: "grow-0", l: "0" }, { v: "grow", l: "1 (grow)" }] },
+                              { id: "flexShrink" as const, label: "flex-shrink", options: [{ v: "", l: "default" }, { v: "shrink-0", l: "0" }, { v: "shrink", l: "1 (shrink)" }] }
+                            ].map((sel) => (
+                              <div key={sel.id} className="flex flex-col gap-1">
+                                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{sel.label}</label>
+                                <div className="relative">
+                                  <select
+                                    value={getActiveGroupClass(selectedElement.classes, sel.id)}
+                                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, sel.id, e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                  >
+                                    {sel.options.map((opt) => (
+                                      <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                    ))}
+                                  </select>
+                                  <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* flex-basis */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">flex-basis</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="relative">
+                                <select
+                                  value={getPrefixedClass(selectedElement.classes, "basis-")}
+                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "basis-", e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                >
+                                  <option value="">default / custom</option>
+                                  <option value="basis-auto">auto</option>
+                                  <option value="basis-full">100%</option>
+                                  <option value="basis-1/2">50%</option>
+                                  <option value="basis-1/3">33%</option>
+                                  <option value="basis-1/4">25%</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="e.g. 50% or 10rem"
+                                value={parseArbitraryValue(selectedElement.classes, "basis-")}
+                                onChange={(e) => updateArbitraryClass("basis-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* align-self */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">align-self</label>
+                            <div className="relative">
+                              <select
+                                value={getActiveGroupClass(selectedElement.classes, "alignSelf")}
+                                onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "alignSelf", e.target.value) }))}
+                                className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                              >
+                                <option value="">auto</option>
+                                <option value="self-auto">self-auto</option>
+                                <option value="self-start">flex-start</option>
+                                <option value="self-end">flex-end</option>
+                                <option value="self-center">center</option>
+                                <option value="self-baseline">baseline</option>
+                                <option value="self-stretch">stretch</option>
+                              </select>
+                              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                            </div>
+                          </div>
+
+                          {/* order */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">order</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="relative">
+                                <select
+                                  value={getPrefixedClass(selectedElement.classes, "order-")}
+                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "order-", e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                >
+                                  <option value="">default / custom</option>
+                                  <option value="order-first">first</option>
+                                  <option value="order-last">last</option>
+                                  <option value="order-1">order-1</option>
+                                  <option value="order-2">order-2</option>
+                                  <option value="order-3">order-3</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="e.g. 4 or -1"
+                                value={parseArbitraryValue(selectedElement.classes, "order-")}
+                                onChange={(e) => updateArbitraryClass("order-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Bottom</label>
-                      <div className="relative">
-                        <select
-                          value={getPrefixedClass(selectedElement.classes, "bottom-")}
-                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "bottom-", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                        >
-                          <option value="">auto</option>
-                          <option value="bottom-0">bottom-0</option>
-                          <option value="bottom-1">bottom-1</option>
-                          <option value="bottom-2">bottom-2</option>
-                          <option value="bottom-4">bottom-4</option>
-                          <option value="bottom-8">bottom-8</option>
-                          <option value="bottom-12">bottom-12</option>
-                          <option value="-bottom-2">-bottom-2</option>
-                          <option value="-bottom-4">-bottom-4</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  {/* --- 3. GRID LAYOUT --- */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-1 shadow-sm">
+                    {sectionHeader("grid", "Grid container & items", Grid)}
+                    {expandedLayoutSections.grid && (
+                      <div className="space-y-4 animate-in fade-in duration-200 pt-3">
+                        {displayVal !== "grid" ? (
+                          <div className="bg-purple-50/30 border border-purple-100 rounded-xl p-3.5 text-center space-y-2">
+                            <div className="text-purple-700 font-bold text-[11px] font-sans">Convert Layout to Grid</div>
+                            <p className="text-[10px] text-purple-600 leading-normal font-medium max-w-[210px] mx-auto">
+                              To edit template columns, spans, rows, gaps, and placement properties, change layout display type.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", "grid") }))}
+                              className="w-full h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
+                            >
+                              <Grid size={11} /> Convert to Grid
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3.5 animate-in fade-in duration-200">
+                            {/* Columns template */}
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">grid-template-columns</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                  <select
+                                    value={getPrefixedClass(selectedElement.classes, "grid-cols-")}
+                                    onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "grid-cols-", e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                  >
+                                    <option value="">default / custom</option>
+                                    <option value="grid-cols-1">1 col</option>
+                                    <option value="grid-cols-2">2 cols</option>
+                                    <option value="grid-cols-3">3 cols</option>
+                                    <option value="grid-cols-4">4 cols</option>
+                                    <option value="grid-cols-12">12 cols</option>
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 1fr 2fr"
+                                  value={parseArbitraryValue(selectedElement.classes, "grid-cols-")}
+                                  onChange={(e) => updateArbitraryClass("grid-cols-", e.target.value)}
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Justify / Align */}
+                            {[
+                              { id: "justifyItems", label: "justify-items", options: [{ v: "", l: "stretch" }, { v: "justify-items-start", l: "start" }, { v: "justify-items-end", l: "end" }, { v: "justify-items-center", l: "center" }, { v: "justify-items-stretch", l: "stretch" }] },
+                              { id: "alignment", label: "align-items", options: [{ v: "", l: "stretch" }, { v: "items-stretch", l: "stretch" }, { v: "items-start", l: "start" }, { v: "items-end", l: "end" }, { v: "items-center", l: "center" }] }
+                            ].map((sel) => (
+                              <div key={sel.id} className="flex flex-col gap-1">
+                                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{sel.label}</label>
+                                <div className="relative">
+                                  <select
+                                    value={getActiveGroupClass(selectedElement.classes, sel.id as any)}
+                                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, sel.id as any, e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                  >
+                                    {sel.options.map((opt) => (
+                                      <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                    ))}
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Grid Items Placing ALWAYS visible */}
+                        <div className="border-t border-stone-200/40 pt-3.5 space-y-4">
+                          <div className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono flex items-center gap-1.5">
+                            <Grid size={11} className="opacity-70" />
+                            <span>Grid Items</span>
+                          </div>
+
+                          {/* Col span preset & custom details */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">grid-column</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="relative col-span-2">
+                                <select
+                                  value={getPrefixedClass(selectedElement.classes, "col-span-")}
+                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "col-span-", e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                >
+                                  <option value="">default / custom col span</option>
+                                  <option value="col-span-1">col-span-1</option>
+                                  <option value="col-span-2">col-span-2</option>
+                                  <option value="col-span-3">col-span-3</option>
+                                  <option value="col-span-4">col-span-4</option>
+                                  <option value="col-span-full">col-span-full</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="col- e.g. 1 / 3"
+                                value={parseArbitraryValue(selectedElement.classes, "col-")}
+                                onChange={(e) => updateArbitraryClass("col-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                              <input
+                                type="text"
+                                placeholder="row- e.g. span 2"
+                                value={parseArbitraryValue(selectedElement.classes, "row-")}
+                                onChange={(e) => updateArbitraryClass("row-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Grid area */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">grid-area</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. header, sidebar"
+                              value={(() => {
+                                const cls = selectedElement.classes.split(/\s+/).find((c) => c.startsWith("[grid-area:") && c.endsWith("]"));
+                                return cls ? cls.substring("[grid-area:".length, cls.length - 1) : "";
+                              })()}
+                              onChange={(e) => {
+                                const val = e.target.value.trim();
+                                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                                let filtered = currentTokens.filter((token) => !token.startsWith("[grid-area:"));
+                                if (val) {
+                                  filtered.push(`[grid-area:${val}]`);
+                                }
+                                updateTree((n) => ({ classes: filtered.join(" ") }));
+                              }}
+                              className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 shadow-xs focus:outline-none placeholder-stone-400"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Left</label>
-                      <div className="relative">
-                        <select
-                          value={getPrefixedClass(selectedElement.classes, "left-")}
-                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "left-", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                        >
-                          <option value="">auto</option>
-                          <option value="left-0">left-0</option>
-                          <option value="left-1">left-1</option>
-                          <option value="left-2">left-2</option>
-                          <option value="left-4">left-4</option>
-                          <option value="left-8">left-8</option>
-                          <option value="left-12">left-12</option>
-                          <option value="-left-2">-left-2</option>
-                          <option value="-left-4">-left-4</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  {/* --- 4. POSITIONING --- */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-1 shadow-sm">
+                    {sectionHeader("position", "Positioning Scheme & Offsets", Move)}
+                    {expandedLayoutSections.position && (
+                      <div className="space-y-4 animate-in fade-in duration-200 pt-3">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] text-stone-505 font-semibold uppercase tracking-wider pl-1">Positioning Scheme</label>
+                          <div className="relative">
+                            <select
+                              value={getActiveGroupClass(selectedElement.classes, "position")}
+                              onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "position", e.target.value) }))}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
+                            >
+                              <option value="">default (static)</option>
+                              <option value="relative">relative</option>
+                              <option value="absolute">absolute</option>
+                              <option value="fixed">fixed (viewport stick)</option>
+                              <option value="sticky">sticky (scroll offset stick)</option>
+                            </select>
+                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* Coordinates Offset Detail */}
+                        <div className="space-y-4 pt-1">
+                          <div className="grid grid-cols-2 gap-3">
+                            {["top", "right", "bottom", "left"].map((dir) => {
+                              const prefix = `${dir}-`;
+                              const currentVal = getPrefixedClass(selectedElement.classes, prefix);
+                              return (
+                                <div key={dir} className="flex flex-col gap-1">
+                                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{dir}</label>
+                                  <div className="grid grid-cols-1 gap-1">
+                                    <div className="relative">
+                                      <select
+                                        value={currentVal}
+                                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, prefix, e.target.value) }))}
+                                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2 pr-6 py-1 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
+                                      >
+                                        <option value="">auto</option>
+                                        <option value={`${prefix}0`}>{prefix}0</option>
+                                        <option value={`${prefix}1`}>{prefix}1</option>
+                                        <option value={`${prefix}2`}>{prefix}2</option>
+                                        <option value={`${prefix}4`}>{prefix}4</option>
+                                        <option value={`${prefix}8`}>{prefix}8</option>
+                                        <option value={`${prefix}12`}>{prefix}12</option>
+                                        <option value={`${prefix}16`}>{prefix}16</option>
+                                        <option value={`-${prefix}2`}>-{prefix}2</option>
+                                        <option value={`-${prefix}4`}>-{prefix}4</option>
+                                      </select>
+                                      <ChevronDown size={11} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                    </div>
+                                    <input
+                                      type="text"
+                                      placeholder="custompx"
+                                      value={parseArbitraryValue(selectedElement.classes, prefix)}
+                                      onChange={(e) => updateArbitraryClass(prefix, e.target.value)}
+                                      className="w-full bg-white border border-stone-200 rounded-lg px-2 py-1 text-[11px] text-stone-700 focus:outline-none placeholder-stone-400"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Shorthand Inset */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">inset</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="relative">
+                                <select
+                                  value={getPrefixedClass(selectedElement.classes, "inset-")}
+                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "inset-", e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
+                                >
+                                  <option value="">none (auto)</option>
+                                  <option value="inset-0">inset-0</option>
+                                  <option value="inset-2">inset-2 (8px)</option>
+                                  <option value="inset-4">inset-4 (16px)</option>
+                                  <option value="inset-auto">inset-auto</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="custom e.g. 10%"
+                                value={parseArbitraryValue(selectedElement.classes, "inset-")}
+                                onChange={(e) => updateArbitraryClass("inset-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* z-index */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-mono">z-index</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="relative">
+                                <select
+                                  value={getPrefixedClass(selectedElement.classes, "z-")}
+                                  onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "z-", e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-xs"
+                                >
+                                  <option value="">auto</option>
+                                  <option value="z-0">z-0</option>
+                                  <option value="z-10">z-10</option>
+                                  <option value="z-20">z-30</option>
+                                  <option value="z-50">z-50</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="custom index e.g. 99"
+                                value={parseArbitraryValue(selectedElement.classes, "z-")}
+                                onChange={(e) => updateArbitraryClass("z-", e.target.value)}
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Shorthand Inset</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "inset-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "inset-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">none (auto)</option>
-                        <option value="inset-0">inset-0 (full bounds relative pin)</option>
-                        <option value="inset-2">inset-2 (pinned with 8px margin)</option>
-                        <option value="inset-4">inset-4 (pinned with 16px margin)</option>
-                        <option value="inset-auto">inset-auto</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
+                  {/* --- 5. OVERFLOW --- */}
+                  <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-1 shadow-sm">
+                    {sectionHeader("overflow", "Overflow & scrolling behavior", Layers)}
+                    {expandedLayoutSections.overflow && (
+                      <div className="flex flex-col gap-4 animate-in fade-in duration-200 pt-3">
+                        {/* Global */}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">overflow</label>
+                          <div className="relative">
+                            <select
+                              value={getActiveGroupClass(selectedElement.classes, "overflow")}
+                              onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "overflow", e.target.value) }))}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                            >
+                              <option value="">default (visible)</option>
+                              <option value="overflow-auto">overflow-auto</option>
+                              <option value="overflow-hidden">overflow-hidden</option>
+                              <option value="overflow-clip">overflow-clip</option>
+                              <option value="overflow-visible">overflow-visible</option>
+                              <option value="overflow-scroll">overflow-scroll</option>
+                            </select>
+                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                        </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1">z-index (overlapping index)</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "z-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "z-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm font-semibold"
-                      >
-                        <option value="">auto</option>
-                        <option value="z-0">z-0 (regular element)</option>
-                        <option value="z-10">z-10 (floating button / banner)</option>
-                        <option value="z-20">z-20 (dropdown menu / panels)</option>
-                        <option value="z-30">z-30</option>
-                        <option value="z-40">z-40</option>
-                        <option value="z-50">z-50 (modal overlays)</option>
-                        <option value="z-auto">z-auto</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+                        {/* X / Y */}
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { id: "overflowX" as const, label: "overflow-x", options: [{ v: "", l: "auto" }, { v: "overflow-x-auto", l: "auto" }, { v: "overflow-x-hidden", l: "hidden" }, { v: "overflow-x-clip", l: "clip" }, { v: "overflow-x-scroll", l: "scroll" }] },
+                            { id: "overflowY" as const, label: "overflow-y", options: [{ v: "", l: "auto" }, { v: "overflow-y-auto", l: "auto" }, { v: "overflow-y-hidden", l: "hidden" }, { v: "overflow-y-clip", l: "clip" }, { v: "overflow-y-scroll", l: "scroll" }] }
+                          ].map((sel) => (
+                            <div key={sel.id} className="flex flex-col gap-1.5">
+                              <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{sel.label}</label>
+                              <div className="relative">
+                                <select
+                                  value={getActiveGroupClass(selectedElement.classes, sel.id)}
+                                  onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, sel.id, e.target.value) }))}
+                                  className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2 pr-6 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                                >
+                                  {sel.options.map((opt) => (
+                                    <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                  ))}
+                                </select>
+                                <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
 
-            {/* Sub-Category: Flexbox Layout (Flex Container & Flex Items) */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
-                <Cpu size={11} />
-                <span>Flexbox Arrangement & Items</span>
-              </div>
-
-              {/* Display selection state block */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1">Display Model</label>
-                <div className="grid grid-cols-5 gap-1 bg-white p-1 rounded-xl border border-stone-200/80 shadow-sm">
-                  {["block", "inline-block", "flex", "grid", "hidden"].map((disp) => {
-                    const isActive = getActiveGroupClass(selectedElement.classes, "display") === disp;
-                    return (
-                      <button
-                        key={disp} type="button"
-                        onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", disp) }))}
-                        className={`py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 flex items-center justify-center capitalize cursor-pointer ${
-                          isActive 
-                            ? "bg-purple-600 text-white shadow-sm font-bold border border-purple-500" 
-                            : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
-                        }`}
-                      >
-                        {disp === "inline-block" ? "Inline" : disp}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Render controls only if displays as flex */}
-              {selectedElement.classes.includes("flex") ? (
-                <div className="space-y-4 animate-in fade-in duration-200 pt-1">
-                  {/* Flex Direction */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Flex Direction</label>
-                    <div className="grid grid-cols-3 gap-1 bg-white p-1 rounded-xl border border-stone-200/60 shadow-sm">
-                      {[
-                        { key: "flex-row", label: "Horizontal" },
-                        { key: "flex-col", label: "Vertical" },
-                        { key: "flex-wrap", label: "Wrap On" }
-                      ].map((item) => {
-                        const isActive = selectedElement.classes.includes(item.key);
-                        return (
-                          <button
-                            key={item.key} type="button"
-                            onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "flexDirection", item.key) }))}
-                            className={`py-1.5 rounded-lg text-[10px] font-medium transition-all duration-150 flex items-center justify-center cursor-pointer ${
-                              isActive 
-                                ? "bg-purple-50 text-purple-700 font-bold border border-purple-200" 
-                                : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
-                            }`}
-                          >
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Justify Content & Align Items */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Horizontal Align</label>
-                      <div className="relative">
-                        <select
-                          value={getActiveGroupClass(selectedElement.classes, "justify")}
-                          onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "justify", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-[11px] text-stone-700 focus:outline-none cursor-pointer shadow-sm font-medium"
-                        >
-                          <option value="">Default</option>
-                          <option value="justify-start">Start (Left)</option>
-                          <option value="justify-center">Center</option>
-                          <option value="justify-end">End (Right)</option>
-                          <option value="justify-between">Space Between</option>
-                          <option value="justify-around">Space Around</option>
-                          <option value="justify-evenly">Space Evenly</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        {/* scroll behavior & snap */}
+                        {[
+                          { id: "scrollBehavior" as const, label: "scroll-behavior", options: [{ v: "", l: "default" }, { v: "scroll-auto", l: "scroll-auto" }, { v: "scroll-smooth", l: "scroll-smooth" }] },
+                          { id: "scrollSnapType" as const, label: "scroll-snap-type", options: [{ v: "", l: "none" }, { v: "snap-none", l: "snap-none" }, { v: "snap-x", l: "snap-x" }, { v: "snap-y", l: "snap-y" }, { v: "snap-both", l: "snap-both" }] }
+                        ].map((sel) => (
+                          <div key={sel.id} className="flex flex-col gap-1.5">
+                            <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">{sel.label}</label>
+                            <div className="relative">
+                              <select
+                                value={getActiveGroupClass(selectedElement.classes, sel.id)}
+                                onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, sel.id, e.target.value) }))}
+                                className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
+                              >
+                                {sel.options.map((opt) => (
+                                  <option key={opt.v} value={opt.v}>{opt.l}</option>
+                                ))}
+                              </select>
+                              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Vertical Align</label>
-                      <div className="relative">
-                        <select
-                          value={getActiveGroupClass(selectedElement.classes, "alignment")}
-                          onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "alignment", e.target.value) }))}
-                          className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-[11px] text-stone-700 focus:outline-none cursor-pointer shadow-sm font-medium"
-                        >
-                          <option value="">Default</option>
-                          <option value="items-start">Top (Start)</option>
-                          <option value="items-center">Middle (Center)</option>
-                          <option value="items-end">Bottom (End)</option>
-                          <option value="items-stretch">Stretch</option>
-                          <option value="items-baseline">Baseline</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Inter-element Gap */}
-                  <div className="flex flex-col gap-1.5 pt-1">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Inter-element Gap</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "gap")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "gap", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">No Gap</option>
-                        <option value="gap-1">Tight (gap-1 - 4px)</option>
-                        <option value="gap-2">Small (gap-2 - 8px)</option>
-                        <option value="gap-3">Standard (gap-3 - 12px)</option>
-                        <option value="gap-4">Relaxed (gap-4 - 16px)</option>
-                        <option value="gap-6">Double (gap-6 - 24px)</option>
-                        <option value="gap-8">Spacious (gap-8 - 32px)</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
+                    )}
                   </div>
                 </div>
-              ) : (
-                <p className="text-[10px] bg-stone-100 border border-stone-200/40 text-stone-500 rounded-xl p-3 leading-relaxed">
-                  Display model is currently not flex. Select <strong>flex</strong> display to reveal detailed container alignment parameters.
-                </p>
-              )}
-
-              {/* Flex Item Properties */}
-              <div className="border-t border-stone-200/50 pt-4 space-y-3">
-                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider font-mono block">Selected Item Flex Properties</span>
-                <p className="text-[9px] text-stone-400 leading-normal">Override properties for custom wrapping, growing or visual ordering.</p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Flex Grow</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "flexGrow")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "flexGrow", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">default</option>
-                        <option value="grow">grow (fill space)</option>
-                        <option value="grow-0">grow-0 (no grow)</option>
-                      </select>
-                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Flex Shrink</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "flexShrink")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "flexShrink", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">default</option>
-                        <option value="shrink">shrink</option>
-                        <option value="shrink-0">shrink-0 (no shrink)</option>
-                      </select>
-                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Align Self Override</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "alignSelf")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "alignSelf", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm font-medium"
-                      >
-                        <option value="">Default (Follow Parent)</option>
-                        <option value="self-auto">self-auto</option>
-                        <option value="self-start">self-start (push to top)</option>
-                        <option value="self-end">self-end (push to bottom)</option>
-                        <option value="self-center">self-center (middle)</option>
-                        <option value="self-stretch">self-stretch</option>
-                        <option value="self-baseline">self-baseline</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Flex Basis (Base Size)</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "basis-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "basis-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">default / auto</option>
-                        <option value="basis-auto">basis-auto</option>
-                        <option value="basis-full">basis-full (100% basis width)</option>
-                        <option value="basis-1/2">basis-1/2 (50%)</option>
-                        <option value="basis-1/3">basis-1/3 (33%)</option>
-                        <option value="basis-1/4">basis-1/4 (25%)</option>
-                        <option value="basis-0">basis-0</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Visual Order</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "order-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "order-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">default</option>
-                        <option value="order-first">order-first (Render first)</option>
-                        <option value="order-last">order-last (Render last)</option>
-                        <option value="order-1">order-1</option>
-                        <option value="order-2">order-2</option>
-                        <option value="order-3">order-3</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Category: Grid Layout */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
-                <Grid size={11} />
-                <span>Grid Layout Grid columns/rows</span>
-              </div>
-
-              {selectedElement.classes.includes("grid") ? (
-                <div className="space-y-4 pt-1 animate-in fade-in duration-200">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Grid Columns template</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "grid-cols-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "grid-cols-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">auto</option>
-                        <option value="grid-cols-1">1 Column (grid-cols-1)</option>
-                        <option value="grid-cols-2">2 Columns (grid-cols-2)</option>
-                        <option value="grid-cols-3">3 Columns (grid-cols-3)</option>
-                        <option value="grid-cols-4">4 Columns (grid-cols-4)</option>
-                        <option value="grid-cols-5">5 Columns</option>
-                        <option value="grid-cols-6">6 Columns</option>
-                        <option value="grid-cols-12">12 Columns (grid-cols-12)</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Grid Rows template</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "grid-rows-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "grid-rows-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">auto</option>
-                        <option value="grid-rows-1">1 Row</option>
-                        <option value="grid-rows-2">2 Rows</option>
-                        <option value="grid-rows-3">3 Rows</option>
-                        <option value="grid-rows-4">4 Rows</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Justify Items (Horizontal plane)</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "justifyItems")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "justifyItems", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">Default (Stretch entire cell width)</option>
-                        <option value="justify-items-start">start</option>
-                        <option value="justify-items-end">end</option>
-                        <option value="justify-items-center">center</option>
-                        <option value="justify-items-stretch">stretch</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  {/* Inter-element Gap */}
-                  <div className="flex flex-col gap-1.5 pt-1">
-                    <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">Grid Gap spacing</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "gap")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "gap", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">No Gap</option>
-                        <option value="gap-1">Tight (gap-1 - 4px)</option>
-                        <option value="gap-2">Small (gap-2 - 8px)</option>
-                        <option value="gap-3">Standard (gap-3 - 12px)</option>
-                        <option value="gap-4">Relaxed (gap-4 - 16px)</option>
-                        <option value="gap-6">Double (gap-6 - 24px)</option>
-                        <option value="gap-8">Spacious (gap-8 - 32px)</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[10px] bg-stone-100 border border-stone-200/40 text-stone-500 rounded-xl p-3 leading-relaxed">
-                  Display model is currently not grid. Select <strong>grid</strong> display above to trigger comprehensive Columns details.
-                </p>
-              )}
-
-              {/* Grid Items Details (Col Span & Row Span) */}
-              <div className="border-t border-stone-200/55 pt-4 space-y-3">
-                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider font-mono block">Selected Item Grid Properties</span>
-                <p className="text-[9px] text-stone-400 leading-normal">Assign custom cell span dimensions inside any Active Grid layout container.</p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Column Span (width span)</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "col-span-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "col-span-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">auto</option>
-                        <option value="col-span-1">col-span-1 (Takes 1 cell width)</option>
-                        <option value="col-span-2">col-span-2 (Takes 2 cell width)</option>
-                        <option value="col-span-3">col-span-3</option>
-                        <option value="col-span-4">col-span-4</option>
-                        <option value="col-span-6">col-span-6</option>
-                        <option value="col-span-12">col-span-12 (Spans full grid width)</option>
-                        <option value="col-span-full">col-span-full</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Row Span (height span)</label>
-                    <div className="relative">
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "row-span-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "row-span-", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="">auto</option>
-                        <option value="row-span-1">row-span-1 (Spans 1 cell height)</option>
-                        <option value="row-span-2">row-span-2 (Spans 2 cell height)</option>
-                        <option value="row-span-3">row-span-3</option>
-                        <option value="row-span-full">row-span-full</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Category: Overflow & Scrolling */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
-                <Layers size={11} />
-                <span>Overflow & Smooth Scrolling</span>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Global Overflow</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "overflow")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "overflow", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-sm focus:outline-none cursor-pointer"
-                    >
-                      <option value="">default (visible)</option>
-                      <option value="overflow-auto">overflow-auto (scrolls when content leaks)</option>
-                      <option value="overflow-hidden">overflow-hidden (clips all overlaps)</option>
-                      <option value="overflow-clip">overflow-clip (hard clip)</option>
-                      <option value="overflow-visible">overflow-visible (allow leakages)</option>
-                      <option value="overflow-scroll">overflow-scroll (forced scrollbars)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Horizontal (X)</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "overflowX")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "overflowX", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2 pr-6 py-1.5 text-xs text-stone-700 shadow-sm focus:outline-none cursor-pointer"
-                      >
-                        <option value="">auto</option>
-                        <option value="overflow-x-auto">auto</option>
-                        <option value="overflow-x-hidden">hidden</option>
-                        <option value="overflow-x-visible">visible</option>
-                        <option value="overflow-x-scroll">scroll</option>
-                      </select>
-                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Vertical (Y)</label>
-                    <div className="relative">
-                      <select
-                        value={getActiveGroupClass(selectedElement.classes, "overflowY")}
-                        onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "overflowY", e.target.value) }))}
-                        className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-2 pr-6 py-1.5 text-xs text-stone-700 shadow-sm focus:outline-none cursor-pointer"
-                      >
-                        <option value="">auto</option>
-                        <option value="overflow-y-auto">auto</option>
-                        <option value="overflow-y-hidden">hidden</option>
-                        <option value="overflow-y-visible">visible</option>
-                        <option value="overflow-y-scroll">scroll</option>
-                      </select>
-                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Scrolling Behavior</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "scrollBehavior")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "scrollBehavior", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-sm focus:outline-none cursor-pointer"
-                    >
-                      <option value="">auto (immediate snap)</option>
-                      <option value="scroll-smooth">scroll-smooth (smooth spring transition)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1 font-mono">Scroll Snap Type</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "scrollSnapType")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "scrollSnapType", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-sm focus:outline-none cursor-pointer"
-                    >
-                      <option value="">snap-none</option>
-                      <option value="snap-x">snap-x (Horizontal Slides Snap)</option>
-                      <option value="snap-y">snap-y (Vertical Sections Snap)</option>
-                      <option value="snap-both">snap-both (Dual-Axis snapping)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 
