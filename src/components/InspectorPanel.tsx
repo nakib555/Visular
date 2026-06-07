@@ -547,81 +547,96 @@ export function InspectorPanel({
                   <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block font-sans">Padding (Inside Spacing)</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1 col-span-2">
-                      <label className="text-[9px] text-stone-400 font-medium">All sides padding global</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "p-")}
-                        onChange={(e) => {
-                          let updated = selectedElement.classes
-                            .replace(/\b(pt|pr|pb|pl|px|py)-\w+\b/g, "")
-                            .replace(/\s+/g, " ")
-                            .trim();
-                          updateTree(() => ({ 
-                            classes: setPrefixedClass(updated, "p-", e.target.value) 
-                          }));
-                        }}
-                        className="w-full bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">None (p-0)</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24,32,48,64].map((v) => (
-                          <option key={v} value={`p-${v}`}>p-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">All sides padding global</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "p-")}
+                          onChange={(e) => {
+                            let updated = selectedElement.classes
+                              .replace(/\b(pt|pr|pb|pl|px|py)-\w+\b/g, "")
+                              .replace(/\s+/g, " ")
+                              .trim();
+                            updateTree(() => ({ 
+                              classes: setPrefixedClass(updated, "p-", e.target.value) 
+                            }));
+                          }}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">None (p-0)</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24,32,48,64].map((v) => (
+                            <option key={v} value={`p-${v}`}>p-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Top side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "pt-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pt-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`pt-${v}`}>pt-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Top side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "pt-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pt-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`pt-${v}`}>pt-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Right side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "pr-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pr-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`pr-${v}`}>pr-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Right side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "pr-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pr-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`pr-${v}`}>pr-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Bottom side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "pb-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pb-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`pb-${v}`}>pb-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Bottom side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "pb-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pb-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`pb-${v}`}>pb-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Left side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "pl-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pl-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`pl-${v}`}>pl-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Left side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "pl-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "pl-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`pl-${v}`}>pl-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -630,81 +645,96 @@ export function InspectorPanel({
                   <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block font-sans">Margin (Outside Spacing)</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1 col-span-2">
-                      <label className="text-[9px] text-stone-400 font-medium">All sides margin global</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "m-")}
-                        onChange={(e) => {
-                          let updated = selectedElement.classes
-                            .replace(/\b(mt|mr|mb|ml|mx|my)-\w+\b/g, "")
-                            .replace(/\s+/g, " ")
-                            .trim();
-                          updateTree(() => ({ 
-                            classes: setPrefixedClass(updated, "m-", e.target.value) 
-                          }));
-                        }}
-                        className="w-full bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">None (m-0)</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24,32,48,64].map((v) => (
-                          <option key={v} value={`m-${v}`}>m-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">All sides margin global</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "m-")}
+                          onChange={(e) => {
+                            let updated = selectedElement.classes
+                              .replace(/\b(mt|mr|mb|ml|mx|my)-\w+\b/g, "")
+                              .replace(/\s+/g, " ")
+                              .trim();
+                            updateTree(() => ({ 
+                              classes: setPrefixedClass(updated, "m-", e.target.value) 
+                            }));
+                          }}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">None (m-0)</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24,32,48,64].map((v) => (
+                            <option key={v} value={`m-${v}`}>m-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Top side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "mt-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mt-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`mt-${v}`}>mt-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Top side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "mt-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mt-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`mt-${v}`}>mt-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Right side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "mr-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mr-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`mr-${v}`}>mr-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Right side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "mr-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mr-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`mr-${v}`}>mr-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Bottom side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "mb-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mb-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`mb-${v}`}>mb-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Bottom side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "mb-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "mb-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`mb-${v}`}>mb-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-stone-400 font-medium">Left side</label>
-                      <select
-                        value={getPrefixedClass(selectedElement.classes, "ml-")}
-                        onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "ml-", e.target.value) }))}
-                        className="bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-700 cursor-pointer"
-                      >
-                        <option value="">Inherited</option>
-                        {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
-                          <option key={v} value={`ml-${v}`}>ml-{v} ({v * 4}px)</option>
-                        ))}
-                      </select>
+                      <label className="text-[9px] text-stone-400 font-semibold uppercase tracking-wider font-mono">Left side</label>
+                      <div className="relative">
+                        <select
+                          value={getPrefixedClass(selectedElement.classes, "ml-")}
+                          onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "ml-", e.target.value) }))}
+                          className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl pl-3 pr-7 py-2 text-xs text-stone-700 cursor-pointer shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-medium"
+                        >
+                          <option value="">Inherited</option>
+                          {[0,1,2,3,4,5,6,8,10,12,16,20,24].map((v) => (
+                            <option key={v} value={`ml-${v}`}>ml-{v} ({v * 4}px)</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -787,6 +817,7 @@ export function InspectorPanel({
                             onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", e.target.value) }))}
                             className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer font-medium"
                           >
+                            <option value="">default / browser inherits</option>
                             <option value="block">block</option>
                             <option value="inline-block">inline-block</option>
                             <option value="inline">inline</option>
