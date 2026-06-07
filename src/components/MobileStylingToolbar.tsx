@@ -724,29 +724,29 @@ export function MobileToolControls() {
       case "core": {
         if (subCategory === "contentDetails") {
           return (
-            <div className="flex-1 flex items-center pr-1 animate-fade-in gap-2 select-none">
+            <div className="flex-1 min-w-0 flex items-center pr-1 animate-fade-in gap-2 select-none">
               {selectedElement.content !== undefined ? (
                 <input 
                   type="text" 
                   value={selectedElement.content || ""} 
                   onChange={(e) => updateTree(() => ({ content: e.target.value }))}
-                  className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-rose-500 font-sans text-stone-800"
+                  className="flex-1 min-w-0 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-rose-500 font-sans text-stone-800"
                   placeholder="Text content..."
                 />
               ) : (
-                <span className="text-[10px] text-stone-400 font-mono italic">No direct content (container element)</span>
+                <span className="text-[10px] text-stone-400 font-mono italic truncate">No direct content (container element)</span>
               )}
             </div>
           );
         }
 
         return (
-          <div className="flex-1 flex items-center pr-1 animate-fade-in gap-2 select-none">
+          <div className="flex-1 min-w-0 flex items-center pr-1 animate-fade-in gap-2 select-none">
             <input 
               type="text" 
               value={selectedElement.classes || ""} 
               onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
-              className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-rose-500 font-mono text-stone-800"
+              className="flex-1 min-w-0 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-rose-500 font-mono text-stone-800"
               placeholder="Utilities classes list write..."
             />
           </div>

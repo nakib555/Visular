@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { 
   Settings, Sparkles, Palette, Maximize, Type, Layers, Play, Code, 
   HelpCircle, AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown, Trash2, Copy,
-  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight, Sliders, Anchor
+  Grid, Compass, Cpu, Move, Wand2, Search, Check, ChevronRight, Sliders, Anchor,
+  MousePointer, Image
 } from "lucide-react";
 import { PropertyControl } from "./PropertyControl";
 import { VisualElement } from "../types";
 import { setGroupClass, getActiveGroupClass, setPrefixedClass, getPrefixedClass, setColorClass } from "../styleUtils";
 
-export type InspectorSection = "layout" | "spacing" | "sizing" | "position" | "typography" | "visuals" | "motion" | "core" | "help";
+export type InspectorSection = "layout" | "spacing" | "sizing" | "position" | "typography" | "visuals" | "motion" | "animation" | "interactivity" | "media" | "core" | "help";
 
 interface CSSProperty {
   name: string;
@@ -218,32 +219,102 @@ const CSS_HIERARCHY_DATA: CSSCategory[] = [
     icon: Type,
     subCategories: [
       {
-        name: "Font Styling",
+        name: "Font Selection & Basic Styling",
         properties: [
-          { name: "font-family", values: "<custom-font> | <generic>", note: "e.g., \"Open Sans\", sans-serif, monospace" },
-          { name: "font-size", values: "<length> | <percentage> | small | large", note: "e.g., 16px, 1.2rem" },
-          { name: "font-weight", values: "normal | bold | bolder | lighter | <number>", note: "e.g., 100, 400, 700" },
-          { name: "font-style", values: "normal | italic | oblique" }
+          { name: "font-family", values: "serif | sans-serif | monospace | cursive | fantasy | system-ui | ui-serif | ui-sans-serif | ui-monospace | ui-rounded | emoji | math | fangsong | <string> (e.g. \"Helvetica Neue\", \"SF Pro\", \"Inter\")" },
+          { name: "font-weight", values: "normal | bold | bolder | lighter | <number-range-1-1000> (e.g. 100, 400, 700, 900, 550)" },
+          { name: "font-style", values: "normal | italic | oblique | oblique <angle> (e.g. oblique 14deg, oblique -10deg)" },
+          { name: "font-synthesis", values: "none | weight | style | small-caps | weight style | weight style small-caps" }
         ]
       },
       {
-        name: "Text Formatting",
+        name: "Text Sizing & Scalability",
         properties: [
-          { name: "text-align", values: "left | right | center | justify" },
-          { name: "text-decoration", values: "none | underline | overline | line-through" },
-          { name: "text-transform", values: "none | capitalize | uppercase | lowercase" },
-          { name: "text-indent", values: "<length> | <percentage>", note: "e.g., 20px, 2rem" }
+          { name: "font-size", values: "xx-small | x-small | small | medium | large | x-large | xx-large | xxx-large | smaller | larger | <length-absolute> (e.g. 16px, 12pt) | <length-relative-font> (e.g. 1.5em, 1.2rem, 12ch, 2lh, 2rlh) | <length-relative-viewport> (e.g. 4vw, 3vh, 3svh, 2dvw) | <length-container> (e.g. 5cqw, 4cqh, 3cqmin) | <percentage> (e.g. 120%)" },
+          { name: "font-size-adjust", values: "none | ex-height | cap-height | ch-width | ic-width | <number> (e.g. 0.5, 0.485) | from-font" },
+          { name: "font-stretch", values: "normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded | <percentage-range-50-200> (e.g. 75%, 120%)" }
         ]
       },
       {
-        name: "Text Spacing & Wrapping",
+        name: "Text Alignment, Justification & Spacing",
         properties: [
-          { name: "line-height", values: "normal | <number> | <length> | <percentage>", note: "e.g., 1.5, 24px" },
-          { name: "letter-spacing", values: "normal | <length>", note: "e.g., 1px, 0.05em" },
-          { name: "word-spacing", values: "normal | <length>", note: "e.g., 2px" },
-          { name: "white-space", values: "normal | nowrap | pre | pre-wrap | pre-line" },
+          { name: "text-align", values: "start | end | left | right | center | justify | justify-all | match-parent" },
+          { name: "text-align-last", values: "auto | start | end | left | right | center | justify" },
+          { name: "text-justify", values: "auto | none | inter-word | inter-character | distribute" },
+          { name: "line-height", values: "normal | <number> (e.g. 1.5, 1.2) | <length-absolute> (e.g. 24px) | <length-relative-font> (e.g. 1.8em, 1.6rem) | <length-relative-viewport> (e.g. 3vw) | <percentage> (e.g. 150%)" },
+          { name: "letter-spacing", values: "normal | <length-absolute> (e.g. 1px) | <length-relative-font> (e.g. 0.05em, 0.1rem)" },
+          { name: "word-spacing", values: "normal | <length-absolute> (e.g. 4px) | <length-relative-font> (e.g. 0.25em, 0.3rem) | <percentage> (e.g. 50%)" },
+          { name: "text-indent", values: "<length-absolute> (e.g. 20px) | <length-relative-font> (e.g. 2em, 1.5rem) | <percentage> (e.g. 5%) | each-line | hanging | each-line hanging | hanging each-line" }
+        ]
+      },
+      {
+        name: "Text Wrapping, Breaking & Clamping",
+        properties: [
+          { name: "white-space", values: "normal | pre | nowrap | pre-wrap | pre-line | break-spaces" },
+          { name: "text-wrap", values: "wrap | nowrap | balance | pretty | stable" },
           { name: "word-break", values: "normal | break-all | keep-all | break-word" },
-          { name: "overflow-wrap", values: "normal | break-all | keep-all | break-word" }
+          { name: "overflow-wrap", values: "normal | break-word | anywhere" },
+          { name: "text-overflow", values: "clip | ellipsis | <string> (e.g. \"...\", \" [read more]\")" },
+          { name: "line-clamp", values: "none | <integer> (e.g. 3, 5) | <integer> <string> (e.g. 3 \"...\")" },
+          { name: "hyphens", values: "none | manual | auto" },
+          { name: "hyphenate-character", values: "auto | <string> (e.g. \"-\")" }
+        ]
+      },
+      {
+        name: "Text Box Trim & Metrics",
+        properties: [
+          { name: "text-box-trim", values: "none | trim-over | trim-under | trim-both" },
+          { name: "text-box-edge", values: "auto | text | cap | ex | ideographic | ideographic-ink" },
+          { name: "text-box", values: "none | <text-box-trim> <text-box-edge> (e.g. trim-both cap, trim-over text)" }
+        ]
+      },
+      {
+        name: "Text Decoration Systems",
+        properties: [
+          { name: "text-decoration-line", values: "none | underline | overline | line-through | blink | underline overline | underline line-through" },
+          { name: "text-decoration-color", values: "<color-keyword> (e.g. red) | <color-hex> (e.g. #ff0000) | <color-rgb> | <color-hsl> | <color-oklch> | currentcolor" },
+          { name: "text-decoration-style", values: "solid | double | dotted | dashed | wavy" },
+          { name: "text-decoration-thickness", values: "auto | from-font | <length-absolute> (e.g. 2px) | <length-relative-font> (e.g. 0.1em) | <percentage>" },
+          { name: "text-underline-offset", values: "auto | <length-absolute> (e.g. 3px) | <length-relative-font> (e.g. 0.25em) | <percentage>" },
+          { name: "text-underline-position", values: "auto | under | left | right | under left | under right" }
+        ]
+      },
+      {
+        name: "Text Emphasis & Effects",
+        properties: [
+          { name: "text-emphasis-style", values: "none | filled | open | dot | circle | double-circle | triangle | sesame | <string> (e.g. \"x\") | filled dot | open circle" },
+          { name: "text-emphasis-color", values: "<color-keyword> | <color-hex> | <color-rgb> | <color-hsl> | <color-oklch> | currentcolor" },
+          { name: "text-emphasis-position", values: "over | under | over right | over left | under right | under left" },
+          { name: "text-shadow", values: "none | <length-offset-x> <length-offset-y> <color> | <length-offset-x> <length-offset-y> <length-blur> <color>" }
+        ]
+      },
+      {
+        name: "Text Transform & Case Control",
+        properties: [
+          { name: "text-transform", values: "none | capitalize | uppercase | lowercase | full-width | full-size-kana" },
+          { name: "font-variant-caps", values: "normal | small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps" }
+        ]
+      },
+      {
+        name: "OpenType & Variable Font Controls",
+        properties: [
+          { name: "font-variant-ligatures", values: "normal | none | common-ligatures | no-common-ligatures | discretionary-ligatures | historical-ligatures | contextual" },
+          { name: "font-variant-numeric", values: "normal | ordinal | slashed-zero | lining-nums | oldstyle-nums | proportional-nums | tabular-nums | diagonal-fractions | stacked-fractions" },
+          { name: "font-variant-east-asian", values: "normal | jis78 | jis83 | jis04 | simplified | traditional | full-width | ruby" },
+          { name: "font-variant-emoji", values: "normal | text | emoji | unicode" },
+          { name: "font-feature-settings", values: "normal | <string-tag> <on-off-integer> (e.g. \"smcp\" on, \"liga\" 0)" },
+          { name: "font-variation-settings", values: "normal | <string-tag> <number> (e.g. \"wght\" 500, \"wdth\" 85)" },
+          { name: "font-optical-sizing", values: "auto | none" },
+          { name: "font-palette", values: "normal | light | dark | <dashed-ident>" }
+        ]
+      },
+      {
+        name: "Direction & Writing Mode",
+        properties: [
+          { name: "writing-mode", values: "horizontal-tb | vertical-rl | vertical-lr" },
+          { name: "direction", values: "ltr | rtl" },
+          { name: "text-orientation", values: "mixed | upright | sideways" },
+          { name: "unicode-bidi", values: "normal | embed | bidi-override | isolate | isolate-override | plaintext" }
         ]
       }
     ]
@@ -286,64 +357,235 @@ const CSS_HIERARCHY_DATA: CSSCategory[] = [
   },
   {
     name: "MOVEMENT & ANIMATION",
-    icon: Play,
+    icon: Wand2,
     subCategories: [
       {
         name: "Transitions",
         properties: [
-          { name: "transition-property", values: "all | none | <property-name>", note: "e.g., background-color, transform" },
-          { name: "transition-duration", values: "<time>", note: "e.g., 0.3s, 500ms" },
-          { name: "transition-timing-function", values: "ease | linear | ease-in | ease-out | ease-in-out | cubic-bezier(...)" },
-          { name: "transition-delay", values: "<time>" }
+          { name: "transition", values: "none | all | <single-transition> (e.g. all 0.3s ease-in-out 0s)" },
+          { name: "transition-property", values: "none | all | <property-name> (e.g. transform, opacity)" },
+          { name: "transition-duration", values: "<time> (e.g. 0.3s, 300ms)" },
+          { name: "transition-delay", values: "<time> (e.g. 0.1s, 100ms)" },
+          { name: "transition-timing-function", values: "ease | linear | ease-in | ease-out | ease-in-out | step-start | step-end | steps(...) | cubic-bezier(...)" },
+          { name: "transition-behavior", values: "normal | allow-discrete" }
         ]
       },
       {
-        name: "Transforms",
+        name: "Modern Individual Transforms",
         properties: [
-          { name: "transform", values: "none | translate(X, Y) | scale(X, Y) | rotate(deg) | skew(deg, deg)" },
-          { name: "transform-origin", values: "center | top left | bottom right | <length> | <percentage>" }
+          { name: "translate", values: "none | <length> | <percentage> | <length-percentage> <length-percentage> [<length>] (e.g. 10px 20px)" },
+          { name: "rotate", values: "none | <angle> (e.g. 45deg, 1.5rad) | x <angle> | y <angle> | z <angle> | <number> <number> <number> <angle>" },
+          { name: "scale", values: "none | <number> | <percentage> | <number-percentage> <number-percentage> [<number>] (e.g. 1.5, 120% 80%)" }
+        ]
+      },
+      {
+        name: "Transform Legacy Shorthand & Origin",
+        properties: [
+          { name: "transform", values: "none | <transform-list> (e.g. translate(10px, 20px) rotate(45deg) scale(1.5))" },
+          { name: "transform-origin", values: "center | top | bottom | left | right | <length> | <percentage> | [left | center | right] [top | center | bottom]" }
         ]
       },
       {
         name: "Keyframe Animations",
         properties: [
-          { name: "animation-name", values: "none | <custom-name>", note: "e.g., slideIn, pulse" },
-          { name: "animation-duration", values: "<time>" },
-          { name: "animation-iteration-count", values: "<number> | infinite" },
-          { name: "animation-direction", values: "normal | reverse | alternate | alternate-reverse" }
+          { name: "animation", values: "<single-animation> (e.g. slide-in 1s ease-out 0s infinite normal forwards)" },
+          { name: "animation-name", values: "none | <custom-name> (e.g. fade-in, bounce-animation)" },
+          { name: "animation-duration", values: "<time> (e.g. 1s, 800ms)" },
+          { name: "animation-delay", values: "<time>" },
+          { name: "animation-timing-function", values: "ease | linear | ease-in | ease-out | ease-in-out | step-start | step-end | cubic-bezier(...)" },
+          { name: "animation-iteration-count", values: "infinite | <number>" },
+          { name: "animation-direction", values: "normal | reverse | alternate | alternate-reverse" },
+          { name: "animation-fill-mode", values: "none | forwards | backwards | both" },
+          { name: "animation-play-state", values: "running | paused" },
+          { name: "animation-composition", values: "replace | add | accumulate" }
+        ]
+      },
+      {
+        name: "Scroll-driven Animations",
+        properties: [
+          { name: "animation-timeline", values: "auto | none | scroll() | scroll(...) | view() | view(...) | <custom-timeline-name>" },
+          { name: "scroll-timeline", values: "none | <scroll-timeline-name> [block | inline | x | y]" },
+          { name: "scroll-timeline-name", values: "none | <dashed-ident>" },
+          { name: "scroll-timeline-axis", values: "block | inline | x | y" },
+          { name: "view-timeline", values: "none | <view-timeline-name> [block | inline | x | y]" },
+          { name: "view-timeline-name", values: "none | <dashed-ident>" },
+          { name: "view-timeline-axis", values: "block | inline | x | y" },
+          { name: "animation-range", values: "normal | <animation-range-start> <animation-range-end> (e.g. cover 0% cover 100%)" },
+          { name: "animation-range-start / animation-range-end", values: "normal | auto | <percentage> | [normal | cover | contain | entry | exit] [<percentage>]" }
         ]
       }
     ]
   },
   {
-    name: "INTERACTIVITY & UI",
-    icon: Cpu,
+    name: "INTERACTIVITY & SCROLLING",
+    icon: MousePointer,
     subCategories: [
       {
         name: "Mouse Controls",
         properties: [
-          { name: "cursor", values: "auto | default | pointer | crosshair | not-allowed | grab | grabbing | text" },
-          { name: "pointer-events", values: "auto | none" }
+          { name: "cursor", values: "auto | default | none | pointer | help | wait | text | move | not-allowed | grab | grabbing | zoom-in | <url>" },
+          { name: "pointer-events", values: "auto | none | visiblePainted | visibleFill | visibleStroke | visible | all" }
         ]
       },
       {
-        name: "User Behaviors",
+        name: "User Actions & Inputs",
         properties: [
-          { name: "user-select", values: "auto | text | none | all" },
-          { name: "resize", values: "none | both | horizontal | vertical" },
-          { name: "touch-action", values: "auto | none | pan-x | pan-y | manipulation" }
+          { name: "user-select", values: "none | auto | text | all | contain" },
+          { name: "resize", values: "none | both | horizontal | vertical | block | inline" }
         ]
       },
       {
-        name: "Lists & Tables",
+        name: "Document Scroll Control & Overflow",
         properties: [
-          { name: "list-style-type", values: "none | disc | circle | square | decimal | lower-alpha | upper-roman" },
-          { name: "border-collapse", values: "collapse | separate" }
+          { name: "overflow", values: "visible | hidden | scroll | auto | clip | hidden auto" },
+          { name: "overflow-x / overflow-y / overflow-inline / overflow-block", values: "visible | hidden | scroll | auto | clip" },
+          { name: "scroll-behavior", values: "auto | smooth" },
+          { name: "overscroll-behavior", values: "auto | contain | none | contain none" },
+          { name: "overscroll-behavior-x / overscroll-behavior-y / overscroll-behavior-inline / overscroll-behavior-block", values: "auto | contain | none" }
+        ]
+      },
+      {
+        name: "Scroll Snapping (Container Level)",
+        properties: [
+          { name: "scroll-snap-type", values: "none | x | y | block | inline | both | x mandatory | y proximity" },
+          { name: "scroll-padding", values: "auto | <length> | <percentage> | <length> <length>" },
+          { name: "scroll-padding-top / -right / -bottom / -left / -inline-start / -inline-end / -block-start / -block-end", values: "auto | <length> | <percentage>" }
+        ]
+      },
+      {
+        name: "Scroll Snapping (Target/Item Level)",
+        properties: [
+          { name: "scroll-snap-align", values: "none | start | end | center | start end | center center" },
+          { name: "scroll-snap-stop", values: "normal | always" },
+          { name: "scroll-margin", values: "<length> | <length> <length> | <length> <length> <length> <length>" },
+          { name: "scroll-margin-top / -right / -bottom / -left / -inline-start / -inline-end / -block-start / -block-end", values: "<length>" }
+        ]
+      },
+      {
+        name: "Touch Actions & Performance",
+        properties: [
+          { name: "touch-action", values: "auto | none | pan-x | pan-y | pinch-zoom | manipulation | pan-x pan-y" },
+          { name: "will-change", values: "auto | scroll-position | contents | <custom-ident> (e.g. transform, opacity)" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "MEDIA & OBJECTS",
+    icon: Image,
+    subCategories: [
+      {
+        name: "Media Fitting & Cropping",
+        properties: [
+          { name: "object-fit", values: "fill | contain | cover | none | scale-down | initial | inherit" },
+          { name: "object-position", values: "center | top | bottom | left | right | <length-percentage> <length-percentage>" },
+          { name: "object-view-box", values: "none | inset(<length-percentage>{1,4} [round <border-radius>]?) | rect(...) | xywh(...)" }
+        ]
+      },
+      {
+        name: "Image Rendering & Modification",
+        properties: [
+          { name: "image-rendering", values: "auto | crisp-edges | pixelated | smooth | high-quality" },
+          { name: "image-orientation", values: "from-image | none | <angle> (e.g. 90deg) | flip | <angle> flip" },
+          { name: "image-resolution", values: "from-image | <resolution> (e.g. 300dpi) | from-image <resolution> | snap <resolution>" }
+        ]
+      },
+      {
+        name: "Content Flow Shapes",
+        properties: [
+          { name: "shape-outside", values: "none | margin-box | border-box | padding-box | content-box | circle() | ellipse() | polygon() | inset() | path() | <url>" },
+          { name: "shape-margin", values: "<length> | <percentage>" },
+          { name: "shape-image-threshold", values: "<number> (e.g. 0.5) | <percentage>" }
         ]
       }
     ]
   }
 ];
+
+
+interface SegmentedControlProps<T> {
+  label: string;
+  value: T;
+  onChange: (val: T) => void;
+  options: {
+    value: T;
+    label?: string;
+    icon?: React.ComponentType<{ size?: number; className?: string }>;
+  }[];
+}
+
+function SegmentedControl<T extends string>({ label, value, onChange, options }: SegmentedControlProps<T>) {
+  return (
+    <div className="flex flex-col gap-1.5 w-full">
+      {label && (
+        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">
+          {label}
+        </label>
+      )}
+      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-1 flex w-full gap-1">
+        {options.map((opt) => {
+          const isSelected = value === opt.value;
+          const Icon = opt.icon;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value)}
+              className={`flex-1 flex items-center justify-center py-2 px-3 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
+                isSelected
+                  ? "bg-rose-50/80 border border-rose-200/60 text-rose-600 shadow-sm"
+                  : "bg-transparent border border-transparent text-stone-500 hover:text-stone-800 hover:bg-stone-100/40"
+              }`}
+            >
+              {Icon ? <Icon size={14} className="stroke-[2.25]" /> : opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const SEGMENTED_FIELDS: Record<string, { label: string; options: { value: string; label: string }[] }> = {
+  "pointer-events": {
+    label: "Pointer Interaction Mode",
+    options: [{ value: "auto", label: "Auto" }, { value: "none", label: "None" }]
+  },
+  "user-select": {
+    label: "Text Selection Control",
+    options: [{ value: "auto", label: "Auto" }, { value: "text", label: "Text" }, { value: "none", label: "None" }]
+  },
+  "resize": {
+    label: "Element Resize Handle",
+    options: [
+      { value: "none", label: "None" },
+      { value: "both", label: "Both" },
+      { value: "horizontal", label: "Horiz" },
+      { value: "vertical", label: "Vert" }
+    ]
+  },
+  "scroll-behavior": {
+    label: "Scrolling Interpolation",
+    options: [{ value: "auto", label: "Auto" }, { value: "smooth", label: "Smooth" }]
+  },
+  "touch-action": {
+    label: "Touch Screen Action Mapping",
+    options: [{ value: "auto", label: "Auto" }, { value: "manipulation", label: "Interact" }, { value: "none", label: "None" }]
+  },
+  "object-fit": {
+    label: "Object Auto-Fit Scaling",
+    options: [
+      { value: "cover", label: "Cover" },
+      { value: "contain", label: "Contain" },
+      { value: "fill", label: "Fill" },
+      { value: "none", label: "None" }
+    ]
+  },
+  "image-rendering": {
+    label: "Image Rendering Engine",
+    options: [{ value: "auto", label: "Auto" }, { value: "crisp-edges", label: "Crisp" }, { value: "pixelated", label: "Pixelated" }]
+  }
+};
 
 interface InspectorPanelProps {
   selectedElement: VisualElement | null;
@@ -373,6 +615,12 @@ export function InspectorPanel({
   });
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [layoutSubCategory, setLayoutSubCategory] = useState<"display" | "flex" | "grid" | "position" | "overflow">("display");
+  const [typographySubCategory, setTypographySubCategory] = useState<string>("basic");
+  const [appearanceSubCategory, setAppearanceSubCategory] = useState<"colors" | "backgrounds" | "borders" | "blending">("colors");
+  const [effectsSubCategory, setEffectsSubCategory] = useState<"shadows" | "filters" | "masking" | "transparency">("shadows");
+  const [animationSubCategory, setAnimationSubCategory] = useState<"transitions" | "transforms" | "legacyTransforms" | "keyframes" | "scrollDriven">("transitions");
+  const [interactivitySubCategory, setInteractivitySubCategory] = useState<"mouse" | "user" | "scrollControl" | "containerSnap" | "itemSnap" | "touch">("mouse");
+  const [mediaSubCategory, setMediaSubCategory] = useState<"fitting" | "rendering" | "shapes">("fitting");
   const [expandedLayoutSections, setExpandedLayoutSections] = useState<Record<string, boolean>>({
     display: true,
     flex: true,
@@ -380,6 +628,25 @@ export function InspectorPanel({
     position: true,
     overflow: true,
   });
+  const [expandedTypographySections, setExpandedTypographySections] = useState<Record<string, boolean>>({
+    basic: true,
+    sizing: true,
+    spacing: true,
+    wrapping: true,
+    trim: true,
+    decoration: true,
+    emphasis: true,
+    transform: true,
+    fontControls: true,
+    direction: true,
+  });
+
+  const toggleTypographySection = (section: string) => {
+    setExpandedTypographySections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const toggleLayoutSection = (section: string) => {
     setExpandedLayoutSections(prev => ({
@@ -440,8 +707,11 @@ export function InspectorPanel({
           { id: "sizing", label: "Sizing", icon: Sliders },
           { id: "position", label: "Position", icon: Compass },
           { id: "typography", label: "Typography & Text", icon: Type },
-          { id: "visuals", label: "Appearance & Visuals", icon: Palette },
-          { id: "motion", label: "Motion & Effects", icon: Play },
+          { id: "visuals", label: "Appearance & Styles", icon: Palette },
+          { id: "motion", label: "Effects & Filters", icon: Play },
+          { id: "animation", label: "Movement & Animation", icon: Wand2 },
+          { id: "interactivity", label: "Interactivity & Scrolling", icon: MousePointer },
+          { id: "media", label: "Media & Objects", icon: Image },
           { id: "core", label: "Content & Code", icon: Sparkles },
           { id: "help", label: "CSS Guide", icon: HelpCircle }
         ].map((tab) => (
@@ -1951,467 +2221,2700 @@ export function InspectorPanel({
 
         {/* ==================== 2. TYPOGRAPHY & TEXT ==================== */}
         {inspectorSection === "typography" && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
               <Type size={15} className="text-rose-600" />
-              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Typography & Layout</span>
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">CSS Typography & Text Metrics</span>
             </div>
-            
-            {/* Sub-Category: Core Typography Styles */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Type size={11} />
-                <span>Text styling & Font styles</span>
-              </div>
 
-              {/* Font Family Selection */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Font Family</label>
-                <div className="grid grid-cols-3 gap-1 bg-white p-1 rounded-xl border border-stone-200/80 shadow-sm">
-                  {(["font-sans", "font-serif", "font-mono"] as const).map((font) => {
-                    const isActive = getActiveGroupClass(selectedElement.classes, "fontFamily") === font;
-                    return (
+            {(() => {
+              // Helpers to read and write Tailwind mapping vs JIT styles
+              const parseArbitraryValue = (className: string, prefix: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)${prefix.replace(/[-\[\]()]/g, '\\$&')}\\[([^\\]]+)\\](?:$|\\s)`));
+                if (match) return match[1].replace(/_/g, " ");
+                const active = className.split(/\s+/).find((c) => c.startsWith(prefix) && !c.includes("["));
+                return active ? active.substring(prefix.length) : "";
+              };
+
+              const updateArbitraryClass = (prefix: string, value: string) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(prefix));
+                if (value && value.trim()) {
+                  filtered.push(`${prefix}[${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
+
+              const updateArbitraryProperty = (propName: string, value: string) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              // Map properties helper
+              const getPropValue = (propName: string, tailwindMap?: { [key: string]: string }): string => {
+                const arb = parseArbitraryProperty(selectedElement.classes, propName);
+                if (arb) return arb;
+
+                if (tailwindMap) {
+                  const tokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                  for (const [twClass, realVal] of Object.entries(tailwindMap)) {
+                    if (tokens.includes(twClass)) {
+                      return realVal;
+                    }
+                  }
+                }
+                return "";
+              };
+
+              const setPropValue = (propName: string, value: string, tailwindMap?: { [key: string]: string }) => {
+                const currentTokens = selectedElement.classes.split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+
+                if (tailwindMap) {
+                  const twClasses = Object.keys(tailwindMap);
+                  filtered = filtered.filter((token) => !twClasses.includes(token));
+                }
+
+                if (value && value.trim()) {
+                  let twMatch = "";
+                  if (tailwindMap) {
+                    for (const [twClass, realVal] of Object.entries(tailwindMap)) {
+                      if (realVal === value.trim()) {
+                        twMatch = twClass;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (twMatch) {
+                    filtered.push(twMatch);
+                  } else {
+                    filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                  }
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              // Preset mappings for dual Tailwind compatibility and native CSS integration
+              const fontFamilyMap = { "font-sans": "sans-serif", "font-serif": "serif", "font-mono": "monospace" };
+              const fontWeightMap = { "font-light": "300", "font-normal": "400", "font-medium": "500", "font-semibold": "600", "font-bold": "700" };
+              const fontStyleMap = { "italic": "italic", "not-italic": "normal" };
+              const fontSizeMap = { "text-xs": "xx-small", "text-sm": "x-small", "text-base": "medium", "text-lg": "large", "text-xl": "x-large", "text-2xl": "xx-large" };
+              const textAlignMap = { "text-left": "left", "text-center": "center", "text-right": "right", "text-justify": "justify", "text-start": "start", "text-end": "end" };
+              const textTransformMap = { "uppercase": "uppercase", "lowercase": "lowercase", "capitalize": "capitalize" };
+              const textDecorationLineMap = { "underline": "underline", "line-through": "line-through" };
+              const lineHeightMap = { "leading-none": "1", "leading-tight": "1.25", "leading-snug": "1.375", "leading-normal": "1.5", "leading-relaxed": "1.625", "leading-loose": "2" };
+              const letterSpacingMap = { "tracking-tighter": "-0.05em", "tracking-tight": "-0.025em", "tracking-normal": "0em", "tracking-wide": "0.025em", "tracking-wider": "0.05em", "tracking-widest": "0.1em" };
+              const textDecorationStyleMap = { "decoration-solid": "solid", "decoration-double": "double", "decoration-dotted": "dotted", "decoration-dashed": "dashed", "decoration-wavy": "wavy" };
+
+              return (
+                <div className="space-y-4">
+                  {/* Visual Subcategory Pill Selector to easily skip to areas */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide shrink-0 touch-pan-x">
+                    {[
+                      { id: "basic", label: "Basic Styles" },
+                      { id: "sizing", label: "Sizing" },
+                      { id: "spacing", label: "Alignment & Spacing" },
+                      { id: "wrapping", label: "Wrapping & Clamping" },
+                      { id: "trim", label: "Trim" },
+                      { id: "decoration", label: "Decorations" },
+                      { id: "emphasis", label: "Emphasis" },
+                      { id: "transform", label: "Transform" },
+                      { id: "fontControls", label: "OpenType" },
+                      { id: "direction", label: "Writing Mode" }
+                    ].map((tab) => (
                       <button
-                        key={font} type="button"
-                        onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "fontFamily", font) }))}
-                        className={`py-1.5 rounded-lg text-xs transition-all duration-200 font-semibold flex items-center justify-center capitalize cursor-pointer ${
-                          isActive 
-                            ? "bg-rose-600 text-white shadow-sm font-bold border border-rose-500" 
-                            : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setTypographySubCategory(tab.id)}
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border shrink-0 transition-all cursor-pointer ${
+                          typographySubCategory === tab.id
+                            ? "bg-stone-900 border-stone-900 text-white shadow-xs"
+                            : "bg-white border-stone-200 text-stone-500 hover:text-stone-700 hover:bg-stone-50"
                         }`}
                       >
-                        {font.replace("font-", "")}
+                        {tab.label}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
+                    ))}
+                  </div>
 
-              {/* Alignment Selector */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Horizontal text Alignment</label>
-                <div className="grid grid-cols-4 gap-1 bg-white p-1 rounded-xl border border-stone-200/80 shadow-sm">
-                  {([
-                    { key: "text-left", icon: <AlignLeft size={14} /> },
-                    { key: "text-center", icon: <AlignCenter size={14} /> },
-                    { key: "text-right", icon: <AlignRight size={14} /> },
-                    { key: "text-justify", icon: <AlignJustify size={14} /> },
-                  ] as const).map((align) => {
-                    const isActive = getActiveGroupClass(selectedElement.classes, "textAlign") === align.key;
-                    return (
-                      <button
-                        key={align.key} type="button"
-                        onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "textAlign", align.key) }))}
-                        className={`py-2 rounded-lg transition-all duration-150 flex justify-center items-center cursor-pointer ${
-                          isActive 
-                            ? "bg-rose-50 text-rose-700 shadow-sm border border-rose-200" 
-                            : "text-stone-400 hover:text-stone-800 hover:bg-stone-100"
-                        }`}
-                      >
-                        {align.icon}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                  {/* ==================== SUB-CATEGORY LISTS ==================== */}
 
-              {/* Font Size & Weight Selectors */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Font Size</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "textSize")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "textSize", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default (Base)</option>
-                      <option value="text-xs">XS (12px)</option>
-                      <option value="text-sm">SM (14px)</option>
-                      <option value="text-base">Base (16px)</option>
-                      <option value="text-lg">LG (18px)</option>
-                      <option value="text-xl">XL (20px)</option>
-                      <option value="text-2xl">2XL (24px)</option>
-                      <option value="text-3xl">3XL (30px)</option>
-                      <option value="text-4xl">4XL (36px)</option>
-                      <option value="text-5xl">5XL (48px)</option>
-                      <option value="text-6xl">6XL (60px)</option>
-                      <option value="text-7xl">7XL (72px)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  {/* 1. Font Selection & Basic Styling */}
+                  {typographySubCategory === "basic" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Type size={12} />
+                        <span>Font Selection & Basic Styling</span>
+                      </div>
+
+                      {/* font-family */}
+                      <div className="space-y-2">
+                        <SegmentedControl
+                          label="font-family"
+                          value={getPropValue("font-family", fontFamilyMap) || "sans-serif"}
+                          onChange={(val) => setPropValue("font-family", val, fontFamilyMap)}
+                          options={[
+                            { value: "sans-serif", label: "Sans" },
+                            { value: "serif", label: "Serif" },
+                            { value: "monospace", label: "Mono" }
+                          ]}
+                        />
+                        <div className="flex flex-col gap-1.5 w-full text-left">
+                          <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider pl-0.5 font-sans">Custom Font Override</span>
+                          <input
+                            type="text"
+                            placeholder='e.g. "Space Grotesk"'
+                            value={parseArbitraryProperty(selectedElement.classes, "font-family")}
+                            onChange={(e) => updateArbitraryProperty("font-family", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none placeholder-stone-300 font-mono shadow-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-weight */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-weight</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("font-weight", fontWeightMap)}
+                              onChange={(e) => setPropValue("font-weight", e.target.value, fontWeightMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="normal">normal</option>
+                              <option value="bold">bold</option>
+                              <option value="bolder">bolder</option>
+                              <option value="lighter">lighter</option>
+                              <option value="300">300 (Light)</option>
+                              <option value="400">400 (Regular)</option>
+                              <option value="500">500 (Medium)</option>
+                              <option value="600">600 (Semi-Bold)</option>
+                              <option value="700">700 (Bold)</option>
+                              <option value="900">900 (Black)</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 550"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-weight")}
+                            onChange={(e) => updateArbitraryProperty("font-weight", e.target.value)}
+                            className="w-1/4 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white placeholder-stone-400 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-style */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-style</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("font-style", fontStyleMap)}
+                              onChange={(e) => setPropValue("font-style", e.target.value, fontStyleMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="normal">normal</option>
+                              <option value="italic">italic</option>
+                              <option value="oblique">oblique</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. oblique 12deg"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-style")}
+                            onChange={(e) => updateArbitraryProperty("font-style", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white placeholder-stone-400 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-synthesis */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-synthesis</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "font-synthesis")}
+                              onChange={(e) => updateArbitraryProperty("font-synthesis", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="none">none</option>
+                              <option value="weight">weight</option>
+                              <option value="style">style</option>
+                              <option value="small-caps">small-caps</option>
+                              <option value="weight style">weight style</option>
+                              <option value="weight style small-caps">all active</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="custom string"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-synthesis")}
+                            onChange={(e) => updateArbitraryProperty("font-synthesis", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Text Sizing & Scalability */}
+                  {typographySubCategory === "sizing" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Maximize size={12} />
+                        <span>Text Sizing & Scalability</span>
+                      </div>
+
+                      {/* font-size */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-size</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("font-size", fontSizeMap)}
+                              onChange={(e) => setPropValue("font-size", e.target.value, fontSizeMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="xx-small">xx-small (12px equiv)</option>
+                              <option value="x-small">x-small (14px equiv)</option>
+                              <option value="medium">medium (16px equiv)</option>
+                              <option value="large">large (18px equiv)</option>
+                              <option value="x-large">x-large (20px equiv)</option>
+                              <option value="xx-large">xx-large (24px equiv)</option>
+                              <option value="xxx-large">xxx-large</option>
+                              <option value="smaller">smaller</option>
+                              <option value="larger">larger</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 1.5rem, 5vw, 16px"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-size")}
+                            onChange={(e) => updateArbitraryProperty("font-size", e.target.value)}
+                            className="w-1/2 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white placeholder-stone-405 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-size-adjust */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-size-adjust</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "font-size-adjust")}
+                              onChange={(e) => updateArbitraryProperty("font-size-adjust", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (none)</option>
+                              <option value="none">none</option>
+                              <option value="ex-height">ex-height</option>
+                              <option value="cap-height">cap-height</option>
+                              <option value="ch-width">ch-width</option>
+                              <option value="from-font">from-font</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 0.5"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-size-adjust")}
+                            onChange={(e) => updateArbitraryProperty("font-size-adjust", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-stretch */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-stretch</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "font-stretch")}
+                              onChange={(e) => updateArbitraryProperty("font-stretch", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="normal">normal</option>
+                              <option value="ultra-condensed">ultra-condensed</option>
+                              <option value="extra-condensed">extra-condensed</option>
+                              <option value="condensed">condensed</option>
+                              <option value="semi-condensed">semi-condensed</option>
+                              <option value="semi-expanded">semi-expanded</option>
+                              <option value="expanded">expanded</option>
+                              <option value="extra-expanded">extra-expanded</option>
+                              <option value="ultra-expanded">ultra-expanded</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 110%"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-stretch")}
+                            onChange={(e) => updateArbitraryProperty("font-stretch", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Text Alignment, Justification & Spacing */}
+                  {typographySubCategory === "spacing" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Sliders size={12} />
+                        <span>Alignment, Justification & Spacing</span>
+                      </div>
+
+                      {/* text-align */}
+                      <SegmentedControl
+                        label="text-align"
+                        value={getPropValue("text-align", textAlignMap) || "left"}
+                        onChange={(val) => setPropValue("text-align", val, textAlignMap)}
+                        options={[
+                          { value: "left", icon: AlignLeft },
+                          { value: "center", icon: AlignCenter },
+                          { value: "right", icon: AlignRight },
+                          { value: "justify", icon: AlignJustify }
+                        ]}
+                      />
+
+                      {/* text-align-last */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-align-last</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-align-last")}
+                            onChange={(e) => updateArbitraryProperty("text-align-last", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (auto)</option>
+                            <option value="auto">auto</option>
+                            <option value="start">start</option>
+                            <option value="end">end</option>
+                            <option value="left">left</option>
+                            <option value="right">right</option>
+                            <option value="center">center</option>
+                            <option value="justify">justify</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-justify */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-justify</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-justify")}
+                            onChange={(e) => updateArbitraryProperty("text-justify", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (auto)</option>
+                            <option value="auto">auto</option>
+                            <option value="none">none</option>
+                            <option value="inter-word">inter-word</option>
+                            <option value="inter-character">inter-character</option>
+                            <option value="distribute">distribute</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* line-height */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">line-height</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("line-height", lineHeightMap)}
+                              onChange={(e) => setPropValue("line-height", e.target.value, lineHeightMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="1">1 (none equiv)</option>
+                              <option value="1.25">1.25 (tight)</option>
+                              <option value="1.375">1.375 (snug)</option>
+                              <option value="1.5">1.5 (normal)</option>
+                              <option value="1.625">1.625 (relaxed)</option>
+                              <option value="2">2 (loose)</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 1.8em, 24px, 1.4"
+                            value={parseArbitraryProperty(selectedElement.classes, "line-height")}
+                            onChange={(e) => updateArbitraryProperty("line-height", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* letter-spacing */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">letter-spacing (tracking)</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("letter-spacing", letterSpacingMap)}
+                              onChange={(e) => setPropValue("letter-spacing", e.target.value, letterSpacingMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="-0.05em">Tighter (-0.05em)</option>
+                              <option value="-0.025em">Tight (-0.025em)</option>
+                              <option value="0em">Normal (0em)</option>
+                              <option value="0.025em">Wide (0.025em)</option>
+                              <option value="0.05em">Wider (0.05em)</option>
+                              <option value="0.1em">Widest (0.1em)</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 2px, 0.05em"
+                            value={parseArbitraryProperty(selectedElement.classes, "letter-spacing")}
+                            onChange={(e) => updateArbitraryProperty("letter-spacing", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* word-spacing */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">word-spacing</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. normal, 4px, 0.25rem, 10%"
+                            value={parseArbitraryProperty(selectedElement.classes, "word-spacing")}
+                            onChange={(e) => updateArbitraryProperty("word-spacing", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-indent */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-indent</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. 20px, 2em, hanging, each-line"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-indent")}
+                            onChange={(e) => updateArbitraryProperty("text-indent", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. Text Wrapping, Breaking & Clamping */}
+                  {typographySubCategory === "wrapping" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Layers size={12} />
+                        <span>Wrapping, Breaking & Clamping</span>
+                      </div>
+
+                      {/* white-space */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">white-space</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "white-space")}
+                            onChange={(e) => updateArbitraryProperty("white-space", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="pre">pre</option>
+                            <option value="nowrap">nowrap</option>
+                            <option value="pre-wrap">pre-wrap</option>
+                            <option value="pre-line">pre-line</option>
+                            <option value="break-spaces">break-spaces</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-wrap */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-wrap</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-wrap")}
+                            onChange={(e) => updateArbitraryProperty("text-wrap", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (wrap)</option>
+                            <option value="wrap">wrap</option>
+                            <option value="nowrap">nowrap</option>
+                            <option value="balance">balance (header layout)</option>
+                            <option value="pretty">pretty (avoid orphans)</option>
+                            <option value="stable">stable</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* word-break */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">word-break</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "word-break")}
+                            onChange={(e) => updateArbitraryProperty("word-break", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default</option>
+                            <option value="normal">normal</option>
+                            <option value="break-all">break-all</option>
+                            <option value="keep-all">keep-all</option>
+                            <option value="break-word">break-word</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* overflow-wrap */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">overflow-wrap (word-wrap)</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "overflow-wrap")}
+                            onChange={(e) => updateArbitraryProperty("overflow-wrap", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default</option>
+                            <option value="normal">normal</option>
+                            <option value="break-word">break-word</option>
+                            <option value="anywhere">anywhere</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-overflow */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-overflow</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "text-overflow")}
+                              onChange={(e) => updateArbitraryProperty("text-overflow", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (clip)</option>
+                              <option value="clip">clip</option>
+                              <option value="ellipsis">ellipsis (...)</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder='Custom e.g. "…"'
+                            value={parseArbitraryProperty(selectedElement.classes, "text-overflow")}
+                            onChange={(e) => updateArbitraryProperty("text-overflow", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* line-clamp */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">line-clamp</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "line-clamp")}
+                              onChange={(e) => updateArbitraryProperty("line-clamp", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">None (default)</option>
+                              <option value="none">none</option>
+                              <option value="1">1 line</option>
+                              <option value="2">2 lines</option>
+                              <option value="3">3 lines</option>
+                              <option value="4">4 lines</option>
+                              <option value="5">5 lines</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder='e.g. 3 "..."'
+                            value={parseArbitraryProperty(selectedElement.classes, "line-clamp")}
+                            onChange={(e) => updateArbitraryProperty("line-clamp", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* hyphens */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">hyphens</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "hyphens")}
+                            onChange={(e) => updateArbitraryProperty("hyphens", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (manual)</option>
+                            <option value="none">none</option>
+                            <option value="manual">manual</option>
+                            <option value="auto">auto</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* hyphenate-character */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">hyphenate-character</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. auto, or any custom hyphen string"
+                            value={parseArbitraryProperty(selectedElement.classes, "hyphenate-character")}
+                            onChange={(e) => updateArbitraryProperty("hyphenate-character", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 5. Text Box Trim & Metrics */}
+                  {typographySubCategory === "trim" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Sliders size={12} />
+                        <span>Text Box Trim & Metrics</span>
+                      </div>
+
+                      {/* text-box-trim */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-box-trim</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-box-trim")}
+                            onChange={(e) => updateArbitraryProperty("text-box-trim", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (none)</option>
+                            <option value="none">none</option>
+                            <option value="trim-over">trim-over (top)</option>
+                            <option value="trim-under">trim-under (bottom)</option>
+                            <option value="trim-both">trim-both</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-box-edge */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-box-edge</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-box-edge")}
+                            onChange={(e) => updateArbitraryProperty("text-box-edge", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (auto)</option>
+                            <option value="auto">auto</option>
+                            <option value="text">text</option>
+                            <option value="cap">cap</option>
+                            <option value="ex">ex</option>
+                            <option value="ideographic">ideographic</option>
+                            <option value="ideographic-ink">ideographic-ink</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-box */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-box (shorthand)</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. trim-both cap, trim-over text"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-box")}
+                            onChange={(e) => updateArbitraryProperty("text-box", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 6. Text Decoration Systems */}
+                  {typographySubCategory === "decoration" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Palette size={12} />
+                        <span>Text Decoration Systems</span>
+                      </div>
+
+                      {/* text-decoration-line */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-decoration-line</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={getPropValue("text-decoration-line", textDecorationLineMap)}
+                              onChange={(e) => setPropValue("text-decoration-line", e.target.value, textDecorationLineMap)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (none)</option>
+                              <option value="none">none</option>
+                              <option value="underline">underline</option>
+                              <option value="overline">overline</option>
+                              <option value="line-through">line-through</option>
+                              <option value="blink">blink</option>
+                              <option value="underline overline">underline overline</option>
+                              <option value="underline line-through">underline line-through</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="custom combo"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-decoration-line")}
+                            onChange={(e) => updateArbitraryProperty("text-decoration-line", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-decoration-color */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-decoration-color</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "text-decoration-color")}
+                              onChange={(e) => updateArbitraryProperty("text-decoration-color", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="currentcolor">currentcolor</option>
+                              <option value="transparent">transparent</option>
+                              <option value="red">red</option>
+                              <option value="blue">blue</option>
+                              <option value="black">black</option>
+                              <option value="white">white</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. #ff0000, oklch(0.6 0.2 29)"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-decoration-color")}
+                            onChange={(e) => updateArbitraryProperty("text-decoration-color", e.target.value)}
+                            className="w-1/2 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white placeholder-stone-400 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-decoration-style */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-decoration-style</label>
+                        <div className="relative">
+                          <select
+                            value={getPropValue("text-decoration-style", textDecorationStyleMap)}
+                            onChange={(e) => setPropValue("text-decoration-style", e.target.value, textDecorationStyleMap)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (solid)</option>
+                            <option value="solid">solid</option>
+                            <option value="double">double</option>
+                            <option value="dotted">dotted</option>
+                            <option value="dashed">dashed</option>
+                            <option value="wavy">wavy</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-decoration-thickness */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-decoration-thickness</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "text-decoration-thickness")}
+                              onChange={(e) => updateArbitraryProperty("text-decoration-thickness", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default</option>
+                              <option value="auto">auto</option>
+                              <option value="from-font">from-font</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 2px, 10%"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-decoration-thickness")}
+                            onChange={(e) => updateArbitraryProperty("text-decoration-thickness", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-underline-offset */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-underline-offset</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "text-underline-offset")}
+                              onChange={(e) => updateArbitraryProperty("text-underline-offset", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (auto)</option>
+                              <option value="auto">auto</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. 3px, 10%"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-underline-offset")}
+                            onChange={(e) => updateArbitraryProperty("text-underline-offset", e.target.value)}
+                            className="w-1/2 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-underline-position */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-underline-position</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-underline-position")}
+                            onChange={(e) => updateArbitraryProperty("text-underline-position", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (auto)</option>
+                            <option value="auto">auto</option>
+                            <option value="under">under</option>
+                            <option value="left">left</option>
+                            <option value="right">right</option>
+                            <option value="under left">under left</option>
+                            <option value="under right">under right</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 7. Text Emphasis & Effects */}
+                  {typographySubCategory === "emphasis" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Sparkles size={12} />
+                        <span>Text Emphasis & Effects</span>
+                      </div>
+
+                      {/* text-emphasis-style */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-emphasis-style</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "text-emphasis-style")}
+                              onChange={(e) => updateArbitraryProperty("text-emphasis-style", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (none)</option>
+                              <option value="none">none</option>
+                              <option value="filled">filled</option>
+                              <option value="open">open</option>
+                              <option value="dot">dot</option>
+                              <option value="circle">circle</option>
+                              <option value="double-circle">double-circle</option>
+                              <option value="triangle">triangle</option>
+                              <option value="sesame">sesame</option>
+                              <option value="filled dot">filled dot</option>
+                              <option value="open circle">open circle</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder='Custom e.g. "x"'
+                            value={parseArbitraryProperty(selectedElement.classes, "text-emphasis-style")}
+                            onChange={(e) => updateArbitraryProperty("text-emphasis-style", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-emphasis-color */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-emphasis-color</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. currentcolor, red, #00ff00, oklch(...)"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-emphasis-color")}
+                            onChange={(e) => updateArbitraryProperty("text-emphasis-color", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* text-emphasis-position */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-emphasis-position</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-emphasis-position")}
+                            onChange={(e) => updateArbitraryProperty("text-emphasis-position", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default</option>
+                            <option value="over">over</option>
+                            <option value="under">under</option>
+                            <option value="over right">over right</option>
+                            <option value="over left">over left</option>
+                            <option value="under right">under right</option>
+                            <option value="under left">under left</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-shadow */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-shadow</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. 1px 1px 2px rgba(0,0,0,0.3)"
+                            value={parseArbitraryProperty(selectedElement.classes, "text-shadow")}
+                            onChange={(e) => updateArbitraryProperty("text-shadow", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 8. Text Transform & Case Control */}
+                  {typographySubCategory === "transform" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Type size={12} />
+                        <span>Text Transform & Case Control</span>
+                      </div>
+
+                      {/* text-transform */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-transform</label>
+                        <div className="relative">
+                          <select
+                            value={getPropValue("text-transform", textTransformMap)}
+                            onChange={(e) => setPropValue("text-transform", e.target.value, textTransformMap)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (none)</option>
+                            <option value="none">none</option>
+                            <option value="capitalize">capitalize</option>
+                            <option value="uppercase">uppercase</option>
+                            <option value="lowercase">lowercase</option>
+                            <option value="full-width">full-width</option>
+                            <option value="full-size-kana">full-size-kana</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-variant-caps */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variant-caps</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variant-caps")}
+                            onChange={(e) => updateArbitraryProperty("font-variant-caps", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="small-caps">small-caps</option>
+                            <option value="all-small-caps">all-small-caps</option>
+                            <option value="petite-caps">petite-caps</option>
+                            <option value="all-petite-caps">all-petite-caps</option>
+                            <option value="unicase">unicase</option>
+                            <option value="titling-caps">titling-caps</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 9. OpenType & Variable Font Controls */}
+                  {typographySubCategory === "fontControls" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Sliders size={12} />
+                        <span>OpenType & Variable Font Control</span>
+                      </div>
+
+                      {/* font-variant-ligatures */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variant-ligatures</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variant-ligatures")}
+                            onChange={(e) => updateArbitraryProperty("font-variant-ligatures", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="none">none</option>
+                            <option value="common-ligatures">common-ligatures</option>
+                            <option value="no-common-ligatures">no-common-ligatures</option>
+                            <option value="discretionary-ligatures">discretionary-ligatures</option>
+                            <option value="historical-ligatures">historical-ligatures</option>
+                            <option value="contextual">contextual</option>
+                            <option value="no-contextual">no-contextual</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-variant-numeric */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variant-numeric</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variant-numeric")}
+                            onChange={(e) => updateArbitraryProperty("font-variant-numeric", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="ordinal">ordinal</option>
+                            <option value="slashed-zero">slashed-zero</option>
+                            <option value="lining-nums">lining-nums</option>
+                            <option value="oldstyle-nums">oldstyle-nums</option>
+                            <option value="proportional-nums">proportional-nums</option>
+                            <option value="tabular-nums">tabular-nums</option>
+                            <option value="diagonal-fractions">diagonal-fractions</option>
+                            <option value="stacked-fractions">stacked-fractions</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-variant-east-asian */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variant-east-asian</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variant-east-asian")}
+                            onChange={(e) => updateArbitraryProperty("font-variant-east-asian", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="jis78">jis78</option>
+                            <option value="jis83">jis83</option>
+                            <option value="jis90">jis90</option>
+                            <option value="jis04">jis04</option>
+                            <option value="simplified">simplified</option>
+                            <option value="traditional">traditional</option>
+                            <option value="full-width">full-width</option>
+                            <option value="proportional-width">proportional-width</option>
+                            <option value="ruby">ruby</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-variant-emoji */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variant-emoji</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variant-emoji")}
+                            onChange={(e) => updateArbitraryProperty("font-variant-emoji", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="text">text</option>
+                            <option value="emoji">emoji</option>
+                            <option value="unicode">unicode</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-feature-settings */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-feature-settings</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder='e.g. "smcp" on, "liga" 0'
+                            value={parseArbitraryProperty(selectedElement.classes, "font-feature-settings")}
+                            onChange={(e) => updateArbitraryProperty("font-feature-settings", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-variation-settings */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-variation-settings</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder='e.g. "wght" 500, "wdth" 85'
+                            value={parseArbitraryProperty(selectedElement.classes, "font-variation-settings")}
+                            onChange={(e) => updateArbitraryProperty("font-variation-settings", e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* font-optical-sizing */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-optical-sizing</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "font-optical-sizing")}
+                            onChange={(e) => updateArbitraryProperty("font-optical-sizing", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (auto)</option>
+                            <option value="auto">auto</option>
+                            <option value="none">none</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* font-palette */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">font-palette</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <select
+                              value={parseArbitraryProperty(selectedElement.classes, "font-palette")}
+                              onChange={(e) => updateArbitraryProperty("font-palette", e.target.value)}
+                              className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                            >
+                              <option value="">Default (normal)</option>
+                              <option value="normal">normal</option>
+                              <option value="light">light</option>
+                              <option value="dark">dark</option>
+                            </select>
+                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="e.g. --my-palette"
+                            value={parseArbitraryProperty(selectedElement.classes, "font-palette")}
+                            onChange={(e) => updateArbitraryProperty("font-palette", e.target.value)}
+                            className="w-1/3 bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 focus:outline-none focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 10. Direction & Writing Mode */}
+                  {typographySubCategory === "direction" && (
+                    <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-3.5 space-y-3 shadow-sm animate-in fade-in duration-200">
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                        <Compass size={12} />
+                        <span>Direction & Writing Mode</span>
+                      </div>
+
+                      {/* writing-mode */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">writing-mode</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "writing-mode")}
+                            onChange={(e) => updateArbitraryProperty("writing-mode", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (horizontal-tb)</option>
+                            <option value="horizontal-tb">horizontal-tb</option>
+                            <option value="vertical-rl">vertical-rl</option>
+                            <option value="vertical-lr">vertical-lr</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* direction */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">direction</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "direction")}
+                            onChange={(e) => updateArbitraryProperty("direction", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (ltr)</option>
+                            <option value="ltr">ltr (Left-To-Right)</option>
+                            <option value="rtl">rtl (Right-To-Left)</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* text-orientation */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">text-orientation</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "text-orientation")}
+                            onChange={(e) => updateArbitraryProperty("text-orientation", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (mixed)</option>
+                            <option value="mixed">mixed</option>
+                            <option value="upright">upright</option>
+                            <option value="sideways">sideways</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* unicode-bidi */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-wider pl-0.5 font-mono">unicode-bidi</label>
+                        <div className="relative">
+                          <select
+                            value={parseArbitraryProperty(selectedElement.classes, "unicode-bidi")}
+                            onChange={(e) => updateArbitraryProperty("unicode-bidi", e.target.value)}
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-2 pr-6 py-1.5 text-xs text-stone-700 cursor-pointer focus:outline-none font-medium"
+                          >
+                            <option value="">Default (normal)</option>
+                            <option value="normal">normal</option>
+                            <option value="embed">embed</option>
+                            <option value="bidi-override">bidi-override</option>
+                            <option value="isolate">isolate</option>
+                            <option value="isolate-override">isolate-override</option>
+                            <option value="plaintext">plaintext</option>
+                          </select>
+                          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Informational Typographic Interlinks and Dependencies Card */}
+                  <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4.5 space-y-3.5 shadow-xs">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono flex items-center gap-1.5">
+                      <HelpCircle size={13} className="text-stone-400" />
+                      <span>Typographic Interlinks & CSS Dependencies</span>
+                    </div>
+
+                    <div className="space-y-3 text-[11px] leading-relaxed text-stone-600">
+                      <div>
+                        <span className="font-semibold text-stone-800">1. Unitless vs. Relative line-height Inheritance:</span> Using percentages or absolute font units evaluats a fixed pixel value immediately. Descendants inherit this computed value, leading to overlapping lines on larger children. A unitless ratio (e.g., <code className="bg-stone-100 px-1 py-0.5 rounded font-mono">1.5</code>) recalculates dynamically on descendants.
+                      </div>
+                      <div>
+                        <span className="font-semibold text-stone-800">2. Relative Length Units:</span> Relative units scroll dynamically and recalculate alongside child or parent <code className="bg-stone-100 px-1 py-0.5 rounded font-mono">font-size</code> updates.
+                      </div>
+                      <div>
+                        <span className="font-semibold text-stone-800">3. white-space Constraints:</span> If <code className="bg-stone-100 px-1 py-0.5 rounded font-mono">nowrap</code> is declared, multi-line wrapping, breaking, balance alignment, pretty styling, and hyphenation are bypassed. Ellipsis overflow requires overflow hidden and a block wrapper.
+                      </div>
+                      <div>
+                        <span className="font-semibold text-stone-800">4. OpenType Variants:</span> Font properties (ligatures, numeric alternates, capitals) rely on underlying OpenType font tables to function.
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Font Weight</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, "fontWeight")}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "fontWeight", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
-                    >
-                      <option value="">Default</option>
-                      <option value="font-light">Light (300)</option>
-                      <option value="font-normal">Normal (400)</option>
-                      <option value="font-medium">Medium (500)</option>
-                      <option value="font-semibold">Semi Bold (600)</option>
-                      <option value="font-bold">Bold (700)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Category: Text Spacing & Flow */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Move size={11} />
-                <span>Text tracking & Line Height</span>
-              </div>
-
-              {/* Letter Spacing (Tracking) */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Letter Spacing (Tracking)</label>
-                <div className="relative">
-                  <select
-                    value={getActiveGroupClass(selectedElement.classes, "tracking")}
-                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "tracking", e.target.value) }))}
-                    className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                  >
-                    <option value="">Default (Normal)</option>
-                    <option value="tracking-tighter">Tighter (-0.05em)</option>
-                    <option value="tracking-tight">Tight (-0.025em)</option>
-                    <option value="tracking-normal">Normal (0em)</option>
-                    <option value="tracking-wide">Wide (0.025em)</option>
-                    <option value="tracking-widest">Widest (0.1em)</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Line Height (Leading) */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Line Height (Leading)</label>
-                <div className="relative">
-                  <select
-                    value={getActiveGroupClass(selectedElement.classes, "leading")}
-                    onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "leading", e.target.value) }))}
-                    className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                  >
-                    <option value="">Default</option>
-                    <option value="leading-none">Tightest (1)</option>
-                    <option value="leading-tight">Tight (1.25)</option>
-                    <option value="leading-snug">Snug (1.375)</option>
-                    <option value="leading-normal">Normal (1.5)</option>
-                    <option value="leading-relaxed">Relaxed (1.625)</option>
-                    <option value="leading-loose">Loose (2)</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
-
         {/* ==================== 3. APPEARANCE & VISUALS ==================== */}
         {inspectorSection === "visuals" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
               <Palette size={15} className="text-rose-600" />
-              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Appearance & Visual styles</span>
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Appearance & Styles</span>
             </div>
 
-            {/* Sub-Category: Color palettes */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Palette size={11} />
-                <span>Colors & Solid Backgrounds</span>
-              </div>
-
-              {/* Background Color Swatches */}
-              <div className="flex flex-col gap-3">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Background Fill</label>
-                <div className="flex flex-wrap gap-2.5">
-                  {[
-                    { name: "Transparent", class: "bg-transparent", ring: "ring-stone-200", render: <div className="w-full h-full bg-gradient-to-br from-stone-100 to-stone-200 opacity-50" /> },
-                    { name: "White", class: "bg-white", ring: "ring-stone-200" },
-                    { name: "Soft Stone", class: "bg-stone-50", ring: "ring-stone-200" },
-                    { name: "Deep Stone", class: "bg-stone-900", ring: "ring-stone-900" },
-                    { name: "Slate Noir", class: "bg-slate-950", ring: "ring-slate-950" },
-                    { name: "Warm Vanilla", class: "bg-amber-50", ring: "ring-amber-200" },
-                    { name: "Emerald Pine", class: "bg-emerald-900", ring: "ring-emerald-900" },
-                    { name: "Cosmic Amber", class: "bg-amber-950", ring: "ring-amber-950" },
-                    { name: "Aura Rose", class: "bg-rose-100", ring: "ring-rose-300" },
-                    { name: "Soft Amber", class: "bg-amber-100", ring: "ring-amber-300" }
-                  ].map((swatch) => {
-                    const isSelected = selectedElement.classes.includes(swatch.class) || 
-                      (swatch.class === "bg-transparent" && !selectedElement.classes.match(/\bbg-\w+/));
-                    
-                    return (
-                      <button
-                        key={swatch.name}
-                        type="button"
-                        onClick={() => {
-                          let textClass = "";
-                          if (["bg-stone-900", "bg-slate-950", "bg-emerald-900", "bg-amber-950"].includes(swatch.class)) {
-                            textClass = "text-stone-100";
-                          } else if (swatch.class === "bg-transparent") {
-                            textClass = "";
-                          } else {
-                            textClass = "text-stone-800";
-                          }
-                          updateTree((n) => {
-                            let updated = setColorClass(n.classes, "bg-", swatch.class);
-                            if (textClass) {
-                              updated = setColorClass(updated, "text-", textClass);
-                            }
-                            return { classes: updated };
-                          });
-                        }}
-                        title={swatch.name}
-                        className={`w-8 h-8 rounded-full relative shadow-sm cursor-pointer transition-all duration-200 hover:scale-110 flex items-center justify-center overflow-hidden border ${swatch.class} ${
-                          isSelected 
-                            ? `ring-2 ${swatch.ring} ring-offset-2 border-transparent scale-105` 
-                            : "border-stone-200/80 hover:border-text"
-                        }`}
-                      >
-                        {swatch.render}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Text Accent Colors selector */}
-              <div className="flex flex-col gap-1.5 pt-1">
-                <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Primary Text Accent</label>
-                <div className="relative">
-                  <select
-                    value={selectedElement.classes.match(/\btext-(stone-800|stone-100|rose-600|amber-600|emerald-600|amber-600|rose-600|white|black)\b/)?.[0] || ""}
-                    onChange={(e) => {
-                      updateTree((n) => ({ classes: setColorClass(n.classes, "text-", e.target.value) }));
-                    }}
-                    className="w-full appearance-none bg-white border border-stone-200/85 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                  >
-                    <option value="">Default (Inherited)</option>
-                    <option value="text-stone-800">Deep Earth Gray (text-stone-800)</option>
-                    <option value="text-stone-600">Soft Obsidian (text-stone-600)</option>
-                    <option value="text-white">Crisp White (text-white)</option>
-                    <option value="text-amber-600">Cosmic Amber (text-amber-600)</option>
-                    <option value="text-emerald-600">Emerald Forest (text-emerald-600)</option>
-                    <option value="text-rose-600">Bright Rose (text-rose-600)</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Category: Borders & Layout Effects */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Layers size={11} />
-                <span>Borders, corners & drop shadows</span>
-              </div>
-
-              {[
-                { 
-                  label: "Border Radius (Corners)", 
-                  prop: "rounding",
-                  options: [
-                    { val: "rounded-none", text: "Flat Bounds (None)" },
-                    { val: "rounded-sm", text: "Small Curves (Rounded-sm)" },
-                    { val: "rounded", text: "Mild Rounded (Rounded)" },
-                    { val: "rounded-md", text: "Medium Corners" },
-                    { val: "rounded-lg", text: "Large Bounds" },
-                    { val: "rounded-xl", text: "Card standard (Rounded-xl)" },
-                    { val: "rounded-2xl", text: "Pill/Button standard (2XL)" },
-                    { val: "rounded-3xl", text: "Expressive Container (3XL)" },
-                    { val: "rounded-full", text: "Pill/Circle (Rounded-full)" }
-                  ]
-                },
-                { 
-                  label: "Border Stroke Weight", 
-                  prop: "borderWidth",
-                  options: [
-                    { val: "border-0", text: "Seamless (Zero Borders)" },
-                    { val: "border", text: "1px Hairline (border)" },
-                    { val: "border-2", text: "2px Precise outline" },
-                    { val: "border-4", text: "4px Dynamic frame" },
-                    { val: "border-8", text: "8px Heavy border frame" }
-                  ]
-                },
-                { 
-                  label: "Shading & Depth (Box Shadow)", 
-                  prop: "shadow",
-                  options: [
-                    { val: "shadow-none", text: "Flat Surface (No Shadow)" },
-                    { val: "shadow-sm", text: "Subtle Lift-up (sm)" },
-                    { val: "shadow", text: "Ambient Hover Soft (shadow)" },
-                    { val: "shadow-md", text: "Double-layered depth (md)" },
-                    { val: "shadow-lg", text: "Large floating shadow (lg)" },
-                    { val: "shadow-xl", text: "Major Depth Elevation (xl)" },
-                    { val: "shadow-2xl", text: "Maximum Contrast Floating (2xl)" }
-                  ]
-                }
-              ].map((control) => (
-                <div key={control.label} className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">{control.label}</label>
-                  <div className="relative">
-                    <select
-                      value={getActiveGroupClass(selectedElement.classes, control.prop as any)}
-                      onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, control.prop as any, e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
-                    >
-                      {control.options.map(opt => <option key={opt.val} value={opt.val}>{opt.text}</option>)}
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
+            {/* Sub-Category Pills Navigation */}
+            <div className="flex bg-stone-100/80 p-1 rounded-xl gap-1">
+              {(["colors", "backgrounds", "borders", "blending"] as const).map((sub) => (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => setAppearanceSubCategory(sub)}
+                  className={`flex-1 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all duration-200 cursor-pointer ${
+                    appearanceSubCategory === sub
+                      ? "text-rose-700 bg-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {sub}
+                </button>
               ))}
             </div>
+
+            {(() => {
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
+
+              const getPropValue = (propName: string): string => {
+                const arb = parseArbitraryProperty(selectedElement?.classes || "", propName);
+                return arb;
+              };
+
+              const setPropValue = (propName: string, value: string) => {
+                const currentTokens = (selectedElement?.classes || "").split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const appearanceFields = {
+                colors: [
+                  {
+                    prop: "color",
+                    label: "Text Color (color)",
+                    placeholder: "e.g. red, #ff0000, oklch(0.6 0.25 120)",
+                    presets: ["transparent", "currentcolor", "CanvasText", "LinkText", "#000000", "#ffffff", "#ef4444", "#3b82f6", "#10b981", "#f59e0b"]
+                  },
+                  {
+                    prop: "opacity",
+                    label: "Opacity (opacity)",
+                    placeholder: "e.g. 1, 0.5, 30%",
+                    presets: ["0", "0.1", "0.25", "0.5", "0.75", "0.9", "1", "50%", "100%"]
+                  }
+                ],
+                backgrounds: [
+                  {
+                    prop: "background-color",
+                    label: "Background Color (background-color)",
+                    placeholder: "e.g. transparent, white, rgba(0,0,0,0.5)",
+                    presets: ["transparent", "#ffffff", "#f5f5f4", "#1c1917", "#ef4444", "#3b82f6", "#10b981", "#f59e0b"]
+                  },
+                  {
+                    prop: "background-image",
+                    label: "Background Image (background-image)",
+                    placeholder: "e.g. url('pattern.png'), linear-gradient(...)",
+                    presets: ["none", "linear-gradient(45deg, #f43f5e, #fbbf24)", "radial-gradient(circle, #3b82f6, transparent)"]
+                  },
+                  {
+                    prop: "background-size",
+                    label: "Background Size (background-size)",
+                    placeholder: "e.g. cover, contain, auto, 100px 100px",
+                    presets: ["auto", "cover", "contain"]
+                  },
+                  {
+                    prop: "background-position",
+                    label: "Background Position (background-position)",
+                    placeholder: "e.g. center, top left, 50% 50%",
+                    presets: ["center", "top", "bottom", "left", "right", "top left", "bottom right"]
+                  },
+                  {
+                    prop: "background-repeat",
+                    label: "Background Repeat (background-repeat)",
+                    placeholder: "e.g. repeat, no-repeat, space",
+                    presets: ["repeat", "no-repeat", "repeat-x", "repeat-y", "space", "round"]
+                  },
+                  {
+                    prop: "background-attachment",
+                    label: "Background Attachment (background-attachment)",
+                    placeholder: "e.g. scroll, fixed, local",
+                    presets: ["scroll", "fixed", "local"]
+                  },
+                  {
+                    prop: "background-origin",
+                    label: "Background Origin (background-origin)",
+                    placeholder: "e.g. padding-box, border-box",
+                    presets: ["padding-box", "border-box", "content-box"]
+                  },
+                  {
+                    prop: "background-clip",
+                    label: "Background Clip (background-clip)",
+                    placeholder: "e.g. border-box, padding-box, text",
+                    presets: ["border-box", "padding-box", "content-box", "text"]
+                  },
+                  {
+                    prop: "background",
+                    label: "Background Shorthand (background)",
+                    placeholder: "e.g. no-repeat center/cover url('bg.jpg')",
+                    presets: []
+                  }
+                ],
+                borders: [
+                  {
+                    prop: "border",
+                    label: "Border Shorthand (border)",
+                    placeholder: "e.g. 1px solid #e5e7eb, 2px dashed red",
+                    presets: ["none", "1px solid #e5e7eb", "2px solid currentcolor", "2px dashed #9ca3af"]
+                  },
+                  {
+                    prop: "border-radius",
+                    label: "Border Radius (border-radius)",
+                    placeholder: "e.g. 0px, 8px, 1rem, 50%",
+                    presets: ["0px", "4px", "8px", "12px", "16px", "24px", "9999px", "50%"]
+                  },
+                  {
+                    prop: "border-top",
+                    label: "Border Top (border-top)",
+                    placeholder: "e.g. 2px solid red",
+                    presets: ["none", "1px solid #e5e7eb"]
+                  },
+                  {
+                    prop: "border-right",
+                    label: "Border Right (border-right)",
+                    placeholder: "e.g. 2px solid red",
+                    presets: ["none", "1px solid #e5e7eb"]
+                  },
+                  {
+                    prop: "border-bottom",
+                    label: "Border Bottom (border-bottom)",
+                    placeholder: "e.g. 2px solid red",
+                    presets: ["none", "1px solid #e5e7eb"]
+                  },
+                  {
+                    prop: "border-left",
+                    label: "Border Left (border-left)",
+                    placeholder: "e.g. 2px solid red",
+                    presets: ["none", "1px solid #e5e7eb"]
+                  },
+                  {
+                    prop: "border-width",
+                    label: "Border Width (border-width)",
+                    placeholder: "e.g. 1px, 2px, 0.25rem",
+                    presets: ["0px", "1px", "2px", "4px", "8px"]
+                  },
+                  {
+                    prop: "border-style",
+                    label: "Border Style (border-style)",
+                    placeholder: "e.g. solid, dashed, none",
+                    presets: ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+                  },
+                  {
+                    prop: "border-color",
+                    label: "Border Color (border-color)",
+                    placeholder: "e.g. red, #000, currentcolor",
+                    presets: ["transparent", "currentcolor", "#e5e7eb", "#ef4444", "#3b82f6"]
+                  },
+                  {
+                    prop: "border-image-source",
+                    label: "Border Image Source (border-image-source)",
+                    placeholder: "e.g. url('border.png'), linear-gradient(...)",
+                    presets: ["none"]
+                  },
+                  {
+                    prop: "border-image-slice",
+                    label: "Border Image Slice (border-image-slice)",
+                    placeholder: "e.g. 30, 30% fill",
+                    presets: ["100%"]
+                  }
+                ],
+                blending: [
+                  {
+                    prop: "mix-blend-mode",
+                    label: "Mix Blend Mode (mix-blend-mode)",
+                    placeholder: "e.g. normal, multiply, screen",
+                    presets: ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"]
+                  },
+                  {
+                    prop: "background-blend-mode",
+                    label: "Background Blend Mode",
+                    placeholder: "e.g. normal, multiply, screen",
+                    presets: ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion"]
+                  }
+                ]
+              };
+
+              const fields = appearanceFields[appearanceSubCategory] || [];
+
+              return (
+                <div className="space-y-4">
+                  {fields.map((field) => {
+                    const currentVal = getPropValue(field.prop);
+                    return (
+                      <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-2">
+                        <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">{field.label}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={field.placeholder}
+                            onChange={(e) => setPropValue(field.prop, e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-stone-200/85 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 shadow-sm"
+                          />
+                          {field.presets.length > 0 && (
+                            <div className="relative shrink-0">
+                              <select
+                                value={field.presets.includes(currentVal) ? currentVal : ""}
+                                onChange={(e) => {
+                                  if (e.target.value !== "") {
+                                    setPropValue(field.prop, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-stone-100 hover:bg-stone-200/70 border border-stone-200 text-stone-600 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Presets</option>
+                                {field.presets.map((p) => (
+                                  <option key={p} value={p}>{p}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                                <ChevronDown size={13} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Interlinks and Dependencies Card */}
+                  <div className="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-4 mt-6">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5 mb-2.5">
+                      <HelpCircle size={12} />
+                      <span>Interlinks & Dependencies</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-rose-950 font-medium list-disc list-outside pl-4 leading-relaxed">
+                      <li><strong>Transparency:</strong> Standard `opacity` directly influences both background fill and nested content. For separate background alpha, prefer advanced color models (`rgba()`, `hsla()`, `oklch()`).</li>
+                      <li><strong>Border Outlines:</strong> Setting a container border width relies on both a border style (`solid`/`dashed`) and proper border colors, or a comprehensive shorthand config to become visible.</li>
+                      <li><strong>Blend Modes:</strong> Elements using `mix-blend-mode` blend matching regions with parent content layers. Use `background-blend-mode` specifically for blending layered background configurations.</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
-
-        {/* ==================== 4. MOTION & EFFECTS ==================== */}
+        {/* ==================== 4. EFFECTS & FILTERS ==================== */}
         {inspectorSection === "motion" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
               <Play size={15} className="text-rose-600" />
-              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Movement & Micro-interactions</span>
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Effects & Filters</span>
             </div>
 
-            {/* Sub-Category: Smooth CSS Transitions */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Play size={11} />
-                <span>Transition Curves & Speeds</span>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Target Property</label>
-                  <div className="relative">
-                    <select
-                      value={selectedElement.classes.match(/\btransition(-all|-colors|-opacity|-shadow|-transform)?\b/)?.[0] || "none"}
-                      onChange={(e) => {
-                        updateTree((n) => {
-                          let newClasses = n.classes.replace(/\btransition(-all|-colors|-opacity|-shadow|-transform)?\b/g, "").replace(/\s+/g, " ").trim();
-                          if (e.target.value !== "none") newClasses += ` ${e.target.value}`;
-                          return { classes: newClasses.trim() };
-                        });
-                      }}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="none">No Transition</option>
-                      <option value="transition-all">All styling variables (transition-all)</option>
-                      <option value="transition">Default CSS Props (transition)</option>
-                      <option value="transition-colors">Colors, backgrounds, borders</option>
-                      <option value="transition-opacity">Opacity only</option>
-                      <option value="transition-transform">Position, transforms & scale</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Animate Duration</label>
-                  <div className="relative">
-                    <select
-                      value={selectedElement.classes.match(/\bduration-\d+\b/)?.[0] || "none"}
-                      onChange={(e) => {
-                        updateTree((n) => {
-                          let newClasses = n.classes.replace(/\bduration-\d+\b/g, "").replace(/\s+/g, " ").trim();
-                          if (e.target.value !== "none") newClasses += ` ${e.target.value}`;
-                          return { classes: newClasses.trim() };
-                        });
-                      }}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="none">Default Speed (150ms)</option>
-                      <option value="duration-75">75ms (Ultra Snappy)</option>
-                      <option value="duration-150">150ms (Regular Click)</option>
-                      <option value="duration-300">300ms (Smooth transition)</option>
-                      <option value="duration-500">500ms (Noticeable slide)</option>
-                      <option value="duration-700">700ms (Polished slower scroll)</option>
-                      <option value="duration-1000">1000ms (1 second transition)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Easing Timing Curve</label>
-                  <div className="relative">
-                    <select
-                      value={selectedElement.classes.match(/\bease-(linear|in|out|in-out)\b/)?.[0] || "none"}
-                      onChange={(e) => {
-                        updateTree((n) => {
-                          let newClasses = n.classes.replace(/\bease-(linear|in|out|in-out)\b/g, "").replace(/\s+/g, " ").trim();
-                          if (e.target.value !== "none") newClasses += ` ${e.target.value}`;
-                          return { classes: newClasses.trim() };
-                        });
-                      }}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none cursor-pointer shadow-sm"
-                    >
-                      <option value="none">Default Timing</option>
-                      <option value="ease-linear">Linear (constant rate)</option>
-                      <option value="ease-in">Ease-In (starts slow)</option>
-                      <option value="ease-out">Ease-Out (curves out / decelerates)</option>
-                      <option value="ease-in-out">Ease-In-Out (organic bell curve)</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
+            {/* Sub-Category Pills Navigation */}
+            <div className="flex bg-stone-100/80 p-1 rounded-xl gap-1">
+              {(["shadows", "filters", "masking", "transparency"] as const).map((sub) => (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => setEffectsSubCategory(sub)}
+                  className={`flex-1 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all duration-200 cursor-pointer ${
+                    effectsSubCategory === sub
+                      ? "text-rose-700 bg-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
             </div>
 
-            {/* Sub-Category: Interactive micro-inputs / Animations */}
-            <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
-                <Wand2 size={11} />
-                <span>Hover presets & infinite motion</span>
-              </div>
+            {(() => {
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
 
-              {/* Quick toggle chips */}
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { label: "Scale Lift-up on Hover", class: "hover:scale-[1.03]" },
-                  { label: "Slight Rotation on Hover", class: "hover:rotate-3" },
-                  { label: "Hover Lift Shadow", class: "hover:shadow-md" },
-                  { label: "Gentle Fade-In Entry", class: "animate-fade-in" },
-                  { label: "Infinite Ambient Pulse", class: "animate-pulse" },
-                  { label: "Attention Bounce loop", class: "animate-bounce" }
-                ].map((item) => {
-                  const isActive = selectedElement.classes.includes(item.class);
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => {
-                        updateTree((node) => {
-                          let updatedClasses = node.classes;
-                          if (isActive) {
-                            updatedClasses = updatedClasses.replace(item.class, "");
-                          } else {
-                            updatedClasses += ` transition-all duration-300 ${item.class}`;
-                          }
-                          return { classes: updatedClasses.replace(/\s+/g, " ").trim() };
-                        });
-                      }}
-                      className={`w-full py-2 px-3 text-xs rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                        isActive 
-                          ? "bg-rose-100/50 border-rose-200 text-rose-700 font-semibold" 
-                          : "bg-white border-stone-200/60 text-stone-600 hover:text-stone-800 hover:border-stone-300"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-rose-600" : "bg-stone-200"}`} />
-                    </button>
-                  );
-                })}
-              </div>
+              const getPropValue = (propName: string): string => {
+                const arb = parseArbitraryProperty(selectedElement?.classes || "", propName);
+                return arb;
+              };
+
+              const setPropValue = (propName: string, value: string) => {
+                const currentTokens = (selectedElement?.classes || "").split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const effectsFields = {
+                shadows: [
+                  {
+                    prop: "box-shadow",
+                    label: "Box Shadow (box-shadow)",
+                    placeholder: "e.g. 0 4px 6px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.2)",
+                    presets: ["none", "0 1px 3px rgba(0,0,0,0.12)", "0 4px 6px rgba(0,0,0,0.1)", "0 10px 15px rgba(0,0,0,0.1)", "0 20px 25px rgba(0,0,0,0.15)", "inset 0 2px 4px rgba(0,0,0,0.06)"]
+                  },
+                  {
+                    prop: "text-shadow",
+                    label: "Text Shadow (text-shadow)",
+                    placeholder: "e.g. 1px 1px 2px rgba(0,0,0,0.2), 0 0 8px #f43f5e",
+                    presets: ["none", "1px 1px 2px rgba(0,0,0,0.15)", "2px 2px 4px rgba(0,0,0,0.3)", "0 0 8px rgba(239,68,68,0.8)", "0 0 12px rgba(59,130,246,0.8)"]
+                  }
+                ],
+                filters: [
+                  {
+                    prop: "filter",
+                    label: "Graphical Filter (filter)",
+                    placeholder: "e.g. blur(4px) contrast(1.2) grayscale(100%)",
+                    presets: ["none", "blur(4px)", "grayscale(100%)", "sepia(100%)", "brightness(150%)", "contrast(150%)", "hue-rotate(90deg)", "invert(100%)"]
+                  },
+                  {
+                    prop: "backdrop-filter",
+                    label: "Backdrop Filter (backdrop-filter)",
+                    placeholder: "e.g. blur(10px) brightness(95%)",
+                    presets: ["none", "blur(4px)", "blur(8px)", "blur(12px) brightness(90%)", "grayscale(50%)", "contrast(120%)"]
+                  }
+                ],
+                masking: [
+                  {
+                    prop: "clip-path",
+                    label: "Clip Path Polygon/Shape (clip-path)",
+                    placeholder: "e.g. circle(50% at center), polygon(50% 0%, 100% 100%, 0% 100%)",
+                    presets: [
+                      "none",
+                      "circle(50% at center)",
+                      "ellipse(50% 30% at center)",
+                      "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
+                      "polygon(50% 0%, 100% 100%, 0% 100%)",
+                      "inset(10% 20% round 8px)"
+                    ]
+                  }
+                ],
+                transparency: [
+                  {
+                    prop: "opacity",
+                    label: "Opacity (opacity)",
+                    placeholder: "e.g. 1, 0.5, 30%",
+                    presets: ["0", "0.1", "0.25", "0.5", "0.75", "1"]
+                  },
+                  {
+                    prop: "mix-blend-mode",
+                    label: "Mix Blend Mode (mix-blend-mode)",
+                    placeholder: "normal, multiply, screen, overlay",
+                    presets: ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion"]
+                  },
+                  {
+                    prop: "background-blend-mode",
+                    label: "Background Blend Mode",
+                    placeholder: "normal, multiply, screen, overlay",
+                    presets: ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion"]
+                  }
+                ]
+              };
+
+              const fields = effectsFields[effectsSubCategory] || [];
+
+              return (
+                <div className="space-y-4">
+                  {fields.map((field) => {
+                    const currentVal = getPropValue(field.prop);
+                    return (
+                      <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-2">
+                        <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">{field.label}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={field.placeholder}
+                            onChange={(e) => setPropValue(field.prop, e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-stone-200/85 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 shadow-sm"
+                          />
+                          {field.presets.length > 0 && (
+                            <div className="relative shrink-0">
+                              <select
+                                value={field.presets.includes(currentVal) ? currentVal : ""}
+                                onChange={(e) => {
+                                  if (e.target.value !== "") {
+                                    setPropValue(field.prop, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-stone-100 hover:bg-stone-200/70 border border-stone-200 text-stone-600 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Presets</option>
+                                {field.presets.map((p) => (
+                                  <option key={p} value={p}>{p}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                                <ChevronDown size={13} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Interlinks and Dependencies Card */}
+                  <div className="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-4 mt-6">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5 mb-2.5">
+                      <HelpCircle size={12} />
+                      <span>Interlinks & Dependencies</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-rose-950 font-medium list-disc list-outside pl-4 leading-relaxed">
+                      <li><strong>Backdrop filters:</strong> Demand high transparency levels on background colors (`background-color: transparent` or alpha transparency values) of parent overlays to let background-blur effects shine through beautifully.</li>
+                      <li><strong>Clips & Shadows:</strong> Complex clipping boundaries cut off elements exterior shadow layers (`box-shadow`). In such cases, use layered element nesting to carry shadow definitions on the container separately.</li>
+                      <li><strong>Compound Filters:</strong> Chaining multiple custom entries like `blur()` and `contrast()` simultaneously within arbitrary filter configurations demands strict space-delimited styling strings to parse properly on high-performance render engines.</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ==================== MOVEMENT & ANIMATION ==================== */}
+        {inspectorSection === "animation" && (
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <Wand2 size={15} className="text-rose-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Movement & Animation</span>
             </div>
+
+            {/* Sub-Category Pills Navigation */}
+            <div className="flex bg-stone-100/80 p-1 rounded-xl gap-1 overflow-x-auto scrollbar-hide">
+              {[
+                { id: "transitions", label: "Transitions" },
+                { id: "transforms", label: "Transforms" },
+                { id: "legacyTransforms", label: "Legacy Transform" },
+                { id: "keyframes", label: "Keyframes" },
+                { id: "scrollDriven", label: "Scroll-Driven" }
+              ].map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setAnimationSubCategory(sub.id as any)}
+                  className={`flex-1 py-1.5 px-2.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                    animationSubCategory === sub.id
+                      ? "text-rose-700 bg-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
+
+              const getPropValue = (propName: string): string => {
+                const arb = parseArbitraryProperty(selectedElement?.classes || "", propName);
+                return arb;
+              };
+
+              const setPropValue = (propName: string, value: string) => {
+                const currentTokens = (selectedElement?.classes || "").split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const animationFields = {
+                transitions: [
+                  {
+                    prop: "transition",
+                    label: "Transition Shorthand (transition)",
+                    placeholder: "all 0.3s ease-in-out 0s, opacity 200ms linear",
+                    presets: ["none", "all 0.3s ease", "all 150ms cubic-bezier(0.4, 0, 0.2, 1)", "opacity 0.2s ease-in-out", "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)"]
+                  },
+                  {
+                    prop: "transition-property",
+                    label: "Transition Property (transition-property)",
+                    placeholder: "e.g. transform, opacity, background-color",
+                    presets: ["none", "all", "transform", "opacity", "background-color", "color", "border-color", "translate", "rotate", "scale"]
+                  },
+                  {
+                    prop: "transition-duration",
+                    label: "Transition Duration (transition-duration)",
+                    placeholder: "e.g. 0.3s, 300ms",
+                    presets: ["0s", "100ms", "150ms", "200ms", "300ms", "500ms", "700ms", "1s"]
+                  },
+                  {
+                    prop: "transition-delay",
+                    label: "Transition Delay (transition-delay)",
+                    placeholder: "e.g. 0.1s, 100ms",
+                    presets: ["0s", "75ms", "100ms", "150ms", "200ms", "300ms", "500ms"]
+                  },
+                  {
+                    prop: "transition-timing-function",
+                    label: "Transition Timing (transition-timing-function)",
+                    placeholder: "e.g. cubic-bezier(0.25, 0.1, 0.25, 1)",
+                    presets: ["ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end", "cubic-bezier(0.34, 1.56, 0.64, 1)", "cubic-bezier(0.25, 1, 0.5, 1)"]
+                  },
+                  {
+                    prop: "transition-behavior",
+                    label: "Transition Behavior (transition-behavior)",
+                    placeholder: "e.g. normal, allow-discrete",
+                    presets: ["normal", "allow-discrete"]
+                  }
+                ],
+                transforms: [
+                  {
+                    prop: "translate",
+                    label: "Translate Offset (translate)",
+                    placeholder: "e.g. 10px, 50% 100%, 0 -20px",
+                    presets: ["none", "10px", "50%", "-50%", "10px 20px", "50% 100% 15px", "0 -10px", "0 10px"]
+                  },
+                  {
+                    prop: "rotate",
+                    label: "Rotation (rotate)",
+                    placeholder: "e.g. 45deg, z 90deg, 1 1 0 45deg",
+                    presets: ["none", "45deg", "90deg", "180deg", "360deg", "-45deg", "-90deg", "x 45deg", "y 45deg", "z 90deg", "0.25turn"]
+                  },
+                  {
+                    prop: "scale",
+                    label: "Scale Factor (scale)",
+                    placeholder: "e.g. 1.5, 120% 80%",
+                    presets: ["none", "1", "1.05", "1.1", "1.2", "1.5", "2", "0.95", "0.9", "0.8", "0.5"]
+                  }
+                ],
+                legacyTransforms: [
+                  {
+                    prop: "transform",
+                    label: "Legacy Transform List (transform)",
+                    placeholder: "e.g. translate(10px, 20px) rotate(45deg) scale(1.5)",
+                    presets: ["none", "scale(1.05)", "scale(0.95)", "translateY(-4px)", "translateY(4px)", "rotate(3deg)", "rotate(-3deg)", "skewX(-10deg)"]
+                  },
+                  {
+                    prop: "transform-origin",
+                    label: "Transform Origin (transform-origin)",
+                    placeholder: "e.g. center, top left, 50% 50%",
+                    presets: ["center", "top", "bottom", "left", "right", "top left", "bottom right", "50% 50%"]
+                  }
+                ],
+                keyframes: [
+                  {
+                    prop: "animation",
+                    label: "Animation Shorthand (animation)",
+                    placeholder: "e.g. slide-in 1s ease-out infinite forwards",
+                    presets: ["none", "spin 1s linear infinite", "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite", "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", "bounce 1s infinite"]
+                  },
+                  {
+                    prop: "animation-name",
+                    label: "Animation Name (animation-name)",
+                    placeholder: "e.g. fade-in, bounce-animation",
+                    presets: ["none", "spin", "ping", "pulse", "bounce"]
+                  },
+                  {
+                    prop: "animation-duration",
+                    label: "Animation Duration (animation-duration)",
+                    placeholder: "e.g. 1s, 800ms",
+                    presets: ["0s", "150ms", "300ms", "500ms", "800ms", "1s", "1.5s", "2s", "3s", "5s"]
+                  },
+                  {
+                    prop: "animation-delay",
+                    label: "Animation Delay (animation-delay)",
+                    placeholder: "e.g. 0.5s, 500ms",
+                    presets: ["0s", "100ms", "200ms", "300ms", "500ms", "1s", "2s"]
+                  },
+                  {
+                    prop: "animation-timing-function",
+                    label: "Animation Timing (animation-timing-function)",
+                    placeholder: "e.g. cubic-bezier(0.42, 0, 0.58, 1)",
+                    presets: ["ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"]
+                  },
+                  {
+                    prop: "animation-iteration-count",
+                    label: "Iteration Count (animation-iteration-count)",
+                    placeholder: "e.g. infinite, 1, 3",
+                    presets: ["infinite", "1", "2", "3", "5", "10"]
+                  },
+                  {
+                    prop: "animation-direction",
+                    label: "Animation Direction (animation-direction)",
+                    placeholder: "e.g. normal, reverse, alternate",
+                    presets: ["normal", "reverse", "alternate", "alternate-reverse"]
+                  },
+                  {
+                    prop: "animation-fill-mode",
+                    label: "Animation Fill Mode (animation-fill-mode)",
+                    placeholder: "e.g. none, forwards, backwards, both",
+                    presets: ["none", "forwards", "backwards", "both"]
+                  },
+                  {
+                    prop: "animation-play-state",
+                    label: "Animation Play State (animation-play-state)",
+                    placeholder: "e.g. running, paused",
+                    presets: ["running", "paused"]
+                  },
+                  {
+                    prop: "animation-composition",
+                    label: "Animation Composition (animation-composition)",
+                    placeholder: "e.g. replace, add, accumulate",
+                    presets: ["replace", "add", "accumulate"]
+                  }
+                ],
+                scrollDriven: [
+                  {
+                    prop: "animation-timeline",
+                    label: "Animation Timeline (animation-timeline)",
+                    placeholder: "e.g. scroll(self block), view(inline 20%), --my-timeline",
+                    presets: ["auto", "none", "scroll()", "scroll(self block)", "scroll(root y)", "view()", "view(inline 20%)"]
+                  },
+                  {
+                    prop: "scroll-timeline",
+                    label: "Scroll Timeline Shorthand (scroll-timeline)",
+                    placeholder: "e.g. --my-timeline block",
+                    presets: ["none", "--scroll-timeline block", "--scroll-timeline inline"]
+                  },
+                  {
+                    prop: "scroll-timeline-name",
+                    label: "Scroll Timeline Name (scroll-timeline-name)",
+                    placeholder: "e.g. --my-scroll-timeline",
+                    presets: ["none", "--scroll-timeline"]
+                  },
+                  {
+                    prop: "scroll-timeline-axis",
+                    label: "Scroll Timeline Axis (scroll-timeline-axis)",
+                    placeholder: "e.g. block, inline, x, y",
+                    presets: ["block", "inline", "x", "y"]
+                  },
+                  {
+                    prop: "view-timeline",
+                    label: "View Timeline Shorthand (view-timeline)",
+                    placeholder: "e.g. --my-view-timeline block",
+                    presets: ["none", "--view-timeline block", "--view-timeline inline"]
+                  },
+                  {
+                    prop: "view-timeline-name",
+                    label: "View Timeline Name (view-timeline-name)",
+                    placeholder: "e.g. --my-view-timeline",
+                    presets: ["none", "--view-timeline"]
+                  },
+                  {
+                    prop: "view-timeline-axis",
+                    label: "View Timeline Axis (view-timeline-axis)",
+                    placeholder: "e.g. block, inline, x, y",
+                    presets: ["block", "inline", "x", "y"]
+                  },
+                  {
+                    prop: "animation-range",
+                    label: "Animation Range (animation-range)",
+                    placeholder: "e.g. cover 0% cover 100%, entry 10%",
+                    presets: ["normal", "cover 0% cover 100%", "contain 20% entry 80%", "entry 0% exit 100%"]
+                  },
+                  {
+                    prop: "animation-range-start",
+                    label: "Range Start (animation-range-start)",
+                    placeholder: "e.g. cover 0%, entry 20%",
+                    presets: ["normal", "auto", "0%", "50%", "100%", "cover 0%", "contain 0%", "entry 0%"]
+                  },
+                  {
+                    prop: "animation-range-end",
+                    label: "Range End (animation-range-end)",
+                    placeholder: "e.g. cover 100%, exit 80%",
+                    presets: ["normal", "auto", "0%", "50%", "100%", "cover 100%", "contain 100%", "exit 100%"]
+                  }
+                ]
+              };
+
+              const fields = animationFields[animationSubCategory] || [];
+
+              return (
+                <div className="space-y-4 font-sans text-stone-700">
+                  {fields.map((field) => {
+                    const currentVal = getPropValue(field.prop);
+                    return (
+                      <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-2">
+                        <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">{field.label}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={field.placeholder}
+                            onChange={(e) => setPropValue(field.prop, e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-stone-200/85 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 shadow-sm"
+                          />
+                          {field.presets.length > 0 && (
+                            <div className="relative shrink-0">
+                              <select
+                                value={field.presets.includes(currentVal) ? currentVal : ""}
+                                onChange={(e) => {
+                                  if (e.target.value !== "") {
+                                    setPropValue(field.prop, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-stone-100 hover:bg-stone-200/70 border border-stone-200 text-stone-600 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Presets</option>
+                                {field.presets.map((p) => (
+                                  <option key={p} value={p}>{p}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                                <ChevronDown size={13} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Interlinks and Dependencies Card */}
+                  <div className="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-4 mt-6">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5 mb-2.5">
+                      <HelpCircle size={12} />
+                      <span>Interlinks & Dependencies</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-rose-950 font-medium list-disc list-outside pl-4 leading-relaxed">
+                      <li><strong>Animation-Name 🔗 External `@keyframes`:</strong> The `animation-name` property requires a corresponding `@keyframes` rule declared elsewhere. If sets to `slide-in`, a `@keyframes slide-in` must exist, or the animation will fail.</li>
+                      <li><strong>Scroll-Driven Timeline Associations:</strong> To drive an animation using a custom timeline, the scrolling container defines `scroll-timeline-name: --my-timeline` (or `view-timeline-name`), and the target sets `animation-timeline: --my-timeline`.</li>
+                      <li><strong>Shorthand to Longhand Hierarchy:</strong> Setting `transition` overrides individual declarations of `transition-property`, duration, delay, or timing-function. `animation` acts as an aggressive shorthand resetting omitted longhands.</li>
+                      <li><strong>`animation-range` 🔗 Scroll-Driven Contexts:</strong> Timeline range properties rely on scroll-driven or view-driven context. If `animation-timeline` is `auto` or time-based, specified ranges are completely ignored.</li>
+                      <li><strong>Individual Transforms vs. Shorthand `transform` Conflict:</strong> Modern individual transform properties (`translate`, `rotate`, `scale`) process first, and the shorthand `transform` functions apply afterward. Mixing them indiscriminately can lead to unexpected compounding.</li>
+                      <li><strong>Discrete Transitions:</strong> For transitions on discrete properties like `display`, `transition-behavior: allow-discrete` must be set, and `transition-property` must target that specific property.</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ==================== INTERACTIVITY & SCROLLING ==================== */}
+        {inspectorSection === "interactivity" && (
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <MousePointer size={15} className="text-rose-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Interactivity & Scrolling</span>
+            </div>
+
+            {/* Sub-Category Pills Navigation */}
+            <div className="flex bg-stone-100/80 p-1 rounded-xl gap-1 overflow-x-auto scrollbar-hide">
+              {[
+                { id: "mouse", label: "Mouse Controls" },
+                { id: "user", label: "User Actions" },
+                { id: "scrollControl", label: "Scroll & Overflow" },
+                { id: "containerSnap", label: "Snap (Container)" },
+                { id: "itemSnap", label: "Snap (Item)" },
+                { id: "touch", label: "Touch & Perf" }
+              ].map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setInteractivitySubCategory(sub.id as any)}
+                  className={`flex-1 py-1.5 px-2.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                    interactivitySubCategory === sub.id
+                      ? "text-rose-700 bg-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
+
+              const getPropValue = (propName: string): string => {
+                return parseArbitraryProperty(selectedElement?.classes || "", propName);
+              };
+
+              const setPropValue = (propName: string, value: string) => {
+                const currentTokens = (selectedElement?.classes || "").split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const interactivityFields = {
+                mouse: [
+                  {
+                    prop: "cursor",
+                    label: "Mouse Cursor Style (cursor)",
+                    placeholder: "e.g. pointer, grab, url('custom.svg') 10 10, auto",
+                    presets: [
+                      "auto", "default", "none", "context-menu", "help", "pointer", 
+                      "progress", "wait", "cell", "crosshair", "text", "vertical-text", 
+                      "alias", "copy", "move", "no-drop", "not-allowed", "grab", "grabbing", 
+                      "all-scroll", "col-resize", "row-resize", "n-resize", "e-resize", 
+                      "s-resize", "w-resize", "ne-resize", "nw-resize", "se-resize", "sw-resize", 
+                      "ew-resize", "ns-resize", "nesw-resize", "nwse-resize", "zoom-in", "zoom-out"
+                    ]
+                  },
+                  {
+                    prop: "pointer-events",
+                    label: "Pointer Interaction Mode (pointer-events)",
+                    placeholder: "e.g. auto, none",
+                    presets: ["auto", "none", "visiblePainted", "visibleFill", "visibleStroke", "visible", "painted", "fill", "stroke", "all"]
+                  }
+                ],
+                user: [
+                  {
+                    prop: "user-select",
+                    label: "Text Selection Control (user-select)",
+                    placeholder: "e.g. none, auto, text",
+                    presets: ["none", "auto", "text", "all", "contain"]
+                  },
+                  {
+                    prop: "resize",
+                    label: "Element Resize Handle (resize)",
+                    placeholder: "e.g. both, horizontal",
+                    presets: ["none", "both", "horizontal", "vertical", "block", "inline"]
+                  }
+                ],
+                scrollControl: [
+                  {
+                    prop: "overflow",
+                    label: "Overflow Mechanics (overflow)",
+                    placeholder: "e.g. visible, hidden, scroll, auto, clip",
+                    presets: ["visible", "hidden", "scroll", "auto", "clip", "hidden_auto"]
+                  },
+                  {
+                    prop: "overflow-x",
+                    label: "Horizontal Overflow (overflow-x)",
+                    placeholder: "e.g. auto, scroll, hidden",
+                    presets: ["visible", "hidden", "scroll", "auto", "clip"]
+                  },
+                  {
+                    prop: "overflow-y",
+                    label: "Vertical Overflow (overflow-y)",
+                    placeholder: "e.g. auto, scroll, hidden",
+                    presets: ["visible", "hidden", "scroll", "auto", "clip"]
+                  },
+                  {
+                    prop: "overflow-inline",
+                    label: "Inline Overflow (overflow-inline)",
+                    placeholder: "e.g. auto, hidden",
+                    presets: ["visible", "hidden", "scroll", "auto", "clip"]
+                  },
+                  {
+                    prop: "overflow-block",
+                    label: "Block Overflow (overflow-block)",
+                    placeholder: "e.g. auto, hidden",
+                    presets: ["visible", "hidden", "scroll", "auto", "clip"]
+                  },
+                  {
+                    prop: "scroll-behavior",
+                    label: "Scrolling Interpolation (scroll-behavior)",
+                    placeholder: "e.g. smooth, auto",
+                    presets: ["auto", "smooth"]
+                  },
+                  {
+                    prop: "overscroll-behavior",
+                    label: "Overscroll Boundary Chaining (overscroll-behavior)",
+                    placeholder: "e.g. auto, contain, none",
+                    presets: ["auto", "contain", "none", "contain_none"]
+                  },
+                  {
+                    prop: "overscroll-behavior-x",
+                    label: "Overscroll Behavior X (overscroll-behavior-x)",
+                    placeholder: "e.g. auto, contain, none",
+                    presets: ["auto", "contain", "none"]
+                  },
+                  {
+                    prop: "overscroll-behavior-y",
+                    label: "Overscroll Behavior Y (overscroll-behavior-y)",
+                    placeholder: "e.g. auto, contain, none",
+                    presets: ["auto", "contain", "none"]
+                  },
+                  {
+                    prop: "overscroll-behavior-inline",
+                    label: "Overscroll Behavior Inline (overscroll-behavior-inline)",
+                    placeholder: "e.g. auto, contain, none",
+                    presets: ["auto", "contain", "none"]
+                  },
+                  {
+                    prop: "overscroll-behavior-block",
+                    label: "Overscroll Behavior Block (overscroll-behavior-block)",
+                    placeholder: "e.g. auto, contain, none",
+                    presets: ["auto", "contain", "none"]
+                  }
+                ],
+                containerSnap: [
+                  {
+                    prop: "scroll-snap-type",
+                    label: "Scroll Snap Definition (scroll-snap-type)",
+                    placeholder: "e.g. x mandatory, y proximity, both mandatory",
+                    presets: ["none", "x", "y", "block", "inline", "both", "x mandatory", "y proximity", "both mandatory", "block proximity"]
+                  },
+                  {
+                    prop: "scroll-padding",
+                    label: "Viewport Boundary Padding Shorthand (scroll-padding)",
+                    placeholder: "e.g. 10px, 1.5rem, 10px 20px",
+                    presets: ["auto", "10px", "20px", "1rem", "1.5rem", "2rem", "10%", "5vh"]
+                  },
+                  {
+                    prop: "scroll-padding-top",
+                    label: "Scroll Padding Top",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "20px", "24px", "1.5rem", "2rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-right",
+                    label: "Scroll Padding Right",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "20px", "1.5rem", "2rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-bottom",
+                    label: "Scroll Padding Bottom",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "20px", "1.5rem", "2rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-left",
+                    label: "Scroll Padding Left",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "20px", "1.5rem", "2rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-inline-start",
+                    label: "Scroll Padding Inline Start",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "1.5rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-inline-end",
+                    label: "Scroll Padding Inline End",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "1.5rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-block-start",
+                    label: "Scroll Padding Block Start",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "1.5rem", "5%"]
+                  },
+                  {
+                    prop: "scroll-padding-block-end",
+                    label: "Scroll Padding Block End",
+                    placeholder: "e.g. 24px, 2rem",
+                    presets: ["auto", "10px", "1.5rem", "5%"]
+                  }
+                ],
+                itemSnap: [
+                  {
+                    prop: "scroll-snap-align",
+                    label: "Scroll Snap Alignment (scroll-snap-align)",
+                    placeholder: "e.g. center, start, end, none start, start end",
+                    presets: ["none", "start", "end", "center", "none start", "start end", "center center"]
+                  },
+                  {
+                    prop: "scroll-snap-stop",
+                    label: "Scroll Snap Interception (scroll-snap-stop)",
+                    placeholder: "e.g. normal, always",
+                    presets: ["normal", "always"]
+                  },
+                  {
+                    prop: "scroll-margin",
+                    label: "Scroll Margin Shorthand (scroll-margin)",
+                    placeholder: "e.g. 12px, 2rem, 10px 30px",
+                    presets: ["12px", "20px", "1rem", "1.5rem", "2rem", "10px 30px", "5px 10px 15px 20px"]
+                  },
+                  {
+                    prop: "scroll-margin-top",
+                    label: "Scroll Margin Top",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "20px", "1rem", "1.2em", "2vh", "4vw"]
+                  },
+                  {
+                    prop: "scroll-margin-right",
+                    label: "Scroll Margin Right",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "20px", "1rem", "1.2em", "2vh", "4vw"]
+                  },
+                  {
+                    prop: "scroll-margin-bottom",
+                    label: "Scroll Margin Bottom",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "20px", "1rem", "1.2em", "2vh", "4vw"]
+                  },
+                  {
+                    prop: "scroll-margin-left",
+                    label: "Scroll Margin Left",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "20px", "1rem", "1.2em", "2vh", "4vw"]
+                  },
+                  {
+                    prop: "scroll-margin-inline-start",
+                    label: "Scroll Margin Inline Start",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "1rem", "2vh"]
+                  },
+                  {
+                    prop: "scroll-margin-inline-end",
+                    label: "Scroll Margin Inline End",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "1rem", "2vh"]
+                  },
+                  {
+                    prop: "scroll-margin-block-start",
+                    label: "Scroll Margin Block Start",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "1rem", "2vh"]
+                  },
+                  {
+                    prop: "scroll-margin-block-end",
+                    label: "Scroll Margin Block End",
+                    placeholder: "e.g. 15px, 2vh",
+                    presets: ["10px", "15px", "1rem", "2vh"]
+                  }
+                ],
+                touch: [
+                  {
+                    prop: "touch-action",
+                    label: "Touch Screen Action Mapping (touch-action)",
+                    placeholder: "e.g. pan-y, manipulation, none",
+                    presets: ["auto", "none", "pan-x", "pan-y", "pan-left", "pan-right", "pan-up", "pan-down", "pinch-zoom", "manipulation", "pan-x pan-y", "pan-x pinch-zoom"]
+                  },
+                  {
+                    prop: "will-change",
+                    label: "GPU Rendering Intent hint (will-change)",
+                    placeholder: "e.g. transform, opacity, scroll-position",
+                    presets: ["auto", "scroll-position", "contents", "transform", "opacity", "transform, opacity"]
+                  }
+                ]
+              };
+
+              const fields = interactivityFields[interactivitySubCategory] || [];
+
+              return (
+                <div className="space-y-4 font-sans text-stone-700">
+                  {fields.map((field) => {
+                    const currentVal = getPropValue(field.prop);
+                    const segConfig = SEGMENTED_FIELDS[field.prop];
+
+                    if (segConfig) {
+                      return (
+                        <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-3">
+                          <SegmentedControl
+                            label={field.label}
+                            value={currentVal || segConfig.options[0].value}
+                            onChange={(val) => setPropValue(field.prop, val)}
+                            options={segConfig.options}
+                          />
+                          <div className="flex flex-col gap-1.5 w-full text-left">
+                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-0.5 font-sans">Custom Override</span>
+                            <input
+                              type="text"
+                              value={currentVal}
+                              placeholder={field.placeholder}
+                              onChange={(e) => setPropValue(field.prop, e.target.value)}
+                              className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none placeholder-stone-300 font-mono shadow-sm"
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-2">
+                        <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">{field.label}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={field.placeholder}
+                            onChange={(e) => setPropValue(field.prop, e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-stone-200/85 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 shadow-sm"
+                          />
+                          {field.presets.length > 0 && (
+                            <div className="relative shrink-0">
+                              <select
+                                value={field.presets.includes(currentVal) ? currentVal : ""}
+                                onChange={(e) => {
+                                  if (e.target.value !== "") {
+                                    setPropValue(field.prop, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-stone-100 hover:bg-stone-200/70 border border-stone-200 text-stone-600 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Presets</option>
+                                {field.presets.map((p) => (
+                                  <option key={p} value={p}>{p}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                                <ChevronDown size={13} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Interlinks and Dependencies Card */}
+                  <div className="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-4 mt-6">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5 mb-2.5">
+                      <HelpCircle size={12} />
+                      <span>Interlinks & Dependencies</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-rose-950 font-medium list-disc list-outside pl-4 leading-relaxed">
+                      <li><strong>`scroll-snap-type` 🔗 `scroll-snap-align`:</strong> Scroll snapping functions only if `scroll-snap-type` is declared on a parent scroll container (with active overflow scrolling) <strong>and</strong> `scroll-snap-align` is declared on one or more child items within that container.</li>
+                      <li><strong>`scroll-padding` 🔗 `scroll-margin`:</strong> `scroll-padding` adjusts the inner visual viewport area of the container itself, while `scroll-margin` sets layout outsets directly on the target element.</li>
+                      <li><strong>`resize` 🔗 `overflow`:</strong> The `resize` property has no visual or functional effect on an element unless its `overflow` property is set to something other than `visible` (such as `auto`, `scroll`, or `hidden`).</li>
+                      <li><strong>`pointer-events: none` 🔗 `cursor`:</strong> Setting `pointer-events: none` on an element fully bypasses any hover/mouse states, so any `cursor` changes on it or its child tree will not render.</li>
+                      <li><strong>`touch-action` 🔗 Snapping:</strong> Restrictive `touch-action` configurations (such as `none`, `pan-x` or `pan-y`) override scrolling. If vertical snapping is mandatory but `touch-action: pan-x` is active, touch interaction scrolling is blocked completely.</li>
+                      <li><strong>`overscroll-behavior` 🔗 `overflow`:</strong> `overscroll-behavior` controls scroll chaining to parent elements. It remains completely inactive unless the element itself is scrollable (has active overflow hidden/scroll/auto with overflowing content).</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ==================== MEDIA & OBJECTS ==================== */}
+        {inspectorSection === "media" && (
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
+            <div className="flex items-center gap-2 mb-1">
+              <Image size={15} className="text-rose-600" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Media & Objects</span>
+            </div>
+
+            {/* Sub-Category Pills Navigation */}
+            <div className="flex bg-stone-100/80 p-1 rounded-xl gap-1 overflow-x-auto scrollbar-hide">
+              {[
+                { id: "fitting", label: "Media Fitting & Crop" },
+                { id: "rendering", label: "Image Rendering" },
+                { id: "shapes", label: "Content Flow Shapes" }
+              ].map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setMediaSubCategory(sub.id as any)}
+                  className={`flex-1 py-1.5 px-2.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                    mediaSubCategory === sub.id
+                      ? "text-rose-700 bg-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const parseArbitraryProperty = (className: string, propName: string): string => {
+                if (!className) return "";
+                const match = className.match(new RegExp(`(?:^|\\s)\\[${propName.replace(/[-\[\]()]/g, '\\$&')}:([^\\]]+)\\](?:$|\\s)`));
+                return match ? match[1].replace(/_/g, " ") : "";
+              };
+
+              const getPropValue = (propName: string): string => {
+                return parseArbitraryProperty(selectedElement?.classes || "", propName);
+              };
+
+              const setPropValue = (propName: string, value: string) => {
+                const currentTokens = (selectedElement?.classes || "").split(/\s+/).filter(Boolean);
+                let filtered = currentTokens.filter((token) => !token.startsWith(`[${propName}:`));
+                if (value && value.trim()) {
+                  filtered.push(`[${propName}:${value.trim().replace(/\s+/g, "_")}]`);
+                }
+                updateTree((n) => ({ classes: filtered.join(" ") }));
+              };
+
+              const mediaFields = {
+                fitting: [
+                  {
+                    prop: "object-fit",
+                    label: "Object Auto-Fit Scaling (object-fit)",
+                    placeholder: "e.g. cover, contain, fill",
+                    presets: ["fill", "contain", "cover", "none", "scale-down", "initial", "inherit", "revert", "revert-layer", "unset"]
+                  },
+                  {
+                    prop: "object-position",
+                    label: "Object Positioning Coordinates (object-position)",
+                    placeholder: "e.g. center, top, left 5vw bottom 20px, 15% 85%",
+                    presets: ["center", "top", "bottom", "left", "right", "left top", "right bottom", "50% 50%", "100% 100%", "20px 50px"]
+                  },
+                  {
+                    prop: "object-view-box",
+                    label: "Object View Box Crop (object-view-box)",
+                    placeholder: "e.g. inset(10% 20% 10% 20%), rect(10px 50px 100px 0)",
+                    presets: ["none", "inset(10% 20% 10% 20%)", "inset(10px 20px round 5px)", "rect(10px 50px 100px 0)", "xywh(10px 20px 100px 100px)"]
+                  }
+                ],
+                rendering: [
+                  {
+                    prop: "image-rendering",
+                    label: "Image Rendering Engine (image-rendering)",
+                    placeholder: "e.g. pixelated, crisp-edges",
+                    presets: ["auto", "crisp-edges", "pixelated", "smooth", "high-quality"]
+                  },
+                  {
+                    prop: "image-orientation",
+                    label: "Image Rotation Exif Override (image-orientation)",
+                    placeholder: "e.g. from-image, 90deg, 180deg flip",
+                    presets: ["from-image", "none", "90deg", "180deg", "270deg", "360deg", "0.25turn", "1.57rad", "flip", "90deg flip"]
+                  },
+                  {
+                    prop: "image-resolution",
+                    label: "Pixel Concentration (image-resolution)",
+                    placeholder: "e.g. 300dpi, from-image, snap 1dppx",
+                    presets: ["from-image", "300dpi", "1dpcm", "2dppx", "1x", "from-image 150dpi", "snap 1dppx"]
+                  }
+                ],
+                shapes: [
+                  {
+                    prop: "shape-outside",
+                    label: "Float Text Content Flow Wrapper (shape-outside)",
+                    placeholder: "e.g. circle(50% at center), polygon(0 0, 100% 0, 50% 100%)",
+                    presets: [
+                      "none", "margin-box", "border-box", "padding-box", "content-box", 
+                      "circle(50% at center)", "ellipse(25px 50px at 50% 50%)", 
+                      "polygon(0 0, 100% 0, 50% 100%)", "inset(10px round 5px)",
+                      "path(\"M 10,10 H 90 V 90 H 10 Z\")"
+                    ]
+                  },
+                  {
+                    prop: "shape-margin",
+                    label: "Shape Spacing Offset (shape-margin)",
+                    placeholder: "e.g. 10px, 1.5em, 3vw, 5%",
+                    presets: ["0px", "5px", "10px", "15px", "1.5em", "3vw", "5%"]
+                  },
+                  {
+                    prop: "shape-image-threshold",
+                    label: "Shape Alpha Transparency Threshold (shape-image-threshold)",
+                    placeholder: "e.g. 0.0, 0.5, 1.0",
+                    presets: ["0.0", "0.1", "0.3", "0.5", "0.7", "0.9", "1.0", "50%", "100%"]
+                  }
+                ]
+              };
+
+              const fields = mediaFields[mediaSubCategory] || [];
+
+              return (
+                <div className="space-y-4 font-sans text-stone-700">
+                  {fields.map((field) => {
+                    const currentVal = getPropValue(field.prop);
+                    const segConfig = SEGMENTED_FIELDS[field.prop];
+
+                    if (segConfig) {
+                      return (
+                        <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-3">
+                          <SegmentedControl
+                            label={field.label}
+                            value={currentVal || segConfig.options[0].value}
+                            onChange={(val) => setPropValue(field.prop, val)}
+                            options={segConfig.options}
+                          />
+                          <div className="flex flex-col gap-1.5 w-full text-left">
+                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-0.5 font-sans">Custom Override</span>
+                            <input
+                              type="text"
+                              value={currentVal}
+                              placeholder={field.placeholder}
+                              onChange={(e) => setPropValue(field.prop, e.target.value)}
+                              className="w-full bg-white border border-stone-250 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none placeholder-stone-300 font-mono shadow-sm"
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={field.prop} className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 shadow-sm space-y-2">
+                        <label className="text-[10px] text-stone-400 font-bold uppercase tracking-wider pl-1">{field.label}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={currentVal}
+                            placeholder={field.placeholder}
+                            onChange={(e) => setPropValue(field.prop, e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-stone-200/85 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 shadow-sm"
+                          />
+                          {field.presets.length > 0 && (
+                            <div className="relative shrink-0">
+                              <select
+                                value={field.presets.includes(currentVal) ? currentVal : ""}
+                                onChange={(e) => {
+                                  if (e.target.value !== "") {
+                                    setPropValue(field.prop, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-stone-100 hover:bg-stone-200/70 border border-stone-200 text-stone-600 rounded-xl pl-3 pr-8 py-2 text-xs font-semibold cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Presets</option>
+                                {field.presets.map((p) => (
+                                  <option key={p} value={p}>{p}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                                <ChevronDown size={13} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Interlinks and Dependencies Card */}
+                  <div className="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-4 mt-6">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5 mb-2.5">
+                      <HelpCircle size={12} />
+                      <span>Interlinks & Dependencies</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-rose-950 font-medium list-disc list-outside pl-4 leading-relaxed">
+                      <li><strong>`object-fit` and `object-position`:</strong> If `object-fit` is set to `fill` (stretching fully), `object-position` is completely ignored since there is no leftover space to shift the imagery content.</li>
+                      <li><strong>`object-view-box` and friends:</strong> Once cropped via `object-view-box`, standard `object-fit` and `object-position` scale and align only relative to the cropped sub-section.</li>
+                      <li><strong>`shape-outside` and `float`:</strong> Flow shapes only function if the element has `float` explicitly set to `left` or `right`. If `float` is set to `none`, `shape-outside` has zero impact.</li>
+                      <li><strong>`shape-outside` and Sizing Dimensions:</strong> Custom shapes (`polygon`, `circle`, etc.) require explicit height and width bounds on the container to correctly compute wrapping areas.</li>
+                      <li><strong>`shape-margin` and `shape-outside`:</strong> If `shape-outside` is set to `none`, any defined value in `shape-margin` is ignored.</li>
+                      <li><strong>`shape-image-threshold` and `shape-outside`:</strong> Opacity threshold is only valid when reading a shape drawn from an image or gradient with transparent elements.</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
