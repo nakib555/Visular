@@ -29,80 +29,61 @@ interface CSSCategory {
 
 const CSS_HIERARCHY_DATA: CSSCategory[] = [
   {
-    name: "LAYOUT & STRUCTURE",
+    name: "LAYOUT",
     icon: Maximize,
     subCategories: [
       {
-        name: "Box Model",
+        name: "Display Mode",
+        properties: [
+          { name: "display", values: "block | inline-block | inline | flex | inline-flex | grid | inline-grid | flow-root | contents | none | table | table-row | table-cell | list-item" }
+        ]
+      },
+      {
+        name: "Flexbox Container",
+        properties: [
+          { name: "flex-direction", values: "row | row-reverse | column | column-reverse" },
+          { name: "justify-content", values: "normal | flex-start | flex-end | center | space-between | space-around | space-evenly | start | end | left | right" },
+          { name: "align-items", values: "normal | stretch | flex-start | flex-end | center | baseline | start | end" },
+          { name: "flex-wrap", values: "nowrap | wrap | wrap-reverse" },
+          { name: "gap", values: "normal | <length> | <percentage> | calc(...) | clamp(...)", note: "e.g., 16px, 1rem, 5%" }
+        ]
+      },
+      {
+        name: "Flexbox Items",
+        properties: [
+          { name: "flex-grow", values: "<number> | calc(...)", note: "e.g., 0, 1, 2.5" },
+          { name: "flex-shrink", values: "<number> | calc(...)", note: "e.g., 0, 1, 3" },
+          { name: "flex-basis", values: "auto | content | max-content | min-content | fit-content | <length> | <percentage>" },
+          { name: "align-self", values: "auto | normal | flex-start | flex-end | center | baseline | stretch | start | end" },
+          { name: "order", values: "<integer>", note: "e.g., 0, 1, 99, -1, -99" }
+        ]
+      },
+      {
+        name: "Grid Container",
+        properties: [
+          { name: "grid-template-columns", values: "none | subgrid | masonry | <track-list>" },
+          { name: "grid-template-rows", values: "none | subgrid | masonry | <track-list>" },
+          { name: "justify-items", values: "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | left | right | legacy" },
+          { name: "align-items", values: "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | baseline" }
+        ]
+      },
+      {
+        name: "Grid Items",
+        properties: [
+          { name: "grid-column", values: "auto | <integer> | <custom-ident> | <integer> / <integer> | span <integer> | span <custom-ident>" },
+          { name: "grid-row", values: "auto | <integer> | <custom-ident> | <integer> / <integer> | span <integer> | span <custom-ident>" },
+          { name: "grid-area", values: "auto | <custom-name> | <row-start> / <column-start> / <row-end> / <column-end>" }
+        ]
+      },
+      {
+        name: "Box Model & Positioning (Legacy)",
         properties: [
           { name: "width", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
           { name: "height", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
-          { name: "min-width", values: "auto | <length> | <percentage> | max-content | min-content" },
-          { name: "max-width", values: "auto | <length> | <percentage> | max-content | min-content" },
-          { name: "min-height", values: "auto | <length> | <percentage> | max-content | min-content" },
-          { name: "max-height", values: "auto | <length> | <percentage> | max-content | min-content" },
           { name: "margin", values: "auto | <length> | <percentage>", note: "e.g., 10px, 2rem, 5%" },
-          { name: "margin-top", values: "auto | <length> | <percentage>" },
-          { name: "margin-right", values: "auto | <length> | <percentage>" },
-          { name: "margin-bottom", values: "auto | <length> | <percentage>" },
-          { name: "margin-left", values: "auto | <length> | <percentage>" },
           { name: "padding", values: "<length> | <percentage>", note: "e.g., 20px, 1.5em, 10%" },
-          { name: "padding-top", values: "<length> | <percentage>" },
-          { name: "padding-right", values: "<length> | <percentage>" },
-          { name: "padding-bottom", values: "<length> | <percentage>" },
-          { name: "padding-left", values: "<length> | <percentage>" },
-          { name: "box-sizing", values: "content-box | border-box" },
-          { name: "aspect-ratio", values: "auto | <ratio>", note: "e.g., 1/1, 16/9, 4/3" }
-        ]
-      },
-      {
-        name: "Positioning",
-        properties: [
           { name: "position", values: "static | relative | absolute | fixed | sticky" },
-          { name: "top", values: "auto | <length> | <percentage>", note: "e.g., 50px, 100%" },
-          { name: "right", values: "auto | <length> | <percentage>" },
-          { name: "bottom", values: "auto | <length> | <percentage>" },
-          { name: "left", values: "auto | <length> | <percentage>" },
-          { name: "inset", values: "auto | <length> | <percentage>" },
-          { name: "z-index", values: "auto | <integer>", note: "e.g., 1, 999, -1" }
-        ]
-      },
-      {
-        name: "Flexbox Layout (Container & Items)",
-        properties: [
-          { name: "display", values: "flex | inline-flex" },
-          { name: "flex-direction", values: "row | row-reverse | column | column-reverse" },
-          { name: "justify-content", values: "flex-start | flex-end | center | space-between | space-around | space-evenly", note: "Horizontal alignment" },
-          { name: "align-items", values: "stretch | flex-start | flex-end | center | baseline", note: "Vertical alignment" },
-          { name: "flex-wrap", values: "nowrap | wrap | wrap-reverse" },
-          { name: "gap", values: "<length> | <percentage>", note: "e.g., 16px, 1rem" },
-          { name: "flex-grow", values: "<number>", note: "e.g., 0, 1, 2" },
-          { name: "flex-shrink", values: "<number>", note: "e.g., 0, 1, 2" },
-          { name: "flex-basis", values: "auto | <length> | <percentage>" },
-          { name: "order", values: "<integer>", note: "e.g., 1, 2, -1" },
-          { name: "align-self", values: "auto | flex-start | flex-end | center | baseline | stretch" }
-        ]
-      },
-      {
-        name: "Grid Layout (Container & Items)",
-        properties: [
-          { name: "display", values: "grid | inline-grid" },
-          { name: "grid-template-columns", values: "none | <tracks>", note: "e.g., 1fr 1fr, 200px auto, repeat(3, 1fr)" },
-          { name: "grid-template-rows", values: "none | <tracks>" },
-          { name: "justify-items", values: "start | end | center | stretch" },
-          { name: "grid-column", values: "auto | <line-numbers>", note: "e.g., 1 / 3, span 2" },
-          { name: "grid-row", values: "auto | <line-numbers>" },
-          { name: "grid-area", values: "auto | <custom-name>", note: "e.g., header, sidebar" }
-        ]
-      },
-      {
-        name: "Overflow & Scrolling",
-        properties: [
-          { name: "overflow", values: "visible | hidden | scroll | auto | clip" },
-          { name: "overflow-x", values: "visible | hidden | scroll | auto | clip" },
-          { name: "overflow-y", values: "visible | hidden | scroll | auto | clip" },
-          { name: "scroll-behavior", values: "auto | smooth" },
-          { name: "scroll-snap-type", values: "none | x mandatory | y proximity | both mandatory" }
+          { name: "inset", values: "auto | <length> | <percentage>" }
         ]
       }
     ]
@@ -760,8 +741,13 @@ export function InspectorPanel({
                             <option value="inline-flex">inline-flex</option>
                             <option value="grid">grid</option>
                             <option value="inline-grid">inline-grid</option>
+                            <option value="flow-root">flow-root</option>
                             <option value="contents">contents</option>
-                            <option value="hidden">none (hidden)</option>
+                            <option value="table">table</option>
+                            <option value="table-row">table-row</option>
+                            <option value="table-cell">table-cell</option>
+                            <option value="list-item">list-item</option>
+                            <option value="hidden">none</option>
                           </select>
                           <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                         </div>
@@ -841,13 +827,15 @@ export function InspectorPanel({
                                 >
                                   <option value="">normal (default)</option>
                                   <option value="justify-normal">normal</option>
-                                  <option value="justify-start">flex-start</option>
-                                  <option value="justify-end">flex-end</option>
+                                  <option value="justify-start">flex-start / start</option>
+                                  <option value="justify-end">flex-end / end</option>
                                   <option value="justify-center">center</option>
                                   <option value="justify-between">space-between</option>
                                   <option value="justify-around">space-around</option>
                                   <option value="justify-evenly">space-evenly</option>
-                                  <option value="justify-stretch">stretch (stretches along main axis)</option>
+                                  <option value="justify-stretch">stretch</option>
+                                  <option value="justify-items-left">left</option>
+                                  <option value="justify-items-right">right</option>
                                 </select>
                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                               </div>
@@ -862,11 +850,11 @@ export function InspectorPanel({
                                   onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "alignment", e.target.value) }))}
                                   className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer"
                                 >
-                                  <option value="">stretch (default)</option>
+                                  <option value="">normal / stretch (default)</option>
                                   <option value="items-normal">normal</option>
-                                  <option value="items-stretch">stretch (stretch along cross axis)</option>
-                                  <option value="items-start">flex-start</option>
-                                  <option value="items-end">flex-end</option>
+                                  <option value="items-stretch">stretch</option>
+                                  <option value="items-start">flex-start / start</option>
+                                  <option value="items-end">flex-end / end</option>
                                   <option value="items-center">center</option>
                                   <option value="items-baseline">baseline</option>
                                 </select>
@@ -1035,8 +1023,8 @@ export function InspectorPanel({
                                 <option value="self-auto">auto</option>
                                 <option value="self-normal">normal</option>
                                 <option value="self-stretch">stretch</option>
-                                <option value="self-start">flex-start</option>
-                                <option value="self-end">flex-end</option>
+                                <option value="self-start">flex-start / start</option>
+                                <option value="self-end">flex-end / end</option>
                                 <option value="self-center">center</option>
                                 <option value="self-baseline">baseline</option>
                               </select>
@@ -1135,6 +1123,35 @@ export function InspectorPanel({
                               </div>
                             </div>
 
+                            {/* Rows template */}
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[10px] text-stone-505 font-bold uppercase tracking-wider pl-1 font-mono">grid-template-rows</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                  <select
+                                    value={getPrefixedClass(selectedElement.classes, "grid-rows-")}
+                                    onChange={(e) => updateTree((n) => ({ classes: setPrefixedClass(n.classes, "grid-rows-", e.target.value) }))}
+                                    className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer font-medium"
+                                  >
+                                    <option value="">default / custom</option>
+                                    <option value="grid-rows-1">1 Row</option>
+                                    <option value="grid-rows-2">2 Rows</option>
+                                    <option value="grid-rows-3">3 Rows</option>
+                                    <option value="grid-rows-4">4 Rows</option>
+                                    <option value="grid-rows-6">6 Rows</option>
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="custom e.g. 100px auto"
+                                  value={parseArbitraryValue(selectedElement.classes, "grid-rows-")}
+                                  onChange={(e) => updateArbitraryClass("grid-rows-", e.target.value)}
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                />
+                              </div>
+                            </div>
+
                             {/* justify-items */}
                             <div className="flex flex-col gap-1.5">
                               <label className="text-[10px] text-stone-505 font-bold uppercase tracking-wider pl-1 font-mono">justify-items</label>
@@ -1144,11 +1161,15 @@ export function InspectorPanel({
                                   onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "justifyItems", e.target.value) }))}
                                   className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer font-medium"
                                 >
-                                  <option value="">stretch (default)</option>
+                                  <option value="">normal / stretch (default)</option>
+                                  <option value="justify-items-normal">normal</option>
+                                  <option value="justify-items-stretch">stretch</option>
+                                  <option value="justify-items-center">center</option>
                                   <option value="justify-items-start">start</option>
                                   <option value="justify-items-end">end</option>
-                                  <option value="justify-items-center">center</option>
-                                  <option value="justify-items-stretch">stretch</option>
+                                  <option value="justify-items-left">left</option>
+                                  <option value="justify-items-right">right</option>
+                                  <option value="justify-items-legacy">legacy</option>
                                 </select>
                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                               </div>
@@ -1163,11 +1184,13 @@ export function InspectorPanel({
                                   onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "alignment", e.target.value) }))}
                                   className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none cursor-pointer font-medium"
                                 >
-                                  <option value="">stretch (default)</option>
+                                  <option value="">normal / stretch (default)</option>
+                                  <option value="items-normal">normal</option>
                                   <option value="items-stretch">stretch</option>
+                                  <option value="items-center">center</option>
                                   <option value="items-start">start</option>
                                   <option value="items-end">end</option>
-                                  <option value="items-center">center</option>
+                                  <option value="items-baseline">baseline</option>
                                 </select>
                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                               </div>
@@ -1290,10 +1313,11 @@ export function InspectorPanel({
                                 >
                                   <option value="">auto</option>
                                   <option value="justify-self-auto">auto</option>
+                                  <option value="justify-self-normal">normal</option>
+                                  <option value="justify-self-stretch">stretch</option>
                                   <option value="justify-self-start">start</option>
                                   <option value="justify-self-end">end</option>
                                   <option value="justify-self-center">center</option>
-                                  <option value="justify-self-stretch">stretch</option>
                                 </select>
                                 <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                               </div>

@@ -631,7 +631,7 @@ function DesignerApp() {
         </div>
 
         {/* INTERACTIVE CENTER VIEWPORT CANVAS */}
-        <div ref={parentContainerRef} id="visual_canvas_backyard" className={`flex-1 bg-stone-100 flex flex-col items-stretch justify-start relative p-3 sm:p-5 md:p-6 pb-48 md:pb-6 h-[calc(100vh-64px)] overflow-auto ${mobileActiveView === "canvas" || mobileActiveView === "inspector" ? "flex" : "hidden md:flex"}`}>
+        <div ref={parentContainerRef} id="visual_canvas_backyard" className={`flex-1 bg-stone-100 bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] flex flex-col items-stretch justify-start relative p-3 sm:p-5 md:p-6 pb-48 md:pb-6 h-[calc(100vh-64px)] overflow-auto ${mobileActiveView === "canvas" || mobileActiveView === "inspector" ? "flex" : "hidden md:flex"}`}>
           
           {/* Subtle loading indicator overlay */}
           <AnimatePresence>
@@ -654,36 +654,36 @@ function DesignerApp() {
           </AnimatePresence>
 
           {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
-          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] p-1.5 px-2 md:p-2.5 md:px-3 mb-3 md:mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-2 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0" style={{ height: "46px", borderRadius: "50px" }}>
+          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 p-2 md:p-2.5 px-3 mb-3 md:mb-4 shadow-sm flex flex-row flex-wrap items-center justify-center sm:justify-between gap-3 text-xs select-none z-10 box-border rounded-[18px] lg:rounded-[50px]">
             
             {/* Left Column: Landscape vs Portrait (Only when non-desktop viewports) */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
+            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-3">
               {canvasViewport !== "desktop" && (
-                <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
+                <div className="flex flex-row flex-wrap items-center justify-center gap-1 bg-stone-50 p-1 md:p-1.5 rounded-[30px] border border-stone-100">
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("portrait")}
                     title="Vertical Mode"
-                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                    className={`px-3 py-1.5 rounded-[30px] transition-all flex flex-row items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
                       canvasOrientation === "portrait"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={12} className={`transition-transform duration-300 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Portrait</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("landscape")}
                     title="Landscape Mode"
-                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                    className={`px-3 py-1.5 rounded-[30px] transition-all flex flex-row items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
                       canvasOrientation === "landscape"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={12} className={`rotate-90 transition-transform duration-300 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Landscape</span>
                   </button>
                 </div>
@@ -691,59 +691,26 @@ function DesignerApp() {
             </div>
 
             {/* Middle Column: Auto Layout Adjustments Quick Actions */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
-              <div className="flex flex-row flex-nowrap items-center gap-1 text-purple-600 font-semibold px-0.5 md:px-1 shrink-0 whitespace-nowrap">
-                <Zap size={13} className="animate-pulse shrink-0" />
-                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider font-mono shrink-0 hidden sm:inline-block">Auto-Structure</span>
-              </div>
-              
-              <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 border border-stone-100 rounded-[30px] shrink-0 whitespace-nowrap">
-                <button
-                  type="button"
-                  onClick={() => runAutoOptimize("columns")}
-                  title="Force wide grid columns and tables to stack on mobile viewports seamlessly"
-                  className="px-2 md:px-3 py-1 md:py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-[30px] text-[9px] md:text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0 whitespace-nowrap"
-                >
-                  Stack Columns
-                </button>
-                <button
-                  type="button"
-                  onClick={() => runAutoOptimize("padding")}
-                  title="Make huge density padding spacing fully adaptive instead of static"
-                  className="px-2 md:px-3 py-1 md:py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-[30px] text-[9px] md:text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0 whitespace-nowrap"
-                >
-                  Fluid Spacing
-                </button>
-                <button
-                  type="button"
-                  onClick={() => runAutoOptimize("typography")}
-                  title="Convert flat title sizes (like text-6xl) to fluid display sizing"
-                  className="px-2 md:px-3 py-1 md:py-1.5 bg-white hover:bg-stone-50 border border-stone-200/60 rounded-[30px] text-[9px] md:text-[10px] font-semibold text-stone-700 transition cursor-pointer active:scale-95 shadow-sm shrink-0 whitespace-nowrap"
-                >
-                  Responsive Text
-                </button>
-              </div>
-
+            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-3">
               <button
                 type="button"
                 onClick={runAIResponsiveAudit}
                 disabled={!hasApiKey}
                 title={hasApiKey ? "Rewrite styles for outstanding mobile/tablet layout presentation" : "Active Gemini API key is required"}
-                className={`px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 transition cursor-pointer active:scale-95 border shrink-0 whitespace-nowrap ${
+                className={`px-3 py-1.5 text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row items-center gap-1.5 transition cursor-pointer active:scale-95 border ${
                   hasApiKey 
                     ? "bg-purple-600 hover:bg-purple-700 text-white border-purple-700" 
                     : "bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200"
                 }`}
-                style={{ borderRadius: "50px" }}
               >
-                <Sparkles size={11} className={hasApiKey ? "text-purple-200 shrink-0" : "text-stone-300 shrink-0"} />
+                <Sparkles size={11} className={hasApiKey ? "text-purple-200" : "text-stone-300"} />
                 <span>AI Audit</span>
               </button>
             </div>
 
             {/* Right Column: Custom Scaling Slider with click Adjustments */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap">
-              <div className="flex flex-row flex-nowrap bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap">
+            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto">
+              <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 bg-stone-50 p-1 md:p-1.5 rounded-[30px] border border-stone-100 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -754,10 +721,9 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom Out (-10%)"
-                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
-                  style={{ borderRadius: "50px" }}
+                  className="p-1 px-2 hover:bg-white rounded-[30px] text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
                 >
-                  <ZoomOut size={12} className="shrink-0" />
+                  <ZoomOut size={12} />
                 </button>
                 
                 <input 
@@ -767,9 +733,8 @@ function DesignerApp() {
                   step="0.05"
                   value={zoomScale === "auto" ? 1.0 : zoomScale}
                   onChange={(e) => setZoomScale(parseFloat(e.target.value))}
-                  className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
+                  className="w-16 md:w-20 accent-stone-800 h-[3px] bg-stone-200 rounded-[30px] cursor-pointer mx-1"
                   title="Drag zoom level"
-                  style={{ borderRadius: "50px" }}
                 />
 
                 <button
@@ -782,24 +747,22 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom In (+10%)"
-                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
-                  style={{ borderRadius: "50px" }}
+                  className="p-1 px-2 hover:bg-white rounded-[30px] text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
                 >
-                  <ZoomIn size={12} className="shrink-0" />
+                  <ZoomIn size={12} />
                 </button>
 
-                <div className="h-4 w-px bg-stone-200 mx-0.5 md:mx-1 shrink-0" />
+                <div className="h-4 w-px bg-stone-200 mx-1 hidden sm:block" />
 
                 <button
                   type="button"
                   onClick={() => setZoomScale(zoomScale === "auto" ? 1.0 : "auto")}
                   title="Toggle container boundaries Auto Fit"
-                  className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[40px] md:min-w-[50px] text-center shrink-0 whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-[30px] text-[10px] uppercase transition cursor-pointer min-w-[50px] text-center ${
                     zoomScale === "auto" 
                       ? "bg-stone-800 text-white font-bold shadow-sm" 
                       : "bg-white text-stone-600 hover:bg-stone-50 font-semibold shadow-sm border border-stone-200/60"
                   }`}
-                  style={{ borderRadius: "50px" }}
                 >
                   {zoomScale === "auto" ? "Fit" : `${Math.round((zoomScale as number) * 100)}%`}
                 </button>
