@@ -103,9 +103,9 @@ const TYPOGRAPHY_SPACING_PROPS = [
 ];
 
 const COLOR_PROPS = [
-  { id: "background-color", label: "background color", prefix: "bg-", values: ["transparent", "white", "stone-50", "stone-100", "stone-200", "stone-900", "stone-950", "purple-100", "purple-600", "indigo-950", "indigo-600", "emerald-50", "emerald-950", "amber-100", "amber-700", "rose-50", "rose-600"] },
-  { id: "text-color", label: "text color", prefix: "text-", values: ["white", "black", "stone-800", "stone-100", "purple-600", "indigo-600", "emerald-600", "amber-600", "rose-600"] },
-  { id: "border-color", label: "border color", prefix: "border-", values: ["transparent", "stone-200", "stone-300", "stone-800", "purple-200", "purple-600", "indigo-600", "amber-600", "rose-600"] },
+  { id: "background-color", label: "background color", prefix: "bg-", values: ["transparent", "white", "stone-50", "stone-100", "stone-200", "stone-900", "stone-950", "rose-100", "rose-600", "amber-950", "amber-600", "emerald-50", "emerald-950", "amber-100", "amber-700", "rose-50", "rose-600"] },
+  { id: "text-color", label: "text color", prefix: "text-", values: ["white", "black", "stone-800", "stone-100", "rose-600", "amber-600", "emerald-600", "amber-600", "rose-600"] },
+  { id: "border-color", label: "border color", prefix: "border-", values: ["transparent", "stone-200", "stone-300", "stone-800", "rose-200", "rose-600", "amber-600", "amber-600", "rose-600"] },
   { id: "opacity", label: "opacity", prefix: "opacity-", values: ["0", "10", "20", "25", "30", "40", "50", "60", "70", "75", "80", "90", "95", "100"] }
 ];
 
@@ -421,7 +421,7 @@ export function MobileToolControls() {
               onClick={() => {
                 updateTree((n) => ({ classes: setGroupClass(n.classes, "display", "flex") }));
               }}
-              className="w-full h-8 rounded-full bg-purple-600 font-bold font-sans text-[10px] text-white flex items-center justify-center gap-1 hover:bg-purple-700 active:scale-95 transition cursor-pointer select-none"
+              className="w-full h-8 rounded-full bg-rose-600 font-bold font-sans text-[10px] text-white flex items-center justify-center gap-1 hover:bg-rose-700 active:scale-95 transition cursor-pointer select-none"
             >
               <Cpu size={12} />
               <span>Enable Flexbox Layout</span>
@@ -481,7 +481,7 @@ export function MobileToolControls() {
               onClick={() => setActiveFlexSubmenu(activeFlexSubmenu === "direction" ? null : "direction")}
               className={`h-7 px-2 rounded-lg flex items-center gap-0.5 text-[9.5px] font-mono font-bold transition border cursor-pointer ${
                 activeFlexSubmenu === "direction"
-                  ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
                   : "bg-stone-50 text-stone-700 border-stone-200/80 hover:bg-stone-100"
               }`}
             >
@@ -509,7 +509,7 @@ export function MobileToolControls() {
                         setActiveFlexSubmenu(null);
                       }}
                       className={`px-2 py-1.5 rounded-lg text-left text-[10px] font-mono transition cursor-pointer ${
-                        activeDir === d.key ? "bg-purple-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
+                        activeDir === d.key ? "bg-rose-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
                       }`}
                     >
                       {d.label}
@@ -527,7 +527,7 @@ export function MobileToolControls() {
               onClick={() => setActiveFlexSubmenu(activeFlexSubmenu === "alignment" ? null : "alignment")}
               className={`h-7 px-2 rounded-lg flex items-center gap-0.5 text-[9.5px] font-mono font-bold transition border cursor-pointer ${
                 activeFlexSubmenu === "alignment"
-                  ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
                   : "bg-stone-50 text-stone-700 border-stone-200/80 hover:bg-stone-100"
               }`}
             >
@@ -558,7 +558,7 @@ export function MobileToolControls() {
                         setActiveFlexSubmenu(null);
                       }}
                       className={`px-2 py-1.5 rounded-lg text-left text-[10px] font-mono transition cursor-pointer ${
-                        activeAlign === alignOpt.key ? "bg-purple-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
+                        activeAlign === alignOpt.key ? "bg-rose-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
                       }`}
                     >
                       {alignOpt.label}
@@ -576,7 +576,7 @@ export function MobileToolControls() {
               onClick={() => setActiveFlexSubmenu(activeFlexSubmenu === "justify" ? null : "justify")}
               className={`h-7 px-2 rounded-lg flex items-center gap-0.5 text-[9.5px] font-mono font-bold transition border cursor-pointer ${
                 activeFlexSubmenu === "justify"
-                  ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
                   : "bg-stone-50 text-stone-700 border-stone-200/80 hover:bg-stone-100"
               }`}
             >
@@ -608,7 +608,7 @@ export function MobileToolControls() {
                         setActiveFlexSubmenu(null);
                       }}
                       className={`px-2 py-1.5 rounded-lg text-left text-[10px] font-mono transition cursor-pointer ${
-                        activeJustify === j.key ? "bg-purple-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
+                        activeJustify === j.key ? "bg-rose-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
                       }`}
                     >
                       {j.label}
@@ -626,7 +626,7 @@ export function MobileToolControls() {
               onClick={() => setActiveFlexSubmenu(activeFlexSubmenu === "gap" ? null : "gap")}
               className={`h-7 px-2 rounded-lg flex items-center gap-0.5 text-[9.5px] font-mono font-bold transition border cursor-pointer ${
                 activeFlexSubmenu === "gap"
-                  ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
                   : "bg-stone-50 text-stone-700 border-stone-200/80 hover:bg-stone-100"
               }`}
             >
@@ -658,7 +658,7 @@ export function MobileToolControls() {
                         setActiveFlexSubmenu(null);
                       }}
                       className={`px-2 py-1.5 rounded-lg text-left text-[10px] font-mono transition cursor-pointer ${
-                        activeGap === g.key ? "bg-purple-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
+                        activeGap === g.key ? "bg-rose-600 text-white font-bold" : "text-stone-600 hover:bg-stone-50"
                       }`}
                     >
                       {g.label}
@@ -719,7 +719,7 @@ export function MobileToolControls() {
                   type="text" 
                   value={selectedElement.content || ""} 
                   onChange={(e) => updateTree(() => ({ content: e.target.value }))}
-                  className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-purple-500 font-sans text-stone-800"
+                  className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-rose-500 font-sans text-stone-800"
                   placeholder="Text content..."
                 />
               ) : (
@@ -735,7 +735,7 @@ export function MobileToolControls() {
               type="text" 
               value={selectedElement.classes || ""} 
               onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
-              className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-purple-500 font-mono text-stone-800"
+              className="flex-1 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-rose-500 font-mono text-stone-800"
               placeholder="Utilities classes list write..."
             />
           </div>
@@ -776,7 +776,7 @@ export function MobileToolControls() {
           {(() => {
             const currentSub = subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory);
             const IconComponent = currentSub?.icon || activeTab.icon;
-            return <IconComponent size={11} className="text-purple-600 shrink-0" />;
+            return <IconComponent size={11} className="text-rose-600 shrink-0" />;
           })()}
           <span className="max-w-[75px] truncate">
             {subCategoriesConfig[inspectorSection]?.find(s => s.id === subCategory)?.label || "Box Model"}
@@ -816,11 +816,11 @@ export function MobileToolControls() {
                     }}
                     className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left text-[11px] font-semibold transition cursor-pointer ${
                       isSelected 
-                        ? "bg-purple-50 text-purple-700 font-bold border border-purple-100/40" 
+                        ? "bg-rose-50 text-rose-700 font-bold border border-rose-100/40" 
                         : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
                     }`}
                   >
-                    <sub.icon size={11} className={isSelected ? "text-purple-600" : "text-stone-400"} />
+                    <sub.icon size={11} className={isSelected ? "text-rose-600" : "text-stone-400"} />
                     <span className="truncate">{sub.label}</span>
                   </button>
                 );
@@ -862,7 +862,7 @@ export function MobileToolControls() {
           }}
           className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition border cursor-pointer ${
             isActionsDropdownOpen 
-              ? "bg-purple-50 text-purple-600 border-purple-200 shadow-sm" 
+              ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm" 
               : "bg-stone-50 hover:bg-stone-100 text-stone-500 border-stone-200/50"
           }`}
           title="Element Actions"
@@ -952,7 +952,7 @@ export function MobileStylingTabs() {
         }}
       >
         <div className="flex items-center gap-2 text-[11px] font-medium text-stone-200 animate-pulse">
-          <MousePointer size={14} className="text-purple-400" />
+          <MousePointer size={14} className="text-rose-400" />
           <span>Tap any element on canvas to design</span>
         </div>
       </div>
@@ -987,7 +987,7 @@ export function MobileStylingTabs() {
                 : "text-stone-400 hover:text-white"
             }`}
           >
-            <tab.icon size={11.5} className={isActive ? "text-purple-600" : "text-stone-400"} />
+            <tab.icon size={11.5} className={isActive ? "text-rose-600" : "text-stone-400"} />
             <span className="text-[10px] tracking-tight whitespace-nowrap">{tab.label}</span>
           </button>
         );

@@ -329,8 +329,8 @@ function DesignerApp() {
           
           {/* Visual Header Branding for Left Dock */}
           <div className="p-4 flex items-center justify-between border-b border-stone-100">
-            <span className="text-[10px] font-mono tracking-widest font-bold text-stone-800 uppercase flex items-center gap-2 bg-purple-50/50 text-purple-700 px-3.5 py-2 rounded-full select-none">
-              <Sparkles size={12} className="text-purple-600" />
+            <span className="text-[10px] font-mono tracking-widest font-bold text-stone-800 uppercase flex items-center gap-2 bg-rose-50/50 text-rose-700 px-3.5 py-2 rounded-full select-none">
+              <Sparkles size={12} className="text-rose-600" />
               Creator Panel
             </span>
             <span className="text-[10px] font-mono text-stone-400">v1.2 Active</span>
@@ -362,7 +362,7 @@ function DesignerApp() {
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <PlusCircle size={14} className={activeTab === "elements" ? "text-purple-600" : "text-stone-400"} />
+                <PlusCircle size={14} className={activeTab === "elements" ? "text-rose-600" : "text-stone-400"} />
                 <span>Add</span>
               </button>
               <button
@@ -388,7 +388,7 @@ function DesignerApp() {
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <Settings size={14} className={activeTab === "styles" ? "text-white" : "text-purple-500"} />
+                <Settings size={14} className={activeTab === "styles" ? "text-white" : "text-rose-500"} />
                 <span>Styles</span>
               </button>
             </div>
@@ -405,7 +405,7 @@ function DesignerApp() {
                     value={activeSearch}
                     onChange={(e) => setActiveSearch(e.target.value)}
                     placeholder="Search templates..."
-                    className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl text-xs font-sans placeholder-stone-400 focus:outline-none focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition duration-200 shadow-inner"
+                    className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl text-xs font-sans placeholder-stone-400 focus:outline-none focus:border-rose-300 focus:ring-1 focus:ring-rose-300 transition duration-200 shadow-inner"
                   />
                 </div>
                 
@@ -419,7 +419,7 @@ function DesignerApp() {
                       tagBg = "bg-emerald-50 text-emerald-700 border border-emerald-100";
                     } else if (preset.name.includes("Newsletter")) {
                       tagLabel = "CAMPAIGN";
-                      tagBg = "bg-indigo-50 text-indigo-700 border border-indigo-100";
+                      tagBg = "bg-amber-50 text-amber-700 border border-amber-100";
                     } else if (preset.name.includes("Swiss")) {
                       tagLabel = "SWISS GRID";
                       tagBg = "bg-rose-50 text-rose-700 border border-rose-100";
@@ -428,7 +428,7 @@ function DesignerApp() {
                       tagBg = "bg-amber-50 text-amber-700 border border-amber-100";
                     } else if (preset.name.includes("Testimonial")) {
                       tagLabel = "REVIEWS";
-                      tagBg = "bg-purple-50 text-purple-700 border border-purple-100";
+                      tagBg = "bg-rose-50 text-rose-700 border border-rose-100";
                     }
 
                     return (
@@ -440,10 +440,10 @@ function DesignerApp() {
                             setMobileActiveView("canvas");
                           }
                         }}
-                        className="p-4 bg-white hover:bg-gradient-to-br hover:from-white hover:to-purple-50/15 border border-stone-200/80 hover:border-purple-300 rounded-2xl cursor-pointer group transition-all duration-300 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
+                        className="p-4 bg-white hover:bg-gradient-to-br hover:from-white hover:to-rose-50/15 border border-stone-200/80 hover:border-rose-300 rounded-2xl cursor-pointer group transition-all duration-300 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="text-xs font-bold text-stone-800 group-hover:text-purple-600 transition">
+                          <h4 className="text-xs font-bold text-stone-800 group-hover:text-rose-600 transition">
                             {preset.name}
                           </h4>
                           <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${tagBg}`}>
@@ -476,29 +476,29 @@ function DesignerApp() {
                   <button
                     type="button"
                     onClick={() => addNewElement("container", "div", "p-8 bg-white rounded-3xl border border-stone-200 flex flex-col gap-5 shadow-sm")}
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-blue-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-blue-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
+                    className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition">
-                        <Square size={13} className="fill-blue-100" />
+                      <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
+                        <Square size={13} className="fill-orange-100" />
                       </div>
                       <span className="group-hover:text-stone-900 transition font-sans">Aesthetic Light Card</span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-blue-500" />
+                    <Plus size={11} className="text-stone-400 group-hover:text-orange-500" />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => addNewElement("container", "div", "grid grid-cols-1 md:grid-cols-2 gap-6 w-full py-4")}
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-blue-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-blue-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
+                    className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition">
+                      <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
                         <Layout size={13} />
                       </div>
                       <span className="group-hover:text-stone-900 transition font-sans">Dual Column Grid (1/2)</span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-blue-500" />
+                    <Plus size={11} className="text-stone-400 group-hover:text-orange-500" />
                   </button>
                 </div>
 
@@ -556,43 +556,43 @@ function DesignerApp() {
                   <button
                     type="button"
                     onClick={() => addNewElement("button", "button", "px-6 py-3 bg-stone-900 text-white font-medium text-xs hover:bg-stone-800 rounded-xl shadow-md transition-all cursor-pointer font-sans active:scale-95", "Primary Action")}
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-purple-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-purple-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
+                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition">
-                        <Play size={11} className="fill-purple-200" />
+                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
+                        <Play size={11} className="fill-rose-200" />
                       </div>
                       <span className="group-hover:text-stone-900 transition font-sans">Micro Solid Button</span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-purple-500" />
+                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("badge", "span", "inline-block px-3 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold", "FEATURED TAG")}
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-purple-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-purple-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
+                    onClick={() => addNewElement("badge", "span", "inline-block px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold", "FEATURED TAG")}
+                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition">
+                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
                         <CheckCircle2 size={13} />
                       </div>
                       <span className="group-hover:text-stone-900 transition font-sans">Aesthetic Tag Capsule</span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-purple-500" />
+                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => addNewElement("image", "img", "w-full h-48 rounded-2xl object-cover shadow-sm mb-4 bg-stone-100", "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80")}
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-purple-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-purple-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
+                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition">
+                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
                         <ImageIcon size={13} />
                       </div>
                       <span className="group-hover:text-stone-900 transition font-sans">Image Cover Box</span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-purple-500" />
+                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
                   </button>
                 </div>
               </div>
@@ -643,7 +643,7 @@ function DesignerApp() {
                 className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white text-center p-6"
               >
                 <div id="rotating_spinner" className="flex flex-col items-center gap-4">
-                  <RefreshCw className="animate-spin text-purple-400" size={32} />
+                  <RefreshCw className="animate-spin text-rose-400" size={32} />
                   <div className="text-center">
                     <p className="text-sm font-semibold tracking-wide font-mono">AUTOLAYOUT RECONSTRUCTING</p>
                     <p className="text-xs text-stone-300 mt-1 max-w-sm">Dressing visual nodes, calculating viewport layout, & balancing typography...</p>
@@ -654,36 +654,36 @@ function DesignerApp() {
           </AnimatePresence>
 
           {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
-          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 p-2 md:p-2.5 px-3 mb-3 md:mb-4 shadow-sm flex flex-row flex-wrap items-center justify-center sm:justify-between gap-3 text-xs select-none z-10 box-border rounded-[18px] lg:rounded-[50px]">
+          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] p-1.5 px-2 md:p-2.5 md:px-3 mb-3 md:mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-2 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0" style={{ height: "46px", borderRadius: "50px" }}>
             
             {/* Left Column: Landscape vs Portrait (Only when non-desktop viewports) */}
-            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-3">
+            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
               {canvasViewport !== "desktop" && (
-                <div className="flex flex-row flex-wrap items-center justify-center gap-1 bg-stone-50 p-1 md:p-1.5 rounded-[30px] border border-stone-100">
+                <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("portrait")}
                     title="Vertical Mode"
-                    className={`px-3 py-1.5 rounded-[30px] transition-all flex flex-row items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
                       canvasOrientation === "portrait"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`transition-transform duration-300 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={12} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Portrait</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("landscape")}
                     title="Landscape Mode"
-                    className={`px-3 py-1.5 rounded-[30px] transition-all flex flex-row items-center gap-1.5 cursor-pointer text-[11px] font-semibold ${
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
                       canvasOrientation === "landscape"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`rotate-90 transition-transform duration-300 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
+                    <Smartphone size={12} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
                     <span>Landscape</span>
                   </button>
                 </div>
@@ -691,26 +691,27 @@ function DesignerApp() {
             </div>
 
             {/* Middle Column: Auto Layout Adjustments Quick Actions */}
-            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-3">
+            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
               <button
                 type="button"
                 onClick={runAIResponsiveAudit}
                 disabled={!hasApiKey}
                 title={hasApiKey ? "Rewrite styles for outstanding mobile/tablet layout presentation" : "Active Gemini API key is required"}
-                className={`px-3 py-1.5 text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row items-center gap-1.5 transition cursor-pointer active:scale-95 border ${
+                className={`px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 transition cursor-pointer active:scale-95 border shrink-0 whitespace-nowrap ${
                   hasApiKey 
-                    ? "bg-purple-600 hover:bg-purple-700 text-white border-purple-700" 
+                    ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-700" 
                     : "bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200"
                 }`}
+                style={{ borderRadius: "50px" }}
               >
-                <Sparkles size={11} className={hasApiKey ? "text-purple-200" : "text-stone-300"} />
+                <Sparkles size={11} className={hasApiKey ? "text-rose-200 shrink-0" : "text-stone-300 shrink-0"} />
                 <span>AI Audit</span>
               </button>
             </div>
 
             {/* Right Column: Custom Scaling Slider with click Adjustments */}
-            <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto">
-              <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 bg-stone-50 p-1 md:p-1.5 rounded-[30px] border border-stone-100 w-full sm:w-auto">
+            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap">
+              <div className="flex flex-row flex-nowrap bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap">
                 <button
                   type="button"
                   onClick={() => {
@@ -721,9 +722,10 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom Out (-10%)"
-                  className="p-1 px-2 hover:bg-white rounded-[30px] text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
+                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
+                  style={{ borderRadius: "50px" }}
                 >
-                  <ZoomOut size={12} />
+                  <ZoomOut size={12} className="shrink-0" />
                 </button>
                 
                 <input 
@@ -733,8 +735,9 @@ function DesignerApp() {
                   step="0.05"
                   value={zoomScale === "auto" ? 1.0 : zoomScale}
                   onChange={(e) => setZoomScale(parseFloat(e.target.value))}
-                  className="w-16 md:w-20 accent-stone-800 h-[3px] bg-stone-200 rounded-[30px] cursor-pointer mx-1"
+                  className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
                   title="Drag zoom level"
+                  style={{ borderRadius: "50px" }}
                 />
 
                 <button
@@ -747,22 +750,24 @@ function DesignerApp() {
                     }
                   }}
                   title="Zoom In (+10%)"
-                  className="p-1 px-2 hover:bg-white rounded-[30px] text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200"
+                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
+                  style={{ borderRadius: "50px" }}
                 >
-                  <ZoomIn size={12} />
+                  <ZoomIn size={12} className="shrink-0" />
                 </button>
 
-                <div className="h-4 w-px bg-stone-200 mx-1 hidden sm:block" />
+                <div className="h-4 w-px bg-stone-200 mx-0.5 md:mx-1 shrink-0" />
 
                 <button
                   type="button"
                   onClick={() => setZoomScale(zoomScale === "auto" ? 1.0 : "auto")}
                   title="Toggle container boundaries Auto Fit"
-                  className={`px-3 py-1.5 rounded-[30px] text-[10px] uppercase transition cursor-pointer min-w-[50px] text-center ${
+                  className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[40px] md:min-w-[50px] text-center shrink-0 whitespace-nowrap ${
                     zoomScale === "auto" 
                       ? "bg-stone-800 text-white font-bold shadow-sm" 
                       : "bg-white text-stone-600 hover:bg-stone-50 font-semibold shadow-sm border border-stone-200/60"
                   }`}
+                  style={{ borderRadius: "50px" }}
                 >
                   {zoomScale === "auto" ? "Fit" : `${Math.round((zoomScale as number) * 100)}%`}
                 </button>
@@ -823,7 +828,7 @@ function DesignerApp() {
             >
               <div className="p-6 border-b border-stone-200 flex items-center justify-between bg-stone-50">
                 <div className="flex items-center gap-2">
-                  <FileCode size={20} className="text-purple-600" />
+                  <FileCode size={20} className="text-rose-600" />
                   <div>
                     <h2 className="text-sm font-semibold text-stone-900">Your Compiled HTML & Tailwind Output</h2>
                     <p className="text-[10px] text-stone-500 font-mono tracking-wide">COPY OR DOWNLOAD THE BLUEPRINT ROUTINE</p>
@@ -838,9 +843,9 @@ function DesignerApp() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="p-3.5 bg-purple-50 rounded-2xl border border-purple-100 flex items-start gap-2 text-left">
-                  <Lightbulb size={16} className="text-purple-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-purple-900 leading-relaxed font-light">
+                <div className="p-3.5 bg-rose-50 rounded-2xl border border-rose-100 flex items-start gap-2 text-left">
+                  <Lightbulb size={16} className="text-rose-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-rose-900 leading-relaxed font-light">
                     This component is fully responsive and self-contained. It contains pure HTML inline utilities styled specifically via Tailwind CSS. To see a live preview in a static browser environment, load the single `.html` document bundle by clicking "Download Static Layout" below.
                   </p>
                 </div>
@@ -909,11 +914,11 @@ function DesignerApp() {
               {/* Title Header with Close Button */}
               <div className="p-4 px-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
                 <div className="flex items-center gap-2">
-                  <Sliders size={15} className="text-purple-600 animate-pulse" />
+                  <Sliders size={15} className="text-rose-600 animate-pulse" />
                   <div className="text-left">
                     <h3 className="text-xs font-bold text-stone-900 font-sans">Detailed Styling Inspector</h3>
                     {selectedElement && (
-                      <p className="text-[9px] font-mono text-purple-600 uppercase font-bold tracking-wider mt-0.5">
+                      <p className="text-[9px] font-mono text-rose-600 uppercase font-bold tracking-wider mt-0.5">
                         Editing &lt;{selectedElement.tag}&gt; element
                       </p>
                     )}
@@ -968,7 +973,7 @@ function DesignerApp() {
         <button
           onClick={() => setMobileActiveView("library")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "library" ? "text-purple-600 bg-purple-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "library" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <Layout size={16} />
@@ -977,7 +982,7 @@ function DesignerApp() {
         <button
           onClick={() => setMobileActiveView("canvas")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "canvas" ? "text-purple-600 bg-purple-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "canvas" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <MousePointer size={16} />
@@ -986,7 +991,7 @@ function DesignerApp() {
         <button
           onClick={() => setMobileActiveView("inspector")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "inspector" ? "text-purple-600 bg-purple-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "inspector" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <Settings size={16} />

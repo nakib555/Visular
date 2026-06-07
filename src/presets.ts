@@ -44,7 +44,7 @@ export const COMPONENT_PRESETS: ComponentPreset[] = [
           type: "text",
           tag: "p",
           classes: "text-stone-400 text-sm md:text-base max-w-md mx-auto mb-8 font-light leading-relaxed",
-          content: "Receive a single elegant component blueprint in your inbox each Friday. Minimal styling, maximum impact.",
+          content: "Receive a single elegant component orangeprint in your inbox each Friday. Minimal styling, maximum impact.",
         },
         {
           id: "news_form_div",

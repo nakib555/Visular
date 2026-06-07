@@ -109,7 +109,7 @@ export function DeviceFrame({
           onDrop={handleDrop}
           className={`w-full h-full rounded-[42px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300
             ${canvasBackground} 
-            ${dragDropTargetId === "root" ? "border-purple-500 ring-2 ring-purple-500/50" : "border-stone-200/50"}`}
+            ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`}
         >
           {/* Dynamic Island and Status Bar Overlay placed INSIDE the canvas but sticky/absolute */}
           <div className="sticky top-0 w-full h-[54px] z-50 flex justify-between items-center px-7 text-[12px] font-sans font-medium tracking-wide pointer-events-none"
@@ -119,8 +119,8 @@ export function DeviceFrame({
             {/* Dynamic Island */}
             {canvasOrientation === "portrait" ? (
               <div className="absolute top-[11px] left-1/2 -translate-x-1/2 w-[122px] h-[37px] bg-black rounded-full flex items-center shadow-md pointer-events-auto ring-1 ring-white/5">
-                <div className="ml-3 w-2.5 h-2.5 rounded-full bg-blue-900/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
-                <div className="ml-auto mr-3 w-2.5 h-2.5 rounded-full bg-blue-900/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+                <div className="ml-3 w-2.5 h-2.5 rounded-full bg-orange-900/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+                <div className="ml-auto mr-3 w-2.5 h-2.5 rounded-full bg-orange-900/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/5 to-transparent pointer-events-none" />
               </div>
             ) : (
@@ -140,7 +140,7 @@ export function DeviceFrame({
           <div className="flex-1 flex flex-col relative min-h-max pb-8 px-4 w-full pt-2">
             {isEmpty && (
               <div id="empty_view" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-[85%] p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-stone-200 shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500 z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5" />
                 <Layout className="mx-auto text-stone-400 mb-3 relative z-10" size={24} />
                 <h3 className="text-xs font-bold text-stone-800 tracking-tight relative z-10">Mobile Canvas</h3>
                 <p className="text-[10px] text-stone-500 mt-1.5 leading-relaxed font-medium relative z-10">
@@ -175,7 +175,7 @@ export function DeviceFrame({
         {/* Front camera bezel element */}
         <div className={`absolute bg-black shadow-inner z-50 flex items-center justify-center rounded-full ring-1 ring-white/5
           ${canvasOrientation === "portrait" ? "top-[8px] left-1/2 -translate-x-1/2 w-4 h-4" : "left-[8px] top-1/2 -translate-y-1/2 w-4 h-4"}`}>
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-900/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+          <div className="w-1.5 h-1.5 rounded-full bg-orange-900/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
         </div>
 
         {/* Home Indicator */}
@@ -191,7 +191,7 @@ export function DeviceFrame({
           onDrop={handleDrop}
           className={`w-full h-full rounded-[28px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300
             ${canvasBackground} 
-            ${dragDropTargetId === "root" ? "border-purple-500 ring-2 ring-purple-500/50" : "border-stone-200/50"}`}
+            ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`}
         >
           <div className="sticky top-0 w-full h-10 flex justify-between items-center px-6 text-[12px] font-sans font-medium tracking-wide z-50 pointer-events-none"
                style={{ color: statusColor }}>
@@ -207,7 +207,7 @@ export function DeviceFrame({
           <div className="flex-1 flex flex-col relative w-full px-6 pb-12 min-h-max">
             {isEmpty && (
               <div id="empty_view" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center max-w-sm p-8 bg-white/80 backdrop-blur-md rounded-2xl border border-stone-200 shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500 z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5" />
                 <Layout className="mx-auto text-stone-400 mb-4 xl:scale-110 relative z-10" size={28} />
                 <h3 className="text-sm font-bold text-stone-800 relative z-10 tracking-tight">Tablet Canvas Empty</h3>
                 <p className="text-[11px] text-stone-500 mt-2 leading-relaxed font-medium relative z-10">
@@ -255,12 +255,12 @@ export function DeviceFrame({
           onDrop={handleDrop}
           className={`flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-default relative border-0 flex flex-col z-10
             ${canvasBackground} 
-            ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-purple-500/50" : ""}`}
+            ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-rose-500/50" : ""}`}
         >
           <div className="flex-1 flex flex-col w-full relative min-h-max">
             {isEmpty && (
               <div id="empty_view" className="m-auto mt-[20vh] text-center max-w-lg p-10 bg-white/80 backdrop-blur-md rounded-[20px] border border-stone-200 shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500 z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5" />
                 <Layout className="mx-auto text-stone-300 mb-4 relative z-10" size={32} />
                 <h3 className="text-sm font-bold text-stone-800 tracking-tight relative z-10">Desktop Canvas Outline</h3>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed font-medium relative z-10">

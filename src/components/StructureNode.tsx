@@ -47,7 +47,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
   const getTreeNodeIcon = (type: string, tag: string) => {
     const t = tag.toLowerCase().trim();
     if (t === "div") {
-      return <Layers size={11} className={isSelected ? "text-indigo-200 shrink-0" : "text-indigo-500/80 shrink-0"} />;
+      return <Layers size={11} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-500/80 shrink-0"} />;
     }
     if (t === "section" || t === "main" || t === "header" || t === "footer" || t === "aside" || t === "article" || t.includes("grid")) {
       return <Layout size={11} className={isSelected ? "text-violet-200 shrink-0" : "text-violet-500 shrink-0"} />;
@@ -62,10 +62,10 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
       return <ImageIcon size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
     }
     if (t === "a" || t === "link") {
-      return <Link size={11} className={isSelected ? "text-sky-200 shrink-0" : "text-sky-500 shrink-0"} />;
+      return <Link size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
     }
     if (t === "ul" || t === "ol" || t === "li" || t === "list") {
-      return <List size={11} className={isSelected ? "text-teal-200 shrink-0" : "text-teal-500 shrink-0"} />;
+      return <List size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
     }
     if (t === "input" || t === "textarea" || t === "select" || t === "form" || t === "label") {
       return <FormInput size={11} className={isSelected ? "text-orange-200 shrink-0" : "text-orange-500 shrink-0"} />;
@@ -74,7 +74,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
       return <Type size={11} className={isSelected ? "text-stone-300 shrink-0" : "text-stone-400 shrink-0"} />;
     }
     if (t === "nav" || t === "menu") {
-      return <Menu size={11} className={isSelected ? "text-indigo-200 shrink-0" : "text-indigo-600 shrink-0"} />;
+      return <Menu size={11} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-600 shrink-0"} />;
     }
     if (t === "svg" || t === "icon" || t === "path") {
       return <Sparkles size={11} className={isSelected ? "text-yellow-200 shrink-0" : "text-yellow-500 shrink-0"} />;
@@ -83,7 +83,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
     // Default fallback based on type
     switch (type) {
       case "container":
-        return <Square size={11} className={isSelected ? "text-indigo-100 fill-white/10 shrink-0" : "text-indigo-500 fill-indigo-50/20 shrink-0"} />;
+        return <Square size={11} className={isSelected ? "text-amber-100 fill-white/10 shrink-0" : "text-amber-500 fill-amber-50/20 shrink-0"} />;
       case "text":
         return <Type size={11} className={isSelected ? "text-amber-200 shrink-0" : "text-amber-500 shrink-0"} />;
       case "image":
@@ -91,7 +91,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
       case "button":
         return <Play size={11} className={isSelected ? "text-pink-200 shrink-0" : "text-pink-500 shrink-0"} />;
       case "badge":
-        return <CheckCircle2 size={11} className={isSelected ? "text-sky-200 shrink-0" : "text-sky-500 shrink-0"} />;
+        return <CheckCircle2 size={11} className={isSelected ? "text-emerald-200 shrink-0" : "text-emerald-500 shrink-0"} />;
       default:
         return <Square size={11} className="text-stone-400 shrink-0" />;
     }
@@ -152,7 +152,7 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
           isSelected 
             ? "bg-stone-900 border-stone-800 text-white shadow-md shadow-stone-900/10" 
             : "border-transparent text-stone-600 hover:bg-stone-100/80 hover:text-stone-900"
-        } ${isCurrentlyDragged ? "opacity-30 border-dashed border-stone-300 grayscale select-none pointer-events-none scale-95" : ""} ${dragDropTargetId === node.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset bg-purple-50" : ""} ${dragDropTargetId === node.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === node.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
+        } ${isCurrentlyDragged ? "opacity-30 border-dashed border-stone-300 grayscale select-none pointer-events-none scale-95" : ""} ${dragDropTargetId === node.id && dragDropPosition === "inside" ? "ring-2 ring-rose-500 ring-inset bg-rose-50" : ""} ${dragDropTargetId === node.id && dragDropPosition === "before" ? "border-t-[3px] border-t-rose-500" : ""} ${dragDropTargetId === node.id && dragDropPosition === "after" ? "border-b-[3px] border-b-rose-500" : ""}`}
         style={{ paddingLeft: `${depth * 10 + 6}px`, paddingRight: '6px', paddingTop: '6px', paddingBottom: '6px' }}
       >
         <div className="flex flex-row items-center gap-2 overflow-hidden pr-2">
@@ -202,9 +202,9 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
                 {showBefore && (
                   <div 
                     style={{ marginLeft: `${(depth + 1) * 10 + 11}px` }}
-                    className="h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
+                    className="h-1 bg-gradient-to-r from-rose-500 to-amber-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
                   >
-                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-purple-600 border border-white shadow shadow-purple-500/50" />
+                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-rose-600 border border-white shadow shadow-rose-500/50" />
                   </div>
                 )}
                 
@@ -215,9 +215,9 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
                 {showAfter && (
                   <div 
                     style={{ marginLeft: `${(depth + 1) * 10 + 11}px` }}
-                    className="h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
+                    className="h-1 bg-gradient-to-r from-rose-500 to-amber-500 rounded-full my-1 relative flex items-center justify-start pointer-events-none animate-pulse"
                   >
-                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-purple-600 border border-white shadow shadow-purple-500/50" />
+                    <div className="absolute left-0 -translate-x-[4px] w-2 h-2 rounded-full bg-rose-600 border border-white shadow shadow-rose-500/50" />
                   </div>
                 )}
               </React.Fragment>

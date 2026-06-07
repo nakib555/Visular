@@ -67,7 +67,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
   const customClassList = `max-w-full ${elem.classes || ""} ${
     isSelected ? "selected-element-outline" : "hover-element-outline"
-  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} relative transition-all duration-200`;
+  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
   if (isDoubleClicked && elem.content !== undefined) {
     return (
@@ -77,7 +77,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         onChange={(e) => setInlineTextValue(e.target.value)}
         onBlur={handleInlineBlur}
         onKeyDown={handleInlineKeyDown}
-        className="w-full text-stone-900 bg-stone-100 p-2 border border-purple-500 rounded-lg font-sans text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+        className="w-full text-stone-900 bg-stone-100 p-2 border border-rose-500 rounded-lg font-sans text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
         style={{ minHeight: "40px" }}
       />
     );
@@ -120,7 +120,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         }}
         className={`relative inline-block ${elem.classes || ""} ${
           isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
-        } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""} transition-all duration-200 cursor-pointer`}
+        } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-rose-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-rose-500" : ""} transition-all duration-200 cursor-pointer`}
       >
         <img
           src={imgSrc}
@@ -131,18 +131,18 @@ export function VisualNode({ elem }: VisualNodeProps) {
         {isSelected && (
           <motion.span
             layoutId="focusedNodeOutline"
-            className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.35)] block"
+            className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.35)] block"
             transition={{ type: "spring", stiffness: 380, damping: 28 }}
           >
             {/* Corner Anchors */}
-            <span className="absolute -top-1 -left-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-            <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-            <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -top-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
 
             {/* Quick Actions Bar */}
             <span className="absolute -top-11 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-stone-950/95 text-stone-100 border border-stone-800 px-3 py-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(168,85,247,0.15)] text-[10px] uppercase font-mono tracking-widest z-50 pointer-events-auto backdrop-blur-md shrink-0">
-              <span className="text-purple-400 font-bold px-1.5 bg-purple-500/10 rounded-md ring-1 ring-purple-500/20">{elem.tag}</span>
+              <span className="text-rose-400 font-bold px-1.5 bg-rose-500/10 rounded-md ring-1 ring-rose-500/20">{elem.tag}</span>
               <span className="h-3 w-px bg-stone-800"></span>
               
               <span
@@ -159,7 +159,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
                   setDragDropPosition(null);
                 }}
                 title="Drag to reposition"
-                className="p-1 hover:text-purple-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
+                className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
               >
                 <Layout size={11.5} />
               </span>
@@ -168,7 +168,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
                 role="button"
                 onClick={(e) => { e.stopPropagation(); duplicateElement(elem.id); }}
                 title="Duplicate node"
-                className="p-1 hover:text-purple-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
+                className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
               >
                 <Copy size={11.5} />
               </span>
@@ -205,13 +205,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
               style={{ contentVisibility: "auto" }}
             >
               {/* Pulsing Horizontal Gradient Line */}
-              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.85)]" />
+              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
               {/* Point Indicator Dot */}
-              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-purple-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-purple-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-purple-900/20 flex items-center gap-1">
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1">
                 <span>Insert here</span>
               </div>
             </div>
@@ -225,13 +225,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
               style={{ contentVisibility: "auto" }}
             >
               {/* Pulsing Horizontal Gradient Line */}
-              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.85)]" />
+              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
               {/* Point Indicator Dot */}
-              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-purple-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-purple-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-purple-900/20 flex items-center gap-1">
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1">
                 <span>Insert here</span>
               </div>
             </div>
@@ -244,7 +244,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
   // Append !overflow-visible on select so corner anchors and toolbar never clip
   const updatedClassList = `max-w-full ${elem.classes || ""} ${
     isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
-  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-purple-400 pointer-events-none" : ""} relative transition-all duration-200`;
+  } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
   return (
     <TagName
@@ -287,23 +287,23 @@ export function VisualNode({ elem }: VisualNodeProps) {
         setDragDropTargetId(null);
         setDragDropPosition(null);
       }}
-      className={`${updatedClassList} transition-all ${dragDropTargetId === elem.id && dragDropPosition === "inside" ? "ring-2 ring-purple-500 ring-inset opacity-80 bg-purple-500/5" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-purple-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-purple-500" : ""}`}
+      className={`${updatedClassList} transition-all ${dragDropTargetId === elem.id && dragDropPosition === "inside" ? "ring-2 ring-rose-500 ring-inset opacity-80 bg-rose-500/5" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-rose-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-rose-500" : ""}`}
     >
       {isSelected && (
         <motion.span
           layoutId="focusedNodeOutline"
-          className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.35)] block"
+          className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.35)] block"
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
         >
           {/* Corner Anchors */}
-          <span className="absolute -top-1 -left-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-          <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
-          <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-purple-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+          <span className="absolute -top-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+          <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+          <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
 
           {/* Quick Actions Bar */}
           <span className="absolute -top-11 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-stone-950/95 text-stone-100 border border-stone-800 px-3 py-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(168,85,247,0.15)] text-[10px] uppercase font-mono tracking-widest z-50 pointer-events-auto backdrop-blur-md shrink-0">
-            <span className="text-purple-400 font-bold px-1.5 bg-purple-500/10 rounded-md ring-1 ring-purple-500/20">{elem.tag}</span>
+            <span className="text-rose-400 font-bold px-1.5 bg-rose-500/10 rounded-md ring-1 ring-rose-500/20">{elem.tag}</span>
             <span className="h-3 w-px bg-stone-800"></span>
             
             <span
@@ -320,7 +320,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
                 setDragDropPosition(null);
               }}
               title="Drag to reposition"
-              className="p-1 hover:text-purple-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
+              className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
             >
               <Layout size={11.5} />
             </span>
@@ -329,7 +329,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
               role="button"
               onClick={(e) => { e.stopPropagation(); duplicateElement(elem.id); }}
               title="Duplicate node"
-              className="p-1 hover:text-purple-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
+              className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
             >
               <Copy size={11.5} />
             </span>
@@ -352,11 +352,11 @@ export function VisualNode({ elem }: VisualNodeProps) {
       
       {/* Highlight inside container placeholder area */}
       {dragDropTargetId === elem.id && dragDropPosition === "inside" && (
-        <div className="w-full min-h-[50px] border-2 border-dashed border-purple-500/70 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl flex items-center justify-center p-4 my-2 pointer-events-none animate-pulse transition-all">
-          <span className="text-[10px] sm:text-xs font-semibold text-purple-700 uppercase tracking-widest font-mono flex items-center gap-2">
+        <div className="w-full min-h-[50px] border-2 border-dashed border-rose-500/70 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl flex items-center justify-center p-4 my-2 pointer-events-none animate-pulse transition-all">
+          <span className="text-[10px] sm:text-xs font-semibold text-rose-700 uppercase tracking-widest font-mono flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
             </span>
             Nest inside {elem.tag}
           </span>

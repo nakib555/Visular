@@ -80,10 +80,62 @@ const CSS_HIERARCHY_DATA: CSSCategory[] = [
         properties: [
           { name: "width", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
           { name: "height", values: "auto | <length> | <percentage> | max-content | min-content", note: "e.g., 100px, 50%" },
-          { name: "margin", values: "auto | <length> | <percentage>", note: "e.g., 10px, 2rem, 5%" },
-          { name: "padding", values: "<length> | <percentage>", note: "e.g., 20px, 1.5em, 10%" },
           { name: "position", values: "static | relative | absolute | fixed | sticky" },
           { name: "inset", values: "auto | <length> | <percentage>" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "SPACING",
+    icon: Move,
+    subCategories: [
+      {
+        name: "Outer Spacing (Physical Dimension)",
+        properties: [
+          { name: "margin", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>", note: "e.g. 10px, 1.5rem, 50vw, 10cqw, 5%, calc(100% - 20px)" },
+          { name: "margin-top", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-right", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-bottom", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-left", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+        ]
+      },
+      {
+        name: "Inner Spacing (Physical Dimension)",
+        properties: [
+          { name: "padding", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>", note: "e.g. 10px, 1.5rem, 50vw, 10cqw, 5%, clamp(1rem, 2vw, 3rem)" },
+          { name: "padding-top", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-right", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-bottom", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-left", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+        ]
+      },
+      {
+        name: "Logical Outer Spacing (Writing-System Agnostic)",
+        properties: [
+          { name: "margin-block", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-inline", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-block-start", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-block-end", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-inline-start", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "margin-inline-end", values: "auto | <absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+        ]
+      },
+      {
+        name: "Logical Inner Spacing (Writing-System Agnostic)",
+        properties: [
+          { name: "padding-block", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-inline", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-block-start", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-block-end", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-inline-start", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" },
+          { name: "padding-inline-end", values: "<absolute-length> | <relative-font-length> | <viewport-length> | <container-length> | <percentage> | <math-function> | <css-variable> | <global-value>" }
+        ]
+      },
+      {
+        name: "Spacing Trim (Next-Gen Container Spacing Controls)",
+        properties: [
+          { name: "margin-trim", values: "none | all | block | block-start | block-end | inline | inline-start | inline-end | <global-value>" }
         ]
       }
     ]
@@ -239,7 +291,8 @@ export function InspectorPanel({
 }: InspectorPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    "LAYOUT & STRUCTURE": true,
+    "LAYOUT": true,
+    "SPACING": true,
     "TYPOGRAPHY & TEXT": true,
     "APPEARANCE & VISUALS": true,
     "MOVEMENT & ANIMATION": true,
@@ -325,11 +378,11 @@ export function InspectorPanel({
             onClick={() => setInspectorSection(tab.id as InspectorSection)}
             className={`relative px-3.5 py-2 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer shrink-0 text-xs font-semibold ${
               inspectorSection === tab.id 
-                ? "text-purple-700 bg-purple-50/80 shadow-sm border border-purple-100/50" 
+                ? "text-rose-700 bg-rose-50/80 shadow-sm border border-rose-100/50" 
                 : "text-stone-500 border border-transparent hover:text-stone-800 hover:bg-stone-50"
             }`}
           >
-            <tab.icon size={13.5} className={inspectorSection === tab.id ? "text-purple-600" : "text-stone-400"} />
+            <tab.icon size={13.5} className={inspectorSection === tab.id ? "text-rose-600" : "text-stone-400"} />
             <span className="whitespace-nowrap">{tab.label}</span>
           </button>
         ))}
@@ -342,13 +395,13 @@ export function InspectorPanel({
         {inspectorSection === "spacing" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Move size={15} className="text-purple-600" />
+              <Move size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Box Model & Spacing</span>
             </div>
 
             {/* Sub-Category: Box Model (Element Spacing & Sizing) */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Grid size={11} />
                 <span>Box Model (Spacing & Sizing)</span>
               </div>
@@ -664,7 +717,7 @@ export function InspectorPanel({
         {inspectorSection === "layout" && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Maximize size={15} className="text-purple-600" />
+              <Maximize size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest font-sans">Layout Settings</span>
             </div>
 
@@ -705,8 +758,8 @@ export function InspectorPanel({
                     className="w-full flex items-center justify-between pb-1 text-left cursor-pointer select-none font-sans"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-[10px] uppercase font-bold tracking-wider text-purple-700 font-mono flex items-center gap-1.5">
-                        <IconComponent size={11} className="text-purple-600" />
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-rose-700 font-mono flex items-center gap-1.5">
+                        <IconComponent size={11} className="text-rose-600" />
                         <span>{label}</span>
                       </div>
                       {badge && (
@@ -732,7 +785,7 @@ export function InspectorPanel({
                           <select
                             value={displayVal}
                             onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", e.target.value) }))}
-                            className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer font-medium"
+                            className="w-full appearance-none bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer font-medium"
                           >
                             <option value="block">block</option>
                             <option value="inline-block">inline-block</option>
@@ -753,8 +806,8 @@ export function InspectorPanel({
                         </div>
 
                         {/* Behavior Details Banner */}
-                        <div className="p-3 rounded-xl bg-purple-50/40 border border-purple-100/55 text-[10px] leading-relaxed text-purple-900">
-                          <span className="font-bold uppercase tracking-wider text-purple-700 text-[9px] block font-mono">Layout Behavior context</span>
+                        <div className="p-3 rounded-xl bg-rose-50/40 border border-rose-100/55 text-[10px] leading-relaxed text-rose-900">
+                          <span className="font-bold uppercase tracking-wider text-rose-700 text-[9px] block font-mono">Layout Behavior context</span>
                           <p className="mt-1">
                             {displayVal === "block" && "Behaves as a block container. Takes up full width and starts on a new line."}
                             {displayVal === "inline-block" && "Behaves as an inline-level box. Sizing is respectably editable."}
@@ -782,15 +835,15 @@ export function InspectorPanel({
                     {expandedLayoutSections.flex && (
                       <div className="space-y-4 pt-3 animate-in fade-in duration-200">
                         {!isFlexContext ? (
-                          <div className="bg-purple-50/30 border border-purple-100 rounded-xl p-3.5 text-center space-y-2">
-                            <div className="text-purple-700 font-bold text-[11px] font-sans">Convert Layout to Flexbox</div>
-                            <p className="text-[10px] text-purple-600 leading-normal font-medium max-w-[210px] mx-auto">
+                          <div className="bg-rose-50/30 border border-rose-100 rounded-xl p-3.5 text-center space-y-2">
+                            <div className="text-rose-700 font-bold text-[11px] font-sans">Convert Layout to Flexbox</div>
+                            <p className="text-[10px] text-rose-600 leading-normal font-medium max-w-[210px] mx-auto">
                               To edit direction, align, wrap, and gap features, change layout display type to flex.
                             </p>
                             <button
                               type="button"
                               onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", "flex") }))}
-                              className="w-full h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
+                              className="w-full h-8 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
                             >
                               <Cpu size={12} /> Convert to Flex
                             </button>
@@ -884,7 +937,7 @@ export function InspectorPanel({
                             <div className="flex flex-col gap-1.5">
                               <div className="flex items-center justify-between">
                                 <label className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider pl-1 font-mono font-bold">item gap</label>
-                                <span className="text-[8px] text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Dual-Nature</span>
+                                <span className="text-[8px] text-rose-700 bg-rose-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Dual-Nature</span>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="relative">
@@ -909,10 +962,10 @@ export function InspectorPanel({
                                   placeholder="custom e.g. 15px"
                                   value={parseArbitraryValue(selectedElement.classes, "gap-")}
                                   onChange={(e) => updateArbitraryClass("gap-", e.target.value)}
-                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400"
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400"
                                 />
                               </div>
-                              <p className="text-[9px] text-purple-700 leading-snug bg-purple-50/40 p-2 rounded-xl border border-purple-100/30 font-sans font-medium">
+                              <p className="text-[9px] text-rose-700 leading-snug bg-rose-50/40 p-2 rounded-xl border border-rose-100/30 font-sans font-medium">
                                 💡 **Gap Dual-Nature:** Spacing applies column-wise in standard horizontal rows, and row-wise in vertical columns (`flex-col`) automatically.
                               </p>
                             </div>
@@ -922,7 +975,7 @@ export function InspectorPanel({
                         {/* --- 3. FLEXBOX ITEMS SUB-CATEGORY --- */}
                         <div className="border-t border-stone-200/40 pt-4.5 space-y-4 font-sans select-none">
                           <div className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono flex items-center gap-1.5">
-                            <Sparkles size={11} className="text-purple-600" />
+                            <Sparkles size={11} className="text-rose-600" />
                             <span>Flexbox Items (Child overrides)</span>
                           </div>
 
@@ -947,7 +1000,7 @@ export function InspectorPanel({
                                 placeholder="custom e.g. 2.5"
                                 value={parseArbitraryValue(selectedElement.classes, "grow-")}
                                 onChange={(e) => updateArbitraryClass("grow-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -973,7 +1026,7 @@ export function InspectorPanel({
                                 placeholder="custom e.g. 3"
                                 value={parseArbitraryValue(selectedElement.classes, "shrink-")}
                                 onChange={(e) => updateArbitraryClass("shrink-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -1002,7 +1055,7 @@ export function InspectorPanel({
                                 placeholder="e.g. 200px, 15rem"
                                 value={parseArbitraryValue(selectedElement.classes, "basis-")}
                                 onChange={(e) => updateArbitraryClass("basis-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -1011,7 +1064,7 @@ export function InspectorPanel({
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center justify-between">
                               <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono">align-self</label>
-                              <span className="text-[8px] text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Override</span>
+                              <span className="text-[8px] text-rose-700 bg-rose-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Override</span>
                             </div>
                             <div className="relative font-sans">
                               <select
@@ -1030,7 +1083,7 @@ export function InspectorPanel({
                               </select>
                               <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
                             </div>
-                            <p className="text-[9px] text-purple-800 leading-relaxed bg-purple-50/40 p-2.5 rounded-xl border border-purple-100/30 font-medium">
+                            <p className="text-[9px] text-rose-800 leading-relaxed bg-rose-50/40 p-2.5 rounded-xl border border-rose-100/30 font-medium">
                               👉 **Alignment Override:** Parent container's `align-items` sets the default vertical alignment for children; individual items can override it with `align-self` directly.
                             </p>
                           </div>
@@ -1059,7 +1112,7 @@ export function InspectorPanel({
                                 placeholder="custom order integer"
                                 value={parseArbitraryValue(selectedElement.classes, "order-")}
                                 onChange={(e) => updateArbitraryClass("order-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -1078,15 +1131,15 @@ export function InspectorPanel({
                     {expandedLayoutSections.grid && (
                       <div className="space-y-4 pt-3 animate-in fade-in duration-200">
                         {!isGridContext ? (
-                          <div className="bg-purple-50/30 border border-purple-100 rounded-xl p-3.5 text-center space-y-2">
-                            <div className="text-purple-700 font-bold text-[11px] font-sans">Convert Layout to Grid</div>
-                            <p className="text-[10px] text-purple-600 leading-normal font-medium max-w-[210px] mx-auto">
+                          <div className="bg-rose-50/30 border border-rose-100 rounded-xl p-3.5 text-center space-y-2">
+                            <div className="text-rose-700 font-bold text-[11px] font-sans">Convert Layout to Grid</div>
+                            <p className="text-[10px] text-rose-600 leading-normal font-medium max-w-[210px] mx-auto">
                               To edit template columns, spans, rows, gaps, and placement properties, change layout display type to grid.
                             </p>
                             <button
                               type="button"
                               onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "display", "grid") }))}
-                              className="w-full h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
+                              className="w-full h-8 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 mr-auto ml-auto"
                             >
                               <Grid size={11} /> Convert to Grid
                             </button>
@@ -1118,7 +1171,7 @@ export function InspectorPanel({
                                   placeholder="custom e.g. 1fr 2fr"
                                   value={parseArbitraryValue(selectedElement.classes, "grid-cols-")}
                                   onChange={(e) => updateArbitraryClass("grid-cols-", e.target.value)}
-                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                                 />
                               </div>
                             </div>
@@ -1147,7 +1200,7 @@ export function InspectorPanel({
                                   placeholder="custom e.g. 100px auto"
                                   value={parseArbitraryValue(selectedElement.classes, "grid-rows-")}
                                   onChange={(e) => updateArbitraryClass("grid-rows-", e.target.value)}
-                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                                 />
                               </div>
                             </div>
@@ -1200,7 +1253,7 @@ export function InspectorPanel({
                             <div className="flex flex-col gap-1.5">
                               <div className="flex items-center justify-between">
                                 <label className="text-[10px] text-stone-505 font-bold uppercase tracking-wider pl-1 font-mono font-bold">item gap</label>
-                                <span className="text-[8px] text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Dual-Nature</span>
+                                <span className="text-[8px] text-rose-700 bg-rose-50 px-1 py-0.5 rounded font-bold uppercase tracking-wide">Dual-Nature</span>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="relative">
@@ -1225,10 +1278,10 @@ export function InspectorPanel({
                                   placeholder="custom e.g. 1.25rem"
                                   value={parseArbitraryValue(selectedElement.classes, "gap-")}
                                   onChange={(e) => updateArbitraryClass("gap-", e.target.value)}
-                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                                 />
                               </div>
-                              <p className="text-[9px] text-purple-700 leading-snug bg-purple-50/40 p-2 rounded-xl border border-purple-100/30 font-sans font-medium">
+                              <p className="text-[9px] text-rose-700 leading-snug bg-rose-50/40 p-2 rounded-xl border border-rose-100/30 font-sans font-medium">
                                 💡 **Grid Gap Dual-Nature:** Spacing applies column-wise and row-wise across cellular layouts seamlessly.
                               </p>
                             </div>
@@ -1238,7 +1291,7 @@ export function InspectorPanel({
                         {/* --- 4. GRID ITEMS SUB-CATEGORY --- */}
                         <div className="border-t border-stone-200/40 pt-4.5 space-y-4 font-sans select-none">
                           <div className="text-[10px] uppercase font-bold tracking-wider text-stone-500 font-mono flex items-center gap-1.5">
-                            <Sparkles size={11} className="text-purple-600" />
+                            <Sparkles size={11} className="text-rose-600" />
                             <span>Grid Items (Child placement)</span>
                           </div>
 
@@ -1267,7 +1320,7 @@ export function InspectorPanel({
                                 placeholder="custom span / start e.g. 1 / 3"
                                 value={parseArbitraryValue(selectedElement.classes, "col-")}
                                 onChange={(e) => updateArbitraryClass("col-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -1295,7 +1348,7 @@ export function InspectorPanel({
                                 placeholder="custom row e.g. span 2"
                                 value={parseArbitraryValue(selectedElement.classes, "row-")}
                                 onChange={(e) => updateArbitraryClass("row-", e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-purple-400 font-medium"
+                                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700 shadow-xs focus:outline-none focus:border-rose-400 font-medium"
                               />
                             </div>
                           </div>
@@ -1363,7 +1416,7 @@ export function InspectorPanel({
                                 }
                                 updateTree((n) => ({ classes: filtered.join(" ") }));
                               }}
-                              className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 shadow-xs focus:outline-none placeholder-stone-400 focus:border-purple-400 font-medium"
+                              className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 shadow-xs focus:outline-none placeholder-stone-400 focus:border-rose-400 font-medium"
                             />
                           </div>
                         </div>
@@ -1579,13 +1632,13 @@ export function InspectorPanel({
         {inspectorSection === "typography" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2">
-              <Type size={15} className="text-purple-600" />
+              <Type size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Typography & Layout</span>
             </div>
             
             {/* Sub-Category: Core Typography Styles */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Type size={11} />
                 <span>Text styling & Font styles</span>
               </div>
@@ -1602,7 +1655,7 @@ export function InspectorPanel({
                         onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "fontFamily", font) }))}
                         className={`py-1.5 rounded-lg text-xs transition-all duration-200 font-semibold flex items-center justify-center capitalize cursor-pointer ${
                           isActive 
-                            ? "bg-purple-600 text-white shadow-sm font-bold border border-purple-500" 
+                            ? "bg-rose-600 text-white shadow-sm font-bold border border-rose-500" 
                             : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
                         }`}
                       >
@@ -1630,7 +1683,7 @@ export function InspectorPanel({
                         onClick={() => updateTree((n) => ({ classes: setGroupClass(n.classes, "textAlign", align.key) }))}
                         className={`py-2 rounded-lg transition-all duration-150 flex justify-center items-center cursor-pointer ${
                           isActive 
-                            ? "bg-purple-50 text-purple-700 shadow-sm border border-purple-200" 
+                            ? "bg-rose-50 text-rose-700 shadow-sm border border-rose-200" 
                             : "text-stone-400 hover:text-stone-800 hover:bg-stone-100"
                         }`}
                       >
@@ -1649,7 +1702,7 @@ export function InspectorPanel({
                     <select
                       value={getActiveGroupClass(selectedElement.classes, "textSize")}
                       onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "textSize", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm"
+                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
                     >
                       <option value="">Default (Base)</option>
                       <option value="text-xs">XS (12px)</option>
@@ -1674,7 +1727,7 @@ export function InspectorPanel({
                     <select
                       value={getActiveGroupClass(selectedElement.classes, "fontWeight")}
                       onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, "fontWeight", e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm"
+                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
                     >
                       <option value="">Default</option>
                       <option value="font-light">Light (300)</option>
@@ -1691,7 +1744,7 @@ export function InspectorPanel({
 
             {/* Sub-Category: Text Spacing & Flow */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Move size={11} />
                 <span>Text tracking & Line Height</span>
               </div>
@@ -1744,13 +1797,13 @@ export function InspectorPanel({
         {inspectorSection === "visuals" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Palette size={15} className="text-purple-600" />
+              <Palette size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Appearance & Visual styles</span>
             </div>
 
             {/* Sub-Category: Color palettes */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Palette size={11} />
                 <span>Colors & Solid Backgrounds</span>
               </div>
@@ -1766,9 +1819,9 @@ export function InspectorPanel({
                     { name: "Deep Stone", class: "bg-stone-900", ring: "ring-stone-900" },
                     { name: "Slate Noir", class: "bg-slate-950", ring: "ring-slate-950" },
                     { name: "Warm Vanilla", class: "bg-amber-50", ring: "ring-amber-200" },
-                    { name: "Teal Pine", class: "bg-emerald-900", ring: "ring-emerald-900" },
-                    { name: "Cosmic Indigo", class: "bg-indigo-950", ring: "ring-indigo-950" },
-                    { name: "Aura Purple", class: "bg-purple-100", ring: "ring-purple-300" },
+                    { name: "Emerald Pine", class: "bg-emerald-900", ring: "ring-emerald-900" },
+                    { name: "Cosmic Amber", class: "bg-amber-950", ring: "ring-amber-950" },
+                    { name: "Aura Rose", class: "bg-rose-100", ring: "ring-rose-300" },
                     { name: "Soft Amber", class: "bg-amber-100", ring: "ring-amber-300" }
                   ].map((swatch) => {
                     const isSelected = selectedElement.classes.includes(swatch.class) || 
@@ -1780,7 +1833,7 @@ export function InspectorPanel({
                         type="button"
                         onClick={() => {
                           let textClass = "";
-                          if (["bg-stone-900", "bg-slate-950", "bg-emerald-900", "bg-indigo-950"].includes(swatch.class)) {
+                          if (["bg-stone-900", "bg-slate-950", "bg-emerald-900", "bg-amber-950"].includes(swatch.class)) {
                             textClass = "text-stone-100";
                           } else if (swatch.class === "bg-transparent") {
                             textClass = "";
@@ -1814,7 +1867,7 @@ export function InspectorPanel({
                 <label className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider pl-1">Primary Text Accent</label>
                 <div className="relative">
                   <select
-                    value={selectedElement.classes.match(/\btext-(stone-800|stone-100|purple-600|indigo-600|emerald-600|amber-600|rose-600|white|black)\b/)?.[0] || ""}
+                    value={selectedElement.classes.match(/\btext-(stone-800|stone-100|rose-600|amber-600|emerald-600|amber-600|rose-600|white|black)\b/)?.[0] || ""}
                     onChange={(e) => {
                       updateTree((n) => ({ classes: setColorClass(n.classes, "text-", e.target.value) }));
                     }}
@@ -1822,11 +1875,10 @@ export function InspectorPanel({
                   >
                     <option value="">Default (Inherited)</option>
                     <option value="text-stone-800">Deep Earth Gray (text-stone-800)</option>
+                    <option value="text-stone-600">Soft Obsidian (text-stone-600)</option>
                     <option value="text-white">Crisp White (text-white)</option>
-                    <option value="text-purple-600">Dynamic Purple (text-purple-600)</option>
-                    <option value="text-indigo-600">Cosmic Indigo (text-indigo-600)</option>
+                    <option value="text-amber-600">Cosmic Amber (text-amber-600)</option>
                     <option value="text-emerald-600">Emerald Forest (text-emerald-600)</option>
-                    <option value="text-amber-600">Vibrant Amber (text-amber-600)</option>
                     <option value="text-rose-600">Bright Rose (text-rose-600)</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
@@ -1836,7 +1888,7 @@ export function InspectorPanel({
 
             {/* Sub-Category: Borders & Layout Effects */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Layers size={11} />
                 <span>Borders, corners & drop shadows</span>
               </div>
@@ -1888,7 +1940,7 @@ export function InspectorPanel({
                     <select
                       value={getActiveGroupClass(selectedElement.classes, control.prop as any)}
                       onChange={(e) => updateTree((n) => ({ classes: setGroupClass(n.classes, control.prop as any, e.target.value) }))}
-                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm"
+                      className="w-full appearance-none bg-white border border-stone-200/80 rounded-xl pl-3 pr-8 py-2.5 text-xs text-stone-700 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm"
                     >
                       {control.options.map(opt => <option key={opt.val} value={opt.val}>{opt.text}</option>)}
                     </select>
@@ -1904,13 +1956,13 @@ export function InspectorPanel({
         {inspectorSection === "motion" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Play size={15} className="text-purple-600" />
+              <Play size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Movement & Micro-interactions</span>
             </div>
 
             {/* Sub-Category: Smooth CSS Transitions */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Play size={11} />
                 <span>Transition Curves & Speeds</span>
               </div>
@@ -1995,7 +2047,7 @@ export function InspectorPanel({
 
             {/* Sub-Category: Interactive micro-inputs / Animations */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Wand2 size={11} />
                 <span>Hover presets & infinite motion</span>
               </div>
@@ -2028,12 +2080,12 @@ export function InspectorPanel({
                       }}
                       className={`w-full py-2 px-3 text-xs rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${
                         isActive 
-                          ? "bg-purple-100/50 border-purple-200 text-purple-700 font-semibold" 
+                          ? "bg-rose-100/50 border-rose-200 text-rose-700 font-semibold" 
                           : "bg-white border-stone-200/60 text-stone-600 hover:text-stone-800 hover:border-stone-300"
                       }`}
                     >
                       <span>{item.label}</span>
-                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-purple-600" : "bg-stone-200"}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-rose-600" : "bg-stone-200"}`} />
                     </button>
                   );
                 })}
@@ -2046,13 +2098,13 @@ export function InspectorPanel({
         {inspectorSection === "core" && (
           <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-3 duration-350">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={15} className="text-purple-600" />
+              <Sparkles size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">Content & Custom Utilities</span>
             </div>
 
             {/* Sub-Category: Content details */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Compass size={11} />
                 <span>Text / URL Attributes</span>
               </div>
@@ -2064,7 +2116,7 @@ export function InspectorPanel({
                     type="text"
                     value={selectedElement.content || ""}
                     onChange={(e) => updateTree(() => ({ content: e.target.value }))}
-                    className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 transition-all font-sans text-stone-800 shadow-sm"
+                    className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 transition-all font-sans text-stone-800 shadow-sm"
                     placeholder="Type inner text content or image src url..."
                   />
                 </div>
@@ -2078,7 +2130,7 @@ export function InspectorPanel({
 
             {/* Sub-Category: Utility classes direct write */}
             <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 font-mono flex items-center gap-1">
+              <div className="text-[10px] uppercase font-bold tracking-wider text-rose-600 font-mono flex items-center gap-1">
                 <Code size={11} />
                 <span>Advanced Tailwind Utility Classes</span>
               </div>
@@ -2088,7 +2140,7 @@ export function InspectorPanel({
                   rows={4}
                   value={selectedElement.classes || ""}
                   onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
-                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3.5 py-3 text-[11px] leading-relaxed focus:outline-none focus:border-purple-500 focus:ring-3 focus:ring-purple-500/20 transition-all font-mono text-emerald-400 resize-none shadow-inner"
+                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3.5 py-3 text-[11px] leading-relaxed focus:outline-none focus:border-rose-500 focus:ring-3 focus:ring-rose-500/20 transition-all font-mono text-emerald-400 resize-none shadow-inner"
                   placeholder="flex items-center justify-between px-4 py-2 border border-gray-100..."
                 />
               </div>
@@ -2100,7 +2152,7 @@ export function InspectorPanel({
         {inspectorSection === "help" && (
           <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right-3 duration-350 pr-0.5">
             <div className="flex items-center gap-2 mb-1">
-              <HelpCircle size={15} className="text-purple-600" />
+              <HelpCircle size={15} className="text-rose-600" />
               <span className="text-xs font-bold text-stone-800 uppercase tracking-widest">CSS Property Reference</span>
             </div>
 
@@ -2112,7 +2164,7 @@ export function InspectorPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search properties, categories or options..."
-                className="w-full bg-stone-50 border border-stone-200/80 rounded-xl pl-9 pr-8 py-2.5 text-xs text-stone-700 placeholder-stone-400 focus:outline-none focus:border-purple-400 focus:bg-white focus:ring-4 focus:ring-purple-500/10 transition-all font-sans shadow-sm"
+                className="w-full bg-stone-50 border border-stone-200/80 rounded-xl pl-9 pr-8 py-2.5 text-xs text-stone-700 placeholder-stone-400 focus:outline-none focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-500/10 transition-all font-sans shadow-sm"
               />
               {searchQuery && (
                 <button
@@ -2131,7 +2183,7 @@ export function InspectorPanel({
                   <p className="text-xs font-medium">No CSS properties match "{searchQuery}"</p>
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="mt-2 text-xs text-purple-600 font-semibold hover:underline cursor-pointer"
+                    className="mt-2 text-xs text-rose-600 font-semibold hover:underline cursor-pointer"
                   >
                     Clear Search Filter
                   </button>
@@ -2163,7 +2215,7 @@ export function InspectorPanel({
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          <category.icon size={14} className="text-purple-600" />
+                          <category.icon size={14} className="text-rose-600" />
                           <span className="text-[11px] font-bold text-stone-800 uppercase tracking-wider">
                             {category.name}
                           </span>
@@ -2189,7 +2241,7 @@ export function InspectorPanel({
                           {category.subCategories.map((subCategory) => (
                             <div key={subCategory.name} className="pt-3 first:pt-0 flex flex-col gap-2.5">
                               {/* SubCategory Heading */}
-                              <h4 className="text-[10px] text-purple-600 font-bold uppercase tracking-wider font-sans">
+                              <h4 className="text-[10px] text-rose-600 font-bold uppercase tracking-wider font-sans">
                                 {subCategory.name}
                               </h4>
 
@@ -2206,7 +2258,7 @@ export function InspectorPanel({
                                         <code
                                           onClick={() => handleCopy(property.name)}
                                           title="Click to copy property name"
-                                          className="text-[11.5px] font-mono font-bold text-stone-800 hover:text-purple-700 bg-stone-100/50 px-1.5 py-0.5 rounded cursor-pointer transition-all"
+                                          className="text-[11.5px] font-mono font-bold text-stone-800 hover:text-rose-700 bg-stone-100/50 px-1.5 py-0.5 rounded cursor-pointer transition-all"
                                         >
                                           {property.name}
                                         </code>
@@ -2263,14 +2315,14 @@ export function InspectorPanel({
             </div>
 
             {/* Micro Quick Notes Footer Tip */}
-            <div className="bg-purple-50/50 border border-purple-100/50 rounded-2xl p-4 space-y-1.5 text-[11px] text-stone-600 leading-relaxed font-sans shadow-inner">
-              <p className="font-bold text-purple-700 uppercase tracking-wider text-[10px] flex items-center gap-1">
+            <div className="bg-rose-50/50 border border-rose-100/50 rounded-2xl p-4 space-y-1.5 text-[11px] text-stone-600 leading-relaxed font-sans shadow-inner">
+              <p className="font-bold text-rose-700 uppercase tracking-wider text-[10px] flex items-center gap-1">
                 <Sparkles size={11} />
                 <span>Reference Notation Guide:</span>
               </p>
               <ul className="list-disc pl-4 space-y-1 text-stone-500 text-[10.5px]">
-                <li><code className="font-mono text-purple-600 font-semibold">&lt;length&gt;</code>: Units like <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">px</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">rem</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">em</code>, <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">vw</code>, etc.</li>
-                <li><code className="font-mono text-purple-600 font-semibold">&lt;time&gt;</code>: Transition and animation time like <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">s</code> or <code className="font-mono bg-purple-50 px-1 py-0.2 rounded text-[10px]">ms</code>.</li>
+                <li><code className="font-mono text-rose-600 font-semibold">&lt;length&gt;</code>: Units like <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">px</code>, <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">rem</code>, <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">em</code>, <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">vw</code>, etc.</li>
+                <li><code className="font-mono text-rose-600 font-semibold">&lt;time&gt;</code>: Transition and animation time like <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">s</code> or <code className="font-mono bg-rose-50 px-1 py-0.2 rounded text-[10px]">ms</code>.</li>
                 <li>Pills are interactive: **tapping copies values** instantly to clipboard.</li>
               </ul>
             </div>

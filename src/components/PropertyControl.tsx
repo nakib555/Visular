@@ -55,7 +55,7 @@ export function PropertyControl({
           <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full appearance-none bg-stone-50 border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 hover:bg-stone-100 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-sm transition-all text-left"
+            className="w-full appearance-none bg-stone-50 border border-stone-200/85 rounded-xl pl-2.5 pr-6 py-1.5 text-xs text-stone-700 hover:bg-stone-100 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 cursor-pointer shadow-sm transition-all text-left"
           >
             {placeholder && <option value="">{placeholder}</option>}
             {options.map((opt) => (
@@ -65,7 +65,7 @@ export function PropertyControl({
           <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
         </div>
       ) : (
-        <div className="relative flex items-center bg-stone-50 border border-stone-200/85 rounded-xl overflow-hidden shadow-sm hover:bg-stone-100 transition-all focus-within:border-purple-400 focus-within:ring-4 focus-within:ring-purple-500/10">
+        <div className="relative flex items-center bg-stone-50 border border-stone-200/85 rounded-xl overflow-hidden shadow-sm hover:bg-stone-100 transition-all focus-within:border-rose-400 focus-within:ring-4 focus-within:ring-rose-500/10">
           <input
             type="number"
             value={displayValue}
