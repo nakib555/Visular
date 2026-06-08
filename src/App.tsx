@@ -1074,6 +1074,7 @@ function DesignerApp() {
             className="flex-shrink-0 relative transition-all duration-500 ease-out select-none mb-12"
             style={{
               width: `${scaledWidthWithBezel * dynamicScale}px`,
+              minWidth: `${scaledWidthWithBezel * dynamicScale}px`,
               height: `${scaledHeightWithBezel * dynamicScale}px`,
               margin: "0 auto",
             }}
@@ -1083,6 +1084,7 @@ function DesignerApp() {
               className="absolute left-0 top-0 origin-top-left transition-all duration-500 ease-out select-none"
               style={{ 
                 width: `${scaledWidthWithBezel}px`,
+                minWidth: `${scaledWidthWithBezel}px`,
                 height: `${scaledHeightWithBezel}px`,
                 transform: `scale(${dynamicScale})`,
                 transformOrigin: "top left",
