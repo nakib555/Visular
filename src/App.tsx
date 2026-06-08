@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { 
   Paintbrush, 
   Layers, 
@@ -114,6 +114,10 @@ function DesignerApp() {
     handleCopyCode, handleDownloadFile,
   } = designer;
 
+  const [customDeviceWidth, setCustomDeviceWidth] = useState<number>(1024);
+  const [customDeviceHeight, setCustomDeviceHeight] = useState<number>(768);
+  const [showCustomDeviceModal, setShowCustomDeviceModal] = useState<boolean>(false);
+
   // PREMIUM INTERACTIVE SIMULATION PRESETS
   const REAL_DEVICES = [
     { id: "iphone-15", name: "iPhone 15 Pro", viewport: "mobile" as const, width: 393, height: 852, badge: "iOS" },
@@ -124,7 +128,8 @@ function DesignerApp() {
     { id: "ipad-mini", name: "iPad Mini 8.3\"", viewport: "tablet" as const, width: 744, height: 1133, badge: "iPadOS" },
     { id: "galaxy-tab", name: "Galaxy Tab S9", viewport: "tablet" as const, width: 800, height: 1280, badge: "Android" },
     { id: "macbook-14", name: "MacBook Pro 14\"", viewport: "desktop" as const, width: 1440, height: 900, badge: "macOS" },
-    { id: "full-hd", name: "Full HD Monitor", viewport: "desktop" as const, width: 1920, height: 1080, badge: "16:9" }
+    { id: "full-hd", name: "Full HD Monitor", viewport: "desktop" as const, width: 1920, height: 1080, badge: "16:9" },
+    { id: "custom", name: "Custom Canvas", viewport: (customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop") as "mobile"|"tablet"|"desktop", width: customDeviceWidth, height: customDeviceHeight, badge: "Custom" }
   ];
 
   const [selectedDevicePreset, setSelectedDevicePreset] = useState<string>("macbook-14");
@@ -133,6 +138,7 @@ function DesignerApp() {
   const [simulatedTime, setSimulatedTime] = useState<string>("09:41");
   const [showGridGuides, setShowGridGuides] = useState<boolean>(false);
   const [glossyOverlay, setGlossyOverlay] = useState<boolean>(true);
+  const [simulatePointer, setSimulatePointer] = useState<boolean>(false);
   const [notificationText, setNotificationText] = useState<string | null>(null);
   const [showSimulatorSettings, setShowSimulatorSettings] = useState<boolean>(false);
 
@@ -141,10 +147,13 @@ function DesignerApp() {
     setCanvasViewport(vp);
     if (vp === "mobile") {
       setSelectedDevicePreset("iphone-15");
+      setCanvasOrientation("portrait");
     } else if (vp === "tablet") {
       setSelectedDevicePreset("ipad-pro");
+      setCanvasOrientation("portrait");
     } else {
       setSelectedDevicePreset("macbook-14");
+      setCanvasOrientation("landscape");
     }
   };
 
@@ -152,19 +161,28 @@ function DesignerApp() {
   const [activeTab, setActiveTab] = useState<"presets" | "structure" | "elements" | "styles" | "ai_assist">("presets");
   const [activePresetCategory, setActivePresetCategory] = useState<"all" | "heroes" | "cards" | "lists" | "calls-to-action">("all");
 
+  const prevActiveTabRef = useRef(activeTab);
+  const prevMobileActiveViewRef = useRef(mobileActiveView);
+
   // Synchronize desktop activeTab with mobileActiveView to ensure states carry over
   useEffect(() => {
-    if (activeTab === "styles") setMobileActiveView("inspector");
-    else if (activeTab === "presets" || activeTab === "elements" || activeTab === "structure") setMobileActiveView("library");
+    if (prevActiveTabRef.current !== activeTab) {
+      if (activeTab === "styles") setMobileActiveView("inspector");
+      else if (activeTab === "presets" || activeTab === "elements" || activeTab === "structure") setMobileActiveView("library");
+      prevActiveTabRef.current = activeTab;
+    }
   }, [activeTab, setMobileActiveView]);
 
   useEffect(() => {
-    if (mobileActiveView === "inspector") {
-      setActiveTab("styles");
-    } else if (mobileActiveView === "library") {
-      if (activeTab === "styles") setActiveTab("presets");
+    if (prevMobileActiveViewRef.current !== mobileActiveView) {
+      if (mobileActiveView === "inspector") {
+        setActiveTab("styles");
+      } else if (mobileActiveView === "library") {
+        if (activeTab === "styles") setActiveTab("presets");
+      }
+      prevMobileActiveViewRef.current = mobileActiveView;
     }
-  }, [mobileActiveView]);
+  }, [mobileActiveView, activeTab]);
 
   // Sync inline edit text field focus
   useEffect(() => {
@@ -187,34 +205,116 @@ function DesignerApp() {
   }, [selectedId, activeTab]);
 
   // Dynamic tree renderer for standard canvas workspace
-  const filteredPresets = COMPONENT_PRESETS.filter((p) => {
-    const matchesSearch = activeSearch === "" || p.name.toLowerCase().includes(activeSearch.toLowerCase());
-    const matchesCategory = activePresetCategory === "all" || p.category === activePresetCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredPresets = useMemo(() => {
+    return COMPONENT_PRESETS.filter((p) => {
+      const matchesSearch = activeSearch === "" || p.name.toLowerCase().includes(activeSearch.toLowerCase());
+      const matchesCategory = activePresetCategory === "all" || p.category === activePresetCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [activeSearch, activePresetCategory]);
 
+  const lineage = useMemo(() => {
+    if (!selectedId) return null;
+    const findPath = (current: VisualElement, path: VisualElement[]): VisualElement[] | null => {
+      if (current.id === selectedId) return [...path, current];
+      if (current.children) {
+        for (const child of current.children) {
+          const res = findPath(child, [...path, current]);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+    return findPath(componentTree, []);
+  }, [componentTree, selectedId]);
+
+
+  const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!parentContainerRef.current) return;
+    let rAFId: number;
+    const observer = new ResizeObserver((entries) => {
+      if (rAFId) cancelAnimationFrame(rAFId);
+      rAFId = requestAnimationFrame(() => {
+        for (let entry of entries) {
+          setParentDimensions({
+            width: entry.contentRect.width,
+            height: entry.contentRect.height
+          });
+        }
+      });
+    });
+    observer.observe(parentContainerRef.current);
+    return () => {
+      observer.disconnect();
+      if (rAFId) cancelAnimationFrame(rAFId);
+    };
+  }, []);
 
   const activeDeviceConfig = REAL_DEVICES.find(d => d.id === selectedDevicePreset) || REAL_DEVICES[0];
 
-  let targetDeviceWidth = activeDeviceConfig.viewport === "desktop"
-    ? activeDeviceConfig.width
+  const isDesktop = activeDeviceConfig.viewport === "desktop";
+
+  let targetDeviceWidth = isDesktop
+    ? (canvasOrientation === "portrait" ? activeDeviceConfig.height : activeDeviceConfig.width)
     : (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height);
 
-  let targetDeviceHeight = activeDeviceConfig.viewport === "desktop"
-    ? activeDeviceConfig.height
+  let targetDeviceHeight = isDesktop
+    ? (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height)
     : (canvasOrientation === "portrait" ? activeDeviceConfig.height : activeDeviceConfig.width);
 
   const framePadding = activeDeviceConfig.viewport === "mobile" ? 24 : activeDeviceConfig.viewport === "tablet" ? 32 : 0;
   const scaledWidthWithBezel = targetDeviceWidth + framePadding;
   const scaledHeightWithBezel = targetDeviceHeight + framePadding;
 
+  let fitScale = 1;
+  if (parentDimensions.width > 0 && parentDimensions.height > 0) {
+    const isMobile = window.innerWidth < 768;
+    const paddingX = isMobile ? 24 : 48; // padding left/right
+    const paddingY = isMobile 
+      ? (showSimulatorSettings ? 465 : 272)
+      : (showSimulatorSettings ? 300 : 120); // top toolbar space + bottom space, dynamically adjusting for simulator settings menu
+    const scaleX = (parentDimensions.width - paddingX) / scaledWidthWithBezel;
+    const scaleY = (parentDimensions.height - paddingY) / scaledHeightWithBezel;
+    fitScale = Math.min(scaleX, scaleY, 2.0); // max zoom 200%
+    if (fitScale < 0.1) fitScale = 0.1; // zoom limit 10%
+  }
+
   const dynamicScale = zoomScale === "auto" 
-    ? Math.min(1, (parentWidth - 48) / scaledWidthWithBezel)
+    ? fitScale 
     : zoomScale;
+
+  const [simulatedCursorPos, setSimulatedCursorPos] = useState({ x: -100, y: -100 });
+  const [isCanvasClicking, setIsCanvasClicking] = useState(false);
+  const [isPointerInCanvas, setIsPointerInCanvas] = useState(false);
 
   return (
     <div id="builder_root" className="min-h-screen bg-stone-50 font-sans text-stone-800 flex flex-col antialiased">
       
+      {/* SIMULATED CUSTOM POINTER OVERLAY */}
+      {simulatePointer && isPointerInCanvas && (
+        <>
+          <style>{`
+            #visual_canvas_backyard, #visual_canvas_backyard * {
+              cursor: none !important;
+            }
+          `}</style>
+          <div 
+            className="fixed pointer-events-none z-[9999] transition-transform ease-out duration-75 mix-blend-difference"
+            style={{ 
+              left: simulatedCursorPos.x, 
+              top: simulatedCursorPos.y, 
+              transform: `translate(-50%, -50%) scale(${isCanvasClicking ? 0.8 : 1})` 
+            }}
+          >
+            <div className="w-8 h-8 rounded-full border-2 border-white/50 bg-white/30 flex items-center justify-center backdrop-blur-sm shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              <div className="w-2 h-2 rounded-full bg-white shadow-sm" />
+            </div>
+          </div>
+        </>
+      )}
+
       {/* UPPER HIGH-CONTRAST HEADER */}
       <header id="control_bar" className="h-[64px] border-b border-stone-100 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none gap-4 overflow-x-auto scrollbar-hide">
         
@@ -765,7 +865,14 @@ function DesignerApp() {
         </div>
 
         {/* INTERACTIVE CENTER VIEWPORT CANVAS */}
-        <div ref={parentContainerRef} id="visual_canvas_backyard" className={`flex-1 bg-stone-100 bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] flex flex-col items-stretch justify-start relative p-3 sm:p-5 md:p-6 pb-48 md:pb-6 h-[calc(100vh-64px)] overflow-auto ${mobileActiveView === "canvas" || mobileActiveView === "inspector" ? "flex" : "hidden md:flex"}`}>
+        <div 
+          ref={parentContainerRef} 
+          id="visual_canvas_backyard_wrapper" 
+          className={`flex-1 bg-stone-100 flex flex-col items-stretch justify-start relative h-[calc(100vh-64px)] overflow-hidden ${mobileActiveView === "canvas" || mobileActiveView === "inspector" ? "flex" : "hidden md:flex"}`}
+        >
+          {/* STATIC OVERLAYS & TOOLBAR */}
+          <div className="absolute top-0 left-0 right-0 w-full z-40 p-3 sm:p-5 md:p-6 pointer-events-none">
+            <div className="pointer-events-auto w-full max-w-[1024px] mx-auto">
           
           {/* Subtle loading indicator overlay */}
           <AnimatePresence>
@@ -774,7 +881,7 @@ function DesignerApp() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white text-center p-6"
+                className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[9999] flex flex-col justify-center items-center text-white text-center p-6"
               >
                 <div id="rotating_spinner" className="flex flex-col items-center gap-4">
                   <RefreshCw className="animate-spin text-rose-400" size={32} />
@@ -829,28 +936,38 @@ function DesignerApp() {
                   value={selectedDevicePreset}
                   onChange={(e) => {
                     const targetId = e.target.value;
-                    setSelectedDevicePreset(targetId);
-                    const matched = REAL_DEVICES.find(d => d.id === targetId);
-                    if (matched) {
-                      setCanvasViewport(matched.viewport);
+                    if (targetId === "custom") {
+                      setSelectedDevicePreset("custom");
+                      setShowCustomDeviceModal(true);
+                      setCanvasViewport(customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop");
+                    } else {
+                      setSelectedDevicePreset(targetId);
+                      const matched = REAL_DEVICES.find(d => d.id === targetId);
+                      if (matched) {
+                        setCanvasViewport(matched.viewport);
+                        setCanvasOrientation(matched.viewport === "desktop" ? "landscape" : "portrait");
+                      }
                     }
                   }}
                   className="bg-transparent border-0 text-stone-850 text-[10px] md:text-[11px] font-bold py-1 px-2.5 outline-none cursor-pointer focus:ring-0"
                 >
                   <optgroup label="Mobile Devices">
-                    {REAL_DEVICES.filter(d => d.viewport === "mobile").map(d => (
+                    {REAL_DEVICES.filter(d => d.viewport === "mobile" && d.id !== "custom").map(d => (
                       <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
                     ))}
                   </optgroup>
                   <optgroup label="Tablet Devices">
-                    {REAL_DEVICES.filter(d => d.viewport === "tablet").map(d => (
+                    {REAL_DEVICES.filter(d => d.viewport === "tablet" && d.id !== "custom").map(d => (
                       <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
                     ))}
                   </optgroup>
                   <optgroup label="Desktop Screens">
-                    {REAL_DEVICES.filter(d => d.viewport === "desktop").map(d => (
+                    {REAL_DEVICES.filter(d => d.viewport === "desktop" && d.id !== "custom").map(d => (
                       <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
                     ))}
+                  </optgroup>
+                  <optgroup label="Custom">
+                    <option value="custom">Custom Dimensions ({customDeviceWidth} x {customDeviceHeight}px)</option>
                   </optgroup>
                 </select>
 
@@ -895,13 +1012,10 @@ function DesignerApp() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (zoomScale === "auto") {
-                      setZoomScale(0.9);
-                    } else {
-                      setZoomScale(Math.max(0.4, Number((zoomScale - 0.1).toFixed(1))));
-                    }
+                    const current = zoomScale === "auto" ? fitScale : zoomScale;
+                    setZoomScale(Math.max(0.1, Number((current - 0.05).toFixed(2))));
                   }}
-                  title="Zoom Out (-10%)"
+                  title="Zoom Out (-5%)"
                   className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
                   style={{ borderRadius: "50px" }}
                 >
@@ -910,10 +1024,10 @@ function DesignerApp() {
                 
                 <input 
                   type="range"
-                  min="0.4"
-                  max="1.5"
+                  min="0.1"
+                  max="2.0"
                   step="0.05"
-                  value={zoomScale === "auto" ? 1.0 : zoomScale}
+                  value={zoomScale === "auto" ? fitScale : zoomScale}
                   onChange={(e) => setZoomScale(parseFloat(e.target.value))}
                   className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
                   title="Drag zoom level"
@@ -923,13 +1037,10 @@ function DesignerApp() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (zoomScale === "auto") {
-                      setZoomScale(1.1);
-                    } else {
-                      setZoomScale(Math.min(1.5, Number((zoomScale + 0.1).toFixed(1))));
-                    }
+                    const current = zoomScale === "auto" ? fitScale : zoomScale;
+                    setZoomScale(Math.min(2.0, Number((current + 0.05).toFixed(2))));
                   }}
-                  title="Zoom In (+10%)"
+                  title="Zoom In (+5%)"
                   className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
                   style={{ borderRadius: "50px" }}
                 >
@@ -941,7 +1052,7 @@ function DesignerApp() {
                 <button
                   type="button"
                   onClick={() => setZoomScale(zoomScale === "auto" ? 1.0 : "auto")}
-                  title="Toggle container boundaries Auto Fit"
+                  title="Toggle auto-fit / 100%"
                   className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[40px] md:min-w-[50px] text-center shrink-0 whitespace-nowrap ${
                     zoomScale === "auto" 
                       ? "bg-stone-800 text-white font-bold shadow-sm" 
@@ -1008,20 +1119,33 @@ function DesignerApp() {
                   </select>
                 </div>
 
-                {/* Grid guides trigger */}
+                {/* Display Overlays */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Layout Grid Guides</label>
-                  <button
-                    onClick={() => setShowGridGuides(!showGridGuides)}
-                    className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
-                      showGridGuides
-                        ? "bg-rose-500/10 border-rose-500 text-rose-300"
-                        : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
-                    }`}
-                  >
-                    <Grid size={11} />
-                    <span>{showGridGuides ? "Guides: Visible" : "Guides: Hidden"}</span>
-                  </button>
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Simulator Overlays</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowGridGuides(!showGridGuides)}
+                      className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                        showGridGuides
+                          ? "bg-rose-500/10 border-rose-500 text-rose-300"
+                          : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                      }`}
+                    >
+                      <Grid size={11} />
+                      <span>{showGridGuides ? "Grids ON" : "Grids OFF"}</span>
+                    </button>
+                    <button
+                      onClick={() => setSimulatePointer(!simulatePointer)}
+                      className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                        simulatePointer
+                          ? "bg-sky-500/10 border-sky-500 text-sky-300"
+                          : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                      }`}
+                    >
+                      <MousePointer size={11} />
+                      <span>{simulatePointer ? "Pointer ON" : "Pointer OFF"}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Gloss toggle trigger */}
@@ -1067,29 +1191,87 @@ function DesignerApp() {
               </motion.div>
             )}
           </AnimatePresence>
+            </div>
+          </div>
 
-          {/* Scaler Wrapper Frame with layout-preserving container bounds */}
-          <div
-            id="scaler_outer_container"
-            className="flex-shrink-0 relative transition-all duration-500 ease-out select-none mb-12 mx-auto self-center"
-            style={{
-              width: `${scaledWidthWithBezel * dynamicScale}px`,
-              minWidth: `${scaledWidthWithBezel * dynamicScale}px`,
-              height: `${scaledHeightWithBezel * dynamicScale}px`,
-              margin: "0 auto",
+          <div 
+            id="visual_canvas_backyard" 
+            className={`flex-1 overflow-auto flex flex-col bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] ${simulatePointer ? "cursor-none" : ""} relative px-3 sm:px-5 md:px-6`}
+            onMouseMove={(e) => {
+              if (simulatePointer) {
+                setSimulatedCursorPos({ x: e.clientX, y: e.clientY });
+                setIsPointerInCanvas(true);
+              }
             }}
+            onMouseLeave={() => setIsPointerInCanvas(false)}
+            onMouseDown={() => setIsCanvasClicking(true)}
+            onMouseUp={() => setIsCanvasClicking(false)}
           >
-            <div 
-              id="scaler_bounds"
-              className="absolute left-0 top-0 origin-top-left transition-all duration-500 ease-out select-none"
-              style={{ 
-                width: `${scaledWidthWithBezel}px`,
-                minWidth: `${scaledWidthWithBezel}px`,
-                height: `${scaledHeightWithBezel}px`,
-                transform: `scale(${dynamicScale})`,
-                transformOrigin: "top left",
-              }}
-            >
+            {/* Breadcrumb parent-child hierarchy navigation displaying at the top of the canvas */}
+            {lineage && lineage.length > 0 && (
+              <div 
+                id="canvas_breadcrumbs"
+                className="flex justify-center items-center select-none pt-4 pb-1 px-4 shrink-0 max-w-full z-10 animate-in fade-in slide-in-from-top-1.5 duration-200"
+              >
+                <div className="flex flex-row items-center gap-1 bg-white/95 backdrop-blur-md border border-stone-200/80 shadow-xs rounded-full px-3.5 py-1.5 text-[11px] text-stone-600 max-w-full overflow-x-auto scrollbar-hide">
+                  {lineage.map((elem, idx) => {
+                    const isLast = idx === lineage.length - 1;
+                    const displayLabel = elem.type === "container" 
+                      ? `${elem.tag}` 
+                      : `${elem.type} (${elem.tag})`;
+
+                    return (
+                      <React.Fragment key={elem.id}>
+                        {idx > 0 && (
+                          <span className="text-stone-300 font-bold mx-0.5 select-none shrink-0 text-[10px]">/</span>
+                        )}
+                        <button
+                          onClick={() => setSelectedId(elem.id)}
+                          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all shrink-0 cursor-pointer ${
+                            isLast
+                              ? "bg-rose-50 text-rose-700 font-semibold border border-rose-100"
+                              : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
+                          }`}
+                        >
+                          {elem.type === "container" && <Layout size={10} className="text-stone-400" />}
+                          {elem.type === "text" && <Type size={10} className="text-stone-400" />}
+                          {elem.type === "image" && <ImageIcon size={10} className="text-stone-400" />}
+                          {elem.type === "button" && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />}
+                          {elem.type === "badge" && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+                          <span className="font-mono lowercase">{displayLabel}</span>
+                          <span className="text-[9px] text-stone-400 font-mono">#{elem.id.substring(0, 4)}</span>
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {/* Inner centering wrapper - using modern 'm-auto' alignment for perfect scroll-safe viewport centering */}
+            <div className="m-auto flex flex-col items-center justify-center p-4 sm:p-8 shrink-0">
+              {/* Scaler Wrapper Frame animated smoothly with layout-preserving dynamic motion physics */}
+              <motion.div
+                id="scaler_outer_container"
+                className="flex-shrink-0 relative select-none m-auto"
+                animate={{
+                  width: scaledWidthWithBezel * dynamicScale,
+                  minWidth: scaledWidthWithBezel * dynamicScale,
+                  height: scaledHeightWithBezel * dynamicScale,
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 25, mass: 0.8 }}
+              >
+                <motion.div 
+                  id="scaler_bounds"
+                  className="absolute left-0 top-0 select-none origin-top-left"
+                  style={{ originX: 0, originY: 0 }}
+                  animate={{ 
+                    width: scaledWidthWithBezel,
+                    minWidth: scaledWidthWithBezel,
+                    height: scaledHeightWithBezel,
+                    scale: dynamicScale,
+                  }}
+                  transition={{ type: "spring", stiffness: 200, damping: 25, mass: 0.8 }}
+                >
               <DeviceFrame
                 canvasViewport={canvasViewport}
                 canvasOrientation={canvasOrientation}
@@ -1113,8 +1295,8 @@ function DesignerApp() {
               >
                 <VisualNode elem={componentTree} />
               </DeviceFrame>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
           {/* Static WYSIWYG tip overlay displayed centered under the active frame */}
           <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-stone-400 uppercase font-mono tracking-wider z-10 pointer-events-none shrink-0 mx-auto w-fit">
@@ -1122,10 +1304,83 @@ function DesignerApp() {
             <span>Click element to select • Double click text fields to modify inline</span>
           </div>
         </div>
+        </div>
+        </div>
 
 
 
       </div>
+
+      {/* CUSTOM DEVICE MODAL */}
+      <AnimatePresence>
+        {showCustomDeviceModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-white rounded-[24px] shadow-2xl p-6 w-[90vw] max-w-[360px] overflow-hidden border border-stone-200"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900">Custom Dimensions</h3>
+                  <p className="text-xs text-stone-500 mt-1">Set exact viewport pixel size</p>
+                </div>
+                <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center">
+                  <Maximize size={18} className="text-rose-600" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">Width (px)</label>
+                  <input
+                    type="number"
+                    value={customDeviceWidth}
+                    onChange={(e) => setCustomDeviceWidth(Number(e.target.value) || 0)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+                <div className="text-stone-300 font-bold mt-6">×</div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">Height (px)</label>
+                  <input
+                    type="number"
+                    value={customDeviceHeight}
+                    onChange={(e) => setCustomDeviceHeight(Number(e.target.value) || 0)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomDeviceModal(false)}
+                  className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCanvasViewport(customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop");
+                    setShowCustomDeviceModal(false);
+                  }}
+                  className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+                >
+                  Apply Set
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* EXPORT COMPLETED DIALOG SCREEN MODAL */}
       <AnimatePresence>

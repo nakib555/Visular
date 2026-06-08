@@ -101,12 +101,10 @@ export function DeviceFrame({
   if (canvasViewport === "mobile") {
     const baseW = customWidth || 375;
     const baseH = customHeight || 812;
-    const width = canvasOrientation === "portrait" ? `${baseW}px` : `${baseH}px`;
-    const height = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
     
-    outerClasses = "bg-black p-[12px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.15),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
-    outerStyle = { width, height, borderRadius: "54px", maxWidth: "none" };
-    canvasClasses = `w-full h-full rounded-[42px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
+    outerClasses = "bg-black p-[12px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.15),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative flex flex-col group w-full h-full";
+    outerStyle = { borderRadius: "54px", maxWidth: "none" };
+    canvasClasses = `w-full h-full rounded-[42px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
 
     decorationElements = (
       <>
@@ -175,12 +173,10 @@ export function DeviceFrame({
   } else if (canvasViewport === "tablet") {
     const baseW = customWidth || 768;
     const baseH = customHeight || 1024;
-    const width = canvasOrientation === "portrait" ? `${baseW}px` : `${baseH}px`;
-    const height = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
 
-    outerClasses = "bg-[#0f0f0f] p-[16px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.1),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
-    outerStyle = { width, height, borderRadius: "44px", maxWidth: "none" };
-    canvasClasses = `w-full h-full rounded-[28px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
+    outerClasses = "bg-[#0f0f0f] p-[16px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.1),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative flex flex-col group w-full h-full";
+    outerStyle = { borderRadius: "44px", maxWidth: "none" };
+    canvasClasses = `w-full h-full rounded-[28px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
 
     decorationElements = (
       <>
@@ -238,16 +234,11 @@ export function DeviceFrame({
     );
   } else {
     // DESKTOP
-    const baseW = customWidth || 1440;
-    const baseH = customHeight || 900;
-    const desktopWidth = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
-    const desktopHeight = canvasOrientation === "portrait" ? `${baseW}px` : `${baseH}px`;
-
     // Make the outer container emulate the "window" structure so `#workspace_canvas` aligns perfectly
-    outerClasses = "bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_30px_60px_-15px_rgba(0,0,0,0.2),0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
+    outerClasses = "bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_30px_60px_-15px_rgba(0,0,0,0.2),0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex-shrink-0 relative flex flex-col group w-full h-full";
     // We give it a fixed height from preset configuration
-    outerStyle = { width: desktopWidth, height: desktopHeight, borderRadius: "14px", maxWidth: "none" };
-    canvasClasses = `flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-default relative border-0 flex flex-col z-10 rounded-b-[14px] transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-rose-500/50" : ""}`;
+    outerStyle = { borderRadius: "14px", maxWidth: "none" };
+    canvasClasses = `flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-default relative border-0 flex flex-col z-10 rounded-b-[14px] ${canvasBackground} ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-rose-500/50" : ""}`;
 
     decorationElements = (
       <div className="w-full h-[46px] bg-[#f2f2f2] border-b border-stone-300/80 flex items-center px-4 justify-between select-none z-40 shrink-0 relative backdrop-blur-md rounded-t-[14px]">
@@ -271,13 +262,12 @@ export function DeviceFrame({
   }
 
   return (
-    <motion.div layout className={outerClasses} style={outerStyle} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+    <div className={outerClasses} style={outerStyle}>
       {/* Device unique layers (Bezels, Cams, Hardware Buttons, or Browser Headers) */}
       {decorationElements}
 
       {/* UNIFIED Screen/Canvas Wrapping Container */}
-      <motion.div 
-        layout
+      <div 
         id="workspace_canvas"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -374,8 +364,8 @@ export function DeviceFrame({
                 </div>
                 <div className="flex-grow min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[9px] font-bold text-stone-800 uppercase tracking-tight font-mono">Visual Lab</span>
-                    <span className="text-[7.5px] text-stone-400 font-bold font-mono">now</span>
+                     <span className="text-[9px] font-bold text-stone-800 uppercase tracking-tight font-mono">Visual Lab</span>
+                     <span className="text-[7.5px] text-stone-400 font-bold font-mono">now</span>
                   </div>
                   <p className="text-[9.5px] text-stone-600 font-semibold leading-normal line-clamp-2 mt-0.5">{notificationText}</p>
                 </div>
@@ -418,7 +408,7 @@ export function DeviceFrame({
           {children}
 
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

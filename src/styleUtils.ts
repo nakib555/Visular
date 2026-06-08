@@ -140,8 +140,11 @@ export function setGroupClass(classes: string, groupKey: keyof typeof STYLE_GROU
   const groupClasses = STYLE_GROUPS[groupKey];
   const currentTokens = classes.split(/\s+/).filter(Boolean);
   
-  // Strip out any existing classes that belong to this group
-  let filtered = currentTokens.filter((token) => !groupClasses.includes(token));
+  // Strip out any existing classes that belong to this group (including responsive/state prefixes like md:, hover:, etc.)
+  let filtered = currentTokens.filter((token) => {
+    const cleanToken = token.includes(":") ? token.split(":").pop()! : token;
+    return !groupClasses.includes(cleanToken);
+  });
   
   if (newClass && newClass.trim()) {
     filtered.push(newClass.trim());
@@ -154,6 +157,7 @@ export function setGroupClass(classes: string, groupKey: keyof typeof STYLE_GROU
 export function getActiveGroupClass(classes: string, groupKey: keyof typeof STYLE_GROUPS): string {
   const groupClasses = STYLE_GROUPS[groupKey];
   const currentTokens = classes.split(/\s+/).filter(Boolean);
+  // Optional: currently we just return the base active class, not caring about breakpoints for the inspector
   const active = currentTokens.find((token) => groupClasses.includes(token));
   return active || "";
 }
@@ -162,28 +166,25 @@ export function getActiveGroupClass(classes: string, groupKey: keyof typeof STYL
 export function setPrefixedClass(classes: string, prefix: string, valueClass: string): string {
   const currentTokens = classes.split(/\s+/).filter(Boolean);
   
-  // Filter out any token that starts with the target prefix
-  let filtered = currentTokens.filter((token) => !token.startsWith(prefix));
-  
-  // Clean matching conflicting shorthand padding class so PX and PY take predictive effect
-  if (prefix === "px-" || prefix === "py-") {
-    filtered = filtered.filter((token) => {
-      if (token.startsWith("px-") || token.startsWith("py-")) {
-        return true;
-      }
-      return !token.startsWith("p-");
-    });
-  }
-
-  // Clean matching conflicting margin shorthand
-  if (prefix === "mb-") {
-    filtered = filtered.filter((token) => {
-      if (token.startsWith("ml-") || token.startsWith("mr-") || token.startsWith("mt-") || token.startsWith("mb-")) {
-        return true;
-      }
-      return !token.startsWith("m-");
-    });
-  }
+  // Filter out any token that starts with the target prefix (including responsive/state prefixes)
+  let filtered = currentTokens.filter((token) => {
+    const cleanToken = token.includes(":") ? token.split(":").pop()! : token;
+    if (cleanToken.startsWith(prefix)) {
+      return false; // strip it
+    }
+    
+    // Clean matching conflicting shorthand padding class so PX and PY take predictive effect
+    if ((prefix === "px-" || prefix === "py-") && cleanToken.startsWith("p-")) {
+      return false;
+    }
+    
+    // Clean matching conflicting margin shorthand
+    if (prefix === "mb-" && cleanToken.startsWith("m-")) {
+      return false;
+    }
+    
+    return true;
+  });
   
   if (valueClass && valueClass.trim()) {
     filtered.push(valueClass.trim());
@@ -204,24 +205,26 @@ export function setColorClass(classes: string, prefix: "bg-" | "text-" | "border
   const currentTokens = classes.split(/\s+/).filter(Boolean);
   
   let filtered = currentTokens.filter((token) => {
+    const cleanToken = token.includes(":") ? token.split(":").pop()! : token;
+
     if (prefix === "text-") {
       // Don't strip out text sizes
-      if (STYLE_GROUPS.textSize.includes(token)) return true;
+      if (STYLE_GROUPS.textSize.includes(cleanToken)) return true;
       // Skip alignment or wrapping
-      if (STYLE_GROUPS.textAlign.includes(token)) return true;
+      if (STYLE_GROUPS.textAlign.includes(cleanToken)) return true;
       // Strip only text colors (like text-stone-900, text-white, text-amber-500)
-      return !token.startsWith("text-");
+      return !cleanToken.startsWith("text-");
     }
     
     if (prefix === "border-") {
       // Don't strip out border widths
-      if (STYLE_GROUPS.borderWidth.includes(token)) return true;
+      if (STYLE_GROUPS.borderWidth.includes(cleanToken)) return true;
       // Don't strip styles like border-dashed or border-double
-      if (["border-dashed", "border-dotted", "border-double", "border-none"].includes(token)) return true;
-      return !token.startsWith("border-");
+      if (["border-dashed", "border-dotted", "border-double", "border-none"].includes(cleanToken)) return true;
+      return !cleanToken.startsWith("border-");
     }
     
-    return !token.startsWith(prefix);
+    return !cleanToken.startsWith(prefix);
   });
   
   if (newColorClass && newColorClass.trim()) {
