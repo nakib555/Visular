@@ -3,43 +3,79 @@ import { VisualElement, ElementType } from "../types";
 import { COMPONENT_PRESETS, cloneTreeWithNewIds, generateId } from "../presets";
 import { compileTreeToHtml } from "../styleUtils";
 
-const API_BASE = ((import.meta as any).env?.VITE_API_URL || "").replace(/\/$/, "");
+const API_BASE = ((import.meta as any).env?.VITE_API_URL || "").replace(
+  /\/$/,
+  "",
+);
 
 export function useDesignerState() {
-  const [componentTree, setComponentTree] = useState<VisualElement>(() => cloneTreeWithNewIds(COMPONENT_PRESETS[0].root));
+  const [componentTree, setComponentTree] = useState<VisualElement>(() =>
+    cloneTreeWithNewIds(COMPONENT_PRESETS[0].root),
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  
+
   const [past, setPast] = useState<VisualElement[]>([]);
   const [future, setFuture] = useState<VisualElement[]>([]);
-  
-  const [backdropTheme, setBackdropTheme] = useState<"stone" | "zinc" | "grid">("grid");
-  const [viewMode, setViewMode] = useState<"editor" | "preview" | "code">("editor");
-  const [canvasViewport, setCanvasViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [canvasOrientation, setCanvasOrientation] = useState<"portrait" | "landscape">("portrait");
+
+  const [backdropTheme, setBackdropTheme] = useState<"stone" | "zinc" | "grid">(
+    "grid",
+  );
+  const [viewMode, setViewMode] = useState<"editor" | "preview" | "code">(
+    "editor",
+  );
+  const [canvasViewport, setCanvasViewport] = useState<
+    "desktop" | "tablet" | "mobile"
+  >("desktop");
+  const [canvasOrientation, setCanvasOrientation] = useState<
+    "portrait" | "landscape"
+  >("portrait");
   const [zoomScale, setZoomScale] = useState<number | "auto">("auto");
   const [parentWidth, setParentWidth] = useState(1000);
   const parentContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const [doubleClickId, setDoubleClickId] = useState<string | null>(null);
   const [inlineTextValue, setInlineTextValue] = useState("");
-  const inlineEditRef = useRef<HTMLTextAreaElement>(null);
-  
+  const inlineEditRef = useRef<any>(null);
+
   const [hasApiKey, setHasApiKey] = useState(false);
   const [isAIWorking, setIsAIWorking] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiAccent, setAiAccent] = useState("stone-900");
-  const [aiGoal, setAiGoal] = useState("Make it sound incredibly premium and engaging");
+  const [aiGoal, setAiGoal] = useState(
+    "Make it sound incredibly premium and engaging",
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [mobileActiveView, setMobileActiveView] = useState<"library" | "canvas" | "inspector">("canvas");
-  const [inspectorSection, setInspectorSection] = useState<"layout" | "spacing" | "sizing" | "position" | "typography" | "visuals" | "motion" | "animation" | "interactivity" | "media" | "core" | "help">("layout");
+  const [mobileActiveView, setMobileActiveView] = useState<
+    "library" | "canvas" | "inspector"
+  >("canvas");
+  const [inspectorSection, setInspectorSection] = useState<
+    | "layout"
+    | "spacing"
+    | "sizing"
+    | "position"
+    | "typography"
+    | "visuals"
+    | "motion"
+    | "animation"
+    | "interactivity"
+    | "media"
+    | "core"
+    | "help"
+    | "animations"
+    | "viewTransitions"
+  >("layout");
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  
+
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragDropTargetId, setDragDropTargetId] = useState<string | null>(null);
-  const [dragDropPosition, setDragDropPosition] = useState<"before" | "after" | "inside" | null>(null);
-  
-  const [activeTab, setActiveTab] = useState<"library" | "structure" | "styles" | "ai">("library");
-  
+  const [dragDropPosition, setDragDropPosition] = useState<
+    "before" | "after" | "inside" | null
+  >(null);
+
+  const [activeTab, setActiveTab] = useState<
+    "library" | "structure" | "styles" | "ai"
+  >("library");
+
   const [activeSearch, setActiveSearch] = useState("");
   const [showExportModal, setShowExportModal] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -56,7 +92,7 @@ export function useDesignerState() {
     observer.observe(parentContainerRef.current);
     return () => observer.disconnect();
   }, [parentContainerRef]);
-  
+
   useEffect(() => {
     fetch(`${API_BASE}/api/health`)
       .then((res) => res.json())
@@ -67,7 +103,17 @@ export function useDesignerState() {
   useEffect(() => {
     if (doubleClickId && inlineEditRef.current) {
       inlineEditRef.current.focus();
-      inlineEditRef.current.select();
+      
+      // Handle selection for contentEditable
+      if (inlineEditRef.current.nodeName !== 'TEXTAREA' && inlineEditRef.current.nodeName !== 'INPUT') {
+        const range = document.createRange();
+        range.selectNodeContents(inlineEditRef.current);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      } else if (typeof inlineEditRef.current.select === 'function') {
+        inlineEditRef.current.select();
+      }
     }
   }, [doubleClickId]);
 
@@ -102,7 +148,10 @@ export function useDesignerState() {
     setComponentTree(next);
   };
 
-  const findElementById = (tree: VisualElement, id: string): VisualElement | null => {
+  const findElementById = (
+    tree: VisualElement,
+    id: string,
+  ): VisualElement | null => {
     if (tree.id === id) return tree;
     if (tree.children) {
       for (const child of tree.children) {
@@ -113,13 +162,18 @@ export function useDesignerState() {
     return null;
   };
 
-  const selectedElement = selectedId ? findElementById(componentTree, selectedId) : null;
+  const selectedElement = selectedId
+    ? findElementById(componentTree, selectedId)
+    : null;
 
-  const updateTree = (updater: (item: VisualElement) => Partial<VisualElement>) => {
+  const updateTree = (
+    updater: (item: VisualElement) => Partial<VisualElement>,
+  ) => {
     if (!selectedId) return;
     const updateNode = (node: VisualElement): VisualElement => {
       if (node.id === selectedId) return { ...node, ...updater(node) };
-      if (node.children) return { ...node, children: node.children.map(updateNode) };
+      if (node.children)
+        return { ...node, children: node.children.map(updateNode) };
       return node;
     };
     changeComponentTree(updateNode(componentTree));
@@ -149,9 +203,10 @@ export function useDesignerState() {
         id: "canvas_root",
         type: "container",
         tag: "div",
-        classes: "p-12 bg-white rounded-3xl min-h-[300px] flex flex-col justify-center items-center text-center",
+        classes:
+          "p-12 bg-white rounded-3xl min-h-[300px] flex flex-col justify-center items-center text-center",
         content: undefined,
-        children: []
+        children: [],
       });
       setSelectedId(null);
       return;
@@ -159,7 +214,9 @@ export function useDesignerState() {
     const deleteNode = (node: VisualElement): VisualElement | null => {
       if (node.id === id) return null;
       if (node.children) {
-        const nextChildren = node.children.map(deleteNode).filter((c): c is VisualElement => c !== null);
+        const nextChildren = node.children
+          .map(deleteNode)
+          .filter((c): c is VisualElement => c !== null);
         return { ...node, children: nextChildren };
       }
       return node;
@@ -169,17 +226,25 @@ export function useDesignerState() {
     setSelectedId(null);
   };
 
-  const moveElement = (dragged: string, target: string, position: "before" | "after" | "inside") => {
+  const moveElement = (
+    dragged: string,
+    target: string,
+    position: "before" | "after" | "inside",
+  ) => {
     if (dragged === target || dragged === "root") return;
     let draggedObject: VisualElement | null = null;
-    
-    const extractAndRemoveNode = (node: VisualElement): VisualElement | null => {
+
+    const extractAndRemoveNode = (
+      node: VisualElement,
+    ): VisualElement | null => {
       if (node.id === dragged) {
         draggedObject = node;
         return null;
       }
       if (node.children) {
-        const nextChildren = node.children.map(extractAndRemoveNode).filter((c): c is VisualElement => c !== null);
+        const nextChildren = node.children
+          .map(extractAndRemoveNode)
+          .filter((c): c is VisualElement => c !== null);
         return { ...node, children: nextChildren };
       }
       return node;
@@ -190,21 +255,28 @@ export function useDesignerState() {
 
     const isInside = (node: VisualElement, id: string): boolean => {
       if (node.id === id) return true;
-      if (node.children) return node.children.some(c => isInside(c, id));
+      if (node.children) return node.children.some((c) => isInside(c, id));
       return false;
     };
     if (isInside(draggedObject, target)) return;
 
     const insertNode = (node: VisualElement): VisualElement => {
       if (node.id === target && position === "inside") {
-        return { ...node, children: [...(node.children || []), draggedObject!] };
+        return {
+          ...node,
+          children: [...(node.children || []), draggedObject!],
+        };
       }
       if (node.children) {
-        const index = node.children.findIndex(c => c.id === target);
+        const index = node.children.findIndex((c) => c.id === target);
         if (index !== -1 && position !== "inside") {
-           const nextChildren = [...node.children];
-           nextChildren.splice(position === "after" ? index + 1 : index, 0, draggedObject!);
-           return { ...node, children: nextChildren };
+          const nextChildren = [...node.children];
+          nextChildren.splice(
+            position === "after" ? index + 1 : index,
+            0,
+            draggedObject!,
+          );
+          return { ...node, children: nextChildren };
         }
         return { ...node, children: node.children.map(insertNode) };
       }
@@ -213,15 +285,29 @@ export function useDesignerState() {
 
     let finalTree = insertNode(treeWithoutDragged);
     if (target === "root" && position !== "inside") {
-       const alreadyIncluded = finalTree.children?.some(c => c.id === dragged) || finalTree.id === dragged;
-       if (!alreadyIncluded) finalTree.children = [...(finalTree.children || []), draggedObject];
+      const alreadyIncluded =
+        finalTree.children?.some((c) => c.id === dragged) ||
+        finalTree.id === dragged;
+      if (!alreadyIncluded)
+        finalTree.children = [...(finalTree.children || []), draggedObject];
     }
     changeComponentTree(finalTree);
   };
 
-  const addNewElement = (type: ElementType, tag: string, baseClasses: string, defaultContent?: string) => {
+  const addNewElement = (
+    type: ElementType,
+    tag: string,
+    baseClasses: string,
+    defaultContent?: string,
+  ) => {
     const targetId = selectedId || componentTree.id;
-    const newElement: VisualElement = { id: generateId(), type, tag, classes: baseClasses, content: defaultContent };
+    const newElement: VisualElement = {
+      id: generateId(),
+      type,
+      tag,
+      classes: baseClasses,
+      content: defaultContent,
+    };
 
     const addNode = (node: VisualElement): VisualElement => {
       if (node.id === targetId) {
@@ -229,7 +315,8 @@ export function useDesignerState() {
         const currentChildren = node.children || [];
         return { ...node, children: [...currentChildren, newElement] };
       }
-      if (node.children) return { ...node, children: node.children.map(addNode) };
+      if (node.children)
+        return { ...node, children: node.children.map(addNode) };
       return node;
     };
 
@@ -255,12 +342,14 @@ export function useDesignerState() {
     const tag = domNode.tagName.toLowerCase();
     const classes = domNode.className || "";
     const id = generateId();
-    
+
     let type: ElementType = "container";
     if (tag === "img") type = "image";
     else if (tag === "button" || tag === "a") type = "button";
-    else if (["h1", "h2", "h3", "h4", "h5", "h6", "p", "span"].includes(tag)) type = "text";
-    else if (classes.includes("badge") || classes.includes("tag")) type = "badge";
+    else if (["h1", "h2", "h3", "h4", "h5", "h6", "p", "span"].includes(tag))
+      type = "text";
+    else if (classes.includes("badge") || classes.includes("tag"))
+      type = "badge";
 
     const children: VisualElement[] = [];
     Array.from(domNode.childNodes).forEach((childNode) => {
@@ -271,58 +360,136 @@ export function useDesignerState() {
         if (text) {
           const hasSiblingElements = Array.from(domNode.children).length > 0;
           if (hasSiblingElements) {
-            children.push({ id: generateId(), type: "text", tag: "span", classes: "inline-block", content: text });
+            children.push({
+              id: generateId(),
+              type: "text",
+              tag: "span",
+              classes: "inline-block",
+              content: text,
+            });
           }
         }
       }
     });
 
     const hasElementChildren = children.length > 0;
-    const content = tag === "img"
-      ? (domNode.getAttribute("src") || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80")
-      : (!hasElementChildren ? domNode.textContent?.trim() || "" : undefined);
+    const content =
+      tag === "img"
+        ? domNode.getAttribute("src") ||
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"
+        : !hasElementChildren
+          ? domNode.textContent?.trim() || ""
+          : undefined;
 
-    return { id, type, tag, classes, content: content || undefined, children: children.length > 0 ? children : undefined };
+    return {
+      id,
+      type,
+      tag,
+      classes,
+      content: content || undefined,
+      children: children.length > 0 ? children : undefined,
+    };
   };
 
-  const autoOptimizeLayout = (node: VisualElement, modes: { typography?: boolean; padding?: boolean; columns?: boolean }): VisualElement => {
+  const autoOptimizeLayout = (
+    node: VisualElement,
+    modes: { typography?: boolean; padding?: boolean; columns?: boolean },
+  ): VisualElement => {
     let classes = node.classes || "";
     if (modes.columns) {
-      if (classes.includes("grid-cols-2") && !classes.includes("sm:grid-cols-2") && !classes.includes("md:grid-cols-2")) classes = classes.replace(/\bgrid-cols-2\b/g, "grid-cols-1 md:grid-cols-2");
-      if (classes.includes("grid-cols-3") && !classes.includes("sm:grid-cols-2") && !classes.includes("md:grid-cols-3")) classes = classes.replace(/\bgrid-cols-3\b/g, "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3");
-      if (classes.includes("grid-cols-4") && !classes.includes("sm:grid-cols-2") && !classes.includes("lg:grid-cols-4")) classes = classes.replace(/\bgrid-cols-4\b/g, "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4");
-      if (classes.includes("flex-row") && !classes.includes("flex-col") && !classes.includes("md:flex-row")) classes = classes.replace(/\bflex-row\b/g, "flex-col sm:flex-row");
-      if ((classes.includes("grid-cols-") || classes.includes("flex-col")) && !classes.includes("gap-") && !classes.includes("space-")) classes += " gap-4 sm:gap-6";
+      if (
+        classes.includes("grid-cols-2") &&
+        !classes.includes("sm:grid-cols-2") &&
+        !classes.includes("md:grid-cols-2")
+      )
+        classes = classes.replace(
+          /\bgrid-cols-2\b/g,
+          "grid-cols-1 md:grid-cols-2",
+        );
+      if (
+        classes.includes("grid-cols-3") &&
+        !classes.includes("sm:grid-cols-2") &&
+        !classes.includes("md:grid-cols-3")
+      )
+        classes = classes.replace(
+          /\bgrid-cols-3\b/g,
+          "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+        );
+      if (
+        classes.includes("grid-cols-4") &&
+        !classes.includes("sm:grid-cols-2") &&
+        !classes.includes("lg:grid-cols-4")
+      )
+        classes = classes.replace(
+          /\bgrid-cols-4\b/g,
+          "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+        );
+      if (
+        classes.includes("flex-row") &&
+        !classes.includes("flex-col") &&
+        !classes.includes("md:flex-row")
+      )
+        classes = classes.replace(/\bflex-row\b/g, "flex-col sm:flex-row");
+      if (
+        (classes.includes("grid-cols-") || classes.includes("flex-col")) &&
+        !classes.includes("gap-") &&
+        !classes.includes("space-")
+      )
+        classes += " gap-4 sm:gap-6";
     }
     if (modes.padding) {
-      classes = classes.replace(/\bp-12\b/g, "p-4 sm:p-8 md:p-12").replace(/\bp-16\b/g, "p-5 sm:p-10 md:p-16").replace(/\bp-20\b/g, "p-6 sm:p-12 md:p-20");
-      classes = classes.replace(/\bpx-12\b/g, "px-4 sm:px-8 md:px-12").replace(/\bpx-16\b/g, "px-5 sm:px-10 md:px-16");
-      classes = classes.replace(/\bpy-12\b/g, "py-6 sm:py-12").replace(/\bpy-16\b/g, "py-6 sm:py-16");
-      if (classes.includes("w-[") || classes.includes("w-96") || classes.includes("w-80")) {
+      classes = classes
+        .replace(/\bp-12\b/g, "p-4 sm:p-8 md:p-12")
+        .replace(/\bp-16\b/g, "p-5 sm:p-10 md:p-16")
+        .replace(/\bp-20\b/g, "p-6 sm:p-12 md:p-20");
+      classes = classes
+        .replace(/\bpx-12\b/g, "px-4 sm:px-8 md:px-12")
+        .replace(/\bpx-16\b/g, "px-5 sm:px-10 md:px-16");
+      classes = classes
+        .replace(/\bpy-12\b/g, "py-6 sm:py-12")
+        .replace(/\bpy-16\b/g, "py-6 sm:py-16");
+      if (
+        classes.includes("w-[") ||
+        classes.includes("w-96") ||
+        classes.includes("w-80")
+      ) {
         if (!classes.includes("max-w-")) classes += " max-w-full";
       }
     }
     if (modes.typography) {
-      classes = classes.replace(/\btext-3xl\b/g, "text-xl sm:text-2xl md:text-3xl").replace(/\btext-4xl\b/g, "text-2xl sm:text-3xl md:text-4xl");
-      classes = classes.replace(/\btext-5xl\b/g, "text-2xl sm:text-4xl md:text-5xl").replace(/\btext-6xl\b/g, "text-3xl sm:text-5xl md:text-6xl");
-      classes = classes.replace(/\btext-7xl\b/g, "text-4xl sm:text-6xl md:text-7xl");
+      classes = classes
+        .replace(/\btext-3xl\b/g, "text-xl sm:text-2xl md:text-3xl")
+        .replace(/\btext-4xl\b/g, "text-2xl sm:text-3xl md:text-4xl");
+      classes = classes
+        .replace(/\btext-5xl\b/g, "text-2xl sm:text-4xl md:text-5xl")
+        .replace(/\btext-6xl\b/g, "text-3xl sm:text-5xl md:text-6xl");
+      classes = classes.replace(
+        /\btext-7xl\b/g,
+        "text-4xl sm:text-6xl md:text-7xl",
+      );
     }
     classes = classes.replace(/\s+/g, " ").trim();
-    return { ...node, classes, children: node.children ? node.children.map(child => autoOptimizeLayout(child, modes)) : undefined };
+    return {
+      ...node,
+      classes,
+      children: node.children
+        ? node.children.map((child) => autoOptimizeLayout(child, modes))
+        : undefined,
+    };
   };
 
   const handleAIGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiPrompt.trim()) return;
-    
+
     setIsAIWorking(true);
     try {
       const response = await fetch(`${API_BASE}/api/gemini/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           description: aiPrompt,
-          accentColor: aiAccent
+          accentColor: aiAccent,
         }),
       });
 
@@ -333,23 +500,29 @@ export function useDesignerState() {
 
       const data = await response.json();
       const parsedTree = parseHtmlToTree(data.html);
-      
+
       if (parsedTree) {
         changeComponentTree(parsedTree);
         setSelectedId(parsedTree.id);
         setAiPrompt("");
       } else {
-        alert("We generated HTML but couldn't parse it into editable nodes. Please try slightly simpler phrasing.");
+        alert(
+          "We generated HTML but couldn't parse it into editable nodes. Please try slightly simpler phrasing.",
+        );
       }
     } catch (err: any) {
       console.error(err);
-      alert(`AI layout generation issue: ${err.message || "Ensure key is connected in Secrets panel."}`);
+      alert(
+        `AI layout generation issue: ${err.message || "Ensure key is connected in Secrets panel."}`,
+      );
     } finally {
       setIsAIWorking(false);
     }
   };
 
-  const runAutoOptimize = (type: "all" | "typography" | "padding" | "columns") => {
+  const runAutoOptimize = (
+    type: "all" | "typography" | "padding" | "columns",
+  ) => {
     setIsAIWorking(true);
     setTimeout(() => {
       try {
@@ -385,14 +558,17 @@ export function useDesignerState() {
 
       const data = await response.json();
       const parsedTree = parseHtmlToTree(data.html);
-      
+
       if (parsedTree) {
         changeComponentTree(parsedTree);
         setSelectedId(parsedTree.id);
       }
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Could not complete layout audit. Ensure your Gemini API Key is active.");
+      alert(
+        error.message ||
+          "Could not complete layout audit. Ensure your Gemini API Key is active.",
+      );
     } finally {
       setIsAIWorking(false);
     }
@@ -408,7 +584,7 @@ export function useDesignerState() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: selectedElement.content,
-          goal: aiGoal
+          goal: aiGoal,
         }),
       });
 
@@ -421,7 +597,10 @@ export function useDesignerState() {
       updateTree(() => ({ content: data.result || data.text }));
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Could not enhance copy. Ensure your Gemini API Key is active.");
+      alert(
+        error.message ||
+          "Could not enhance copy. Ensure your Gemini API Key is active.",
+      );
     } finally {
       setIsAIWorking(false);
     }
@@ -465,43 +644,82 @@ ${rawHtml}
   };
 
   return {
-    componentTree, setComponentTree,
-    selectedId, setSelectedId,
-    past, setPast,
-    future, setFuture,
-    backdropTheme, setBackdropTheme,
-    viewMode, setViewMode,
-    canvasViewport, setCanvasViewport,
-    canvasOrientation, setCanvasOrientation,
-    zoomScale, setZoomScale,
-    parentWidth, setParentWidth,
+    componentTree,
+    setComponentTree,
+    selectedId,
+    setSelectedId,
+    past,
+    setPast,
+    future,
+    setFuture,
+    backdropTheme,
+    setBackdropTheme,
+    viewMode,
+    setViewMode,
+    canvasViewport,
+    setCanvasViewport,
+    canvasOrientation,
+    setCanvasOrientation,
+    zoomScale,
+    setZoomScale,
+    parentWidth,
+    setParentWidth,
     parentContainerRef,
-    doubleClickId, setDoubleClickId,
-    inlineTextValue, setInlineTextValue,
+    doubleClickId,
+    setDoubleClickId,
+    inlineTextValue,
+    setInlineTextValue,
     inlineEditRef,
-    hasApiKey, setHasApiKey,
-    isAIWorking, setIsAIWorking,
-    aiPrompt, setAiPrompt,
-    aiAccent, setAiAccent,
-    aiGoal, setAiGoal,
-    isSidebarOpen, setIsSidebarOpen,
-    mobileActiveView, setMobileActiveView,
-    inspectorSection, setInspectorSection,
-    isMobileDrawerOpen, setIsMobileDrawerOpen,
-    draggedId, setDraggedId,
-    dragDropTargetId, setDragDropTargetId,
-    dragDropPosition, setDragDropPosition,
-    activeTab, setActiveTab,
-    activeSearch, setActiveSearch,
-    showExportModal, setShowExportModal,
-    copied, setCopied,
-    
+    hasApiKey,
+    setHasApiKey,
+    isAIWorking,
+    setIsAIWorking,
+    aiPrompt,
+    setAiPrompt,
+    aiAccent,
+    setAiAccent,
+    aiGoal,
+    setAiGoal,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    mobileActiveView,
+    setMobileActiveView,
+    inspectorSection,
+    setInspectorSection,
+    isMobileDrawerOpen,
+    setIsMobileDrawerOpen,
+    draggedId,
+    setDraggedId,
+    dragDropTargetId,
+    setDragDropTargetId,
+    dragDropPosition,
+    setDragDropPosition,
+    activeTab,
+    setActiveTab,
+    activeSearch,
+    setActiveSearch,
+    showExportModal,
+    setShowExportModal,
+    copied,
+    setCopied,
+
     changeComponentTree,
-    undo, redo,
-    selectedElement, findElementById,
-    updateTree, duplicateElement, deleteElement, moveElement, addNewElement,
-    parseHtmlToTree, autoOptimizeLayout,
-    handleAIGenerate, runAutoOptimize, runAIResponsiveAudit, handleAIEnhanceCopy,
-    handleCopyCode, handleDownloadFile,
+    undo,
+    redo,
+    selectedElement,
+    findElementById,
+    updateTree,
+    duplicateElement,
+    deleteElement,
+    moveElement,
+    addNewElement,
+    parseHtmlToTree,
+    autoOptimizeLayout,
+    handleAIGenerate,
+    runAutoOptimize,
+    runAIResponsiveAudit,
+    handleAIEnhanceCopy,
+    handleCopyCode,
+    handleDownloadFile,
   };
 }

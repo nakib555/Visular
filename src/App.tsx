@@ -48,7 +48,9 @@ import {
   ZoomIn,
   ZoomOut,
   Minus,
-  Sliders
+  Sliders,
+  Bell,
+  Grid
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -111,6 +113,40 @@ function DesignerApp() {
     handleCopyCode, handleDownloadFile,
   } = designer;
 
+  // PREMIUM INTERACTIVE SIMULATION PRESETS
+  const REAL_DEVICES = [
+    { id: "iphone-15", name: "iPhone 15 Pro", viewport: "mobile" as const, width: 393, height: 852, badge: "iOS" },
+    { id: "iphone-se", name: "iPhone SE", viewport: "mobile" as const, width: 375, height: 667, badge: "iOS" },
+    { id: "pixel-8", name: "Google Pixel 8", viewport: "mobile" as const, width: 412, height: 915, badge: "Android" },
+    { id: "galaxy-s23", name: "Galaxy S23", viewport: "mobile" as const, width: 360, height: 800, badge: "Android" },
+    { id: "ipad-pro", name: "iPad Pro 11\"", viewport: "tablet" as const, width: 834, height: 1194, badge: "iPadOS" },
+    { id: "ipad-mini", name: "iPad Mini 8.3\"", viewport: "tablet" as const, width: 744, height: 1133, badge: "iPadOS" },
+    { id: "galaxy-tab", name: "Galaxy Tab S9", viewport: "tablet" as const, width: 800, height: 1280, badge: "Android" },
+    { id: "macbook-14", name: "MacBook Pro 14\"", viewport: "desktop" as const, width: 1440, height: 900, badge: "macOS" },
+    { id: "full-hd", name: "Full HD Monitor", viewport: "desktop" as const, width: 1920, height: 1080, badge: "16:9" }
+  ];
+
+  const [selectedDevicePreset, setSelectedDevicePreset] = useState<string>("macbook-14");
+  const [batteryLevel, setBatteryLevel] = useState<number>(100);
+  const [networkStatus, setNetworkStatus] = useState<"5G" | "4G" | "Wi-Fi" | "Offline">("Wi-Fi");
+  const [simulatedTime, setSimulatedTime] = useState<string>("09:41");
+  const [showGridGuides, setShowGridGuides] = useState<boolean>(false);
+  const [glossyOverlay, setGlossyOverlay] = useState<boolean>(true);
+  const [notificationText, setNotificationText] = useState<string | null>(null);
+  const [showSimulatorSettings, setShowSimulatorSettings] = useState<boolean>(false);
+
+  // Sync preset if viewport changes
+  const selectViewportAndResetPreset = (vp: "desktop" | "tablet" | "mobile") => {
+    setCanvasViewport(vp);
+    if (vp === "mobile") {
+      setSelectedDevicePreset("iphone-15");
+    } else if (vp === "tablet") {
+      setSelectedDevicePreset("ipad-pro");
+    } else {
+      setSelectedDevicePreset("macbook-14");
+    }
+  };
+
   // Workstation preferences (kept as local state to maintain correct tabs compatibility)
   const [activeTab, setActiveTab] = useState<"presets" | "structure" | "elements" | "styles" | "ai_assist">("presets");
 
@@ -154,17 +190,17 @@ function DesignerApp() {
   );
 
 
-  let targetDeviceWidth = 1024;
-  if (canvasViewport === "mobile") {
-    targetDeviceWidth = canvasOrientation === "portrait" ? 400 : 790;
-  } else if (canvasViewport === "tablet") {
-    targetDeviceWidth = canvasOrientation === "portrait" ? 830 : 1090;
-  } else {
-    targetDeviceWidth = 1060;
-  }
+  const activeDeviceConfig = REAL_DEVICES.find(d => d.id === selectedDevicePreset) || REAL_DEVICES[0];
+
+  let targetDeviceWidth = activeDeviceConfig.viewport === "desktop"
+    ? activeDeviceConfig.width
+    : (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height);
+
+  const framePadding = activeDeviceConfig.viewport === "mobile" ? 24 : activeDeviceConfig.viewport === "tablet" ? 32 : 0;
+  const scaledWidthWithBezel = targetDeviceWidth + framePadding;
 
   const dynamicScale = zoomScale === "auto" 
-    ? Math.min(1, (parentWidth - 36) / targetDeviceWidth)
+    ? Math.min(1, (parentWidth - 48) / scaledWidthWithBezel)
     : zoomScale;
 
   return (
@@ -275,7 +311,7 @@ function DesignerApp() {
           <div className="flex bg-stone-50 p-1 rounded-xl items-center gap-1 border border-stone-200/50 flex-shrink-0" id="device_viewport_selector">
             <button
               type="button"
-              onClick={() => setCanvasViewport("desktop")}
+              onClick={() => selectViewportAndResetPreset("desktop")}
               title="Desktop canvas view"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
                 canvasViewport === "desktop" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
@@ -286,7 +322,7 @@ function DesignerApp() {
             </button>
             <button
               type="button"
-              onClick={() => setCanvasViewport("tablet")}
+              onClick={() => selectViewportAndResetPreset("tablet")}
               title="Tablet viewport view"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
                 canvasViewport === "tablet" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
@@ -297,7 +333,7 @@ function DesignerApp() {
             </button>
             <button
               type="button"
-              onClick={() => setCanvasViewport("mobile")}
+              onClick={() => selectViewportAndResetPreset("mobile")}
               title="Mobile viewport mockup"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
                 canvasViewport === "mobile" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
@@ -654,9 +690,9 @@ function DesignerApp() {
           </AnimatePresence>
 
           {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
-          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] p-1.5 px-2 md:p-2.5 md:px-3 mb-3 md:mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-2 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0" style={{ height: "46px", borderRadius: "50px" }}>
+          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] py-0 px-2 md:py-0 md:px-3 mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-2 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0" style={{ height: "46px", borderRadius: "50px" }}>
             
-            {/* Left Column: Landscape vs Portrait (Only when non-desktop viewports) */}
+            {/* Left Column: Landscape vs Portrait + Device Selector */}
             <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
               {canvasViewport !== "desktop" && (
                 <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
@@ -664,30 +700,76 @@ function DesignerApp() {
                     type="button"
                     onClick={() => setCanvasOrientation("portrait")}
                     title="Vertical Mode"
-                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                    className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
                       canvasOrientation === "portrait"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
-                    <span>Portrait</span>
+                    <Smartphone size={11} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
+                    <span className="hidden sm:inline">Portrait</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCanvasOrientation("landscape")}
                     title="Landscape Mode"
-                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                    className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
                       canvasOrientation === "landscape"
                         ? "bg-white text-stone-900 shadow-sm"
                         : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                     }`}
                   >
-                    <Smartphone size={12} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
-                    <span>Landscape</span>
+                    <Smartphone size={11} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
+                    <span className="hidden sm:inline">Landscape</span>
                   </button>
                 </div>
               )}
+
+              {/* Real Preset Selector Dropdown */}
+              <div className="flex items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0">
+                <select
+                  value={selectedDevicePreset}
+                  onChange={(e) => {
+                    const targetId = e.target.value;
+                    setSelectedDevicePreset(targetId);
+                    const matched = REAL_DEVICES.find(d => d.id === targetId);
+                    if (matched) {
+                      setCanvasViewport(matched.viewport);
+                    }
+                  }}
+                  className="bg-transparent border-0 text-stone-850 text-[10px] md:text-[11px] font-bold py-1 px-2.5 outline-none cursor-pointer focus:ring-0"
+                >
+                  <optgroup label="Mobile Devices">
+                    {REAL_DEVICES.filter(d => d.viewport === "mobile").map(d => (
+                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Tablet Devices">
+                    {REAL_DEVICES.filter(d => d.viewport === "tablet").map(d => (
+                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Desktop Screens">
+                    {REAL_DEVICES.filter(d => d.viewport === "desktop").map(d => (
+                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
+                    ))}
+                  </optgroup>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSimulatorSettings(!showSimulatorSettings)}
+                  title="Configure simulated device network, battery & grids"
+                  className={`px-2 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                    showSimulatorSettings 
+                      ? "bg-stone-900 text-white shadow-xs font-bold" 
+                      : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/20"
+                  }`}
+                >
+                  <Sliders size={11} />
+                  <span className="hidden sm:inline">Simulate</span>
+                </button>
+              </div>
             </div>
 
             {/* Middle Column: Auto Layout Adjustments Quick Actions */}
@@ -773,15 +855,128 @@ function DesignerApp() {
                 </button>
               </div>
             </div>
-
           </div>
+
+          {/* EXPANDED SIMULATOR SETTINGS PANEL */}
+          <AnimatePresence>
+            {showSimulatorSettings && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-[1024px] mx-auto bg-stone-900 text-stone-100 border border-stone-800 rounded-[22px] p-4 mb-4 shadow-md flex flex-wrap md:flex-row md:items-center justify-between gap-4 text-xs select-none z-10 box-border"
+              >
+                {/* Mock Time Field */}
+                <div className="flex flex-col gap-1 min-w-[100px]">
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Simulator Time</label>
+                  <input
+                    type="text"
+                    value={simulatedTime}
+                    onChange={(e) => setSimulatedTime(e.target.value)}
+                    placeholder="09:41"
+                    className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-mono font-bold p-1 px-2.5 w-24 outline-none focus:border-rose-500"
+                  />
+                </div>
+
+                {/* Battery Slider */}
+                <div className="flex flex-col gap-1 min-w-[130px]">
+                  <div className="flex justify-between items-center pr-1">
+                    <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Battery Charge</label>
+                    <span className="text-[10px] font-mono text-stone-300 font-bold">{batteryLevel}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    value={batteryLevel}
+                    onChange={(e) => setBatteryLevel(parseInt(e.target.value))}
+                    className="accent-rose-500 rounded-lg cursor-pointer h-1 bg-stone-800 w-32"
+                  />
+                </div>
+
+                {/* Connection Select */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Network State</label>
+                  <select
+                    value={networkStatus}
+                    onChange={(e) => setNetworkStatus(e.target.value as any)}
+                    className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-bold p-1 px-2 w-28 cursor-pointer outline-none focus:border-rose-500"
+                  >
+                    <option value="Wi-Fi">Wi-Fi Wireless</option>
+                    <option value="5G">5G Speed</option>
+                    <option value="4G">4G Speed</option>
+                    <option value="Offline">Offline State</option>
+                  </select>
+                </div>
+
+                {/* Grid guides trigger */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Layout Grid Guides</label>
+                  <button
+                    onClick={() => setShowGridGuides(!showGridGuides)}
+                    className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                      showGridGuides
+                        ? "bg-rose-500/10 border-rose-500 text-rose-300"
+                        : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                    }`}
+                  >
+                    <Grid size={11} />
+                    <span>{showGridGuides ? "Guides: Visible" : "Guides: Hidden"}</span>
+                  </button>
+                </div>
+
+                {/* Gloss toggle trigger */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Reflection glare</label>
+                  <button
+                    onClick={() => setGlossyOverlay(!glossyOverlay)}
+                    className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                      glossyOverlay
+                        ? "bg-rose-500/10 border-rose-500 text-rose-300"
+                        : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                    }`}
+                  >
+                    <Eye size={11} />
+                    <span>{glossyOverlay ? "Glare Refraction: On" : "Glare Refraction: Off"}</span>
+                  </button>
+                </div>
+
+                {/* Notification Triggerer */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Notification Box</label>
+                  <button
+                    onClick={() => {
+                      const sampleAlerts = [
+                        "🔔 Double click text blocks anywhere to customize words inline!",
+                        "🔔 Layout updated successfully! Spacing matches structural criteria.",
+                        "🔔 Simulated incoming push message: 'Deploy build complete.'",
+                        "🔔 Grid guides enabled! You can now align coordinates.",
+                        "🔔 Simulated message: 'We need to check the iPad screen layout next.'"
+                      ];
+                      const randomMsg = sampleAlerts[Math.floor(Math.random() * sampleAlerts.length)];
+                      setNotificationText(randomMsg);
+                      setTimeout(() => {
+                        setNotificationText(prev => prev === randomMsg ? null : prev);
+                      }, 7000);
+                    }}
+                    className="flex items-center gap-1.5 p-1 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs select-none transition shadow-sm border border-rose-750 cursor-pointer"
+                  >
+                    <Bell size={11} />
+                    <span>Test Notification</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Scaler Wrapper Frame */}
           <div 
             id="scaler_bounds"
-            className="w-full flex-1 flex items-start justify-center transition-all duration-300 select-none pb-12"
+            className="w-full flex-1 flex items-start justify-center transition-transform duration-500 ease-out select-none pb-12"
             style={{ 
-              zoom: dynamicScale,
+              transform: `scale(${dynamicScale})`,
+              transformOrigin: "top center",
               margin: "0 auto",
             }}
           >
@@ -795,6 +990,16 @@ function DesignerApp() {
               setDragDropPosition={setDragDropPosition}
               moveElement={moveElement}
               isEmpty={!componentTree.children || componentTree.children.length === 0}
+              customWidth={activeDeviceConfig.width}
+              customHeight={activeDeviceConfig.height}
+              deviceName={activeDeviceConfig.name}
+              showGridGuides={showGridGuides}
+              batteryLevel={batteryLevel}
+              networkStatus={networkStatus}
+              simulatedTime={simulatedTime}
+              glossyOverlay={glossyOverlay}
+              notificationText={notificationText}
+              onClearNotification={() => setNotificationText(null)}
             >
               <VisualNode elem={componentTree} />
             </DeviceFrame>

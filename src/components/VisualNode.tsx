@@ -71,14 +71,32 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
   if (isDoubleClicked && elem.content !== undefined) {
     return (
-      <textarea
-        ref={inlineEditRef}
-        value={inlineTextValue}
-        onChange={(e) => setInlineTextValue(e.target.value)}
-        onBlur={handleInlineBlur}
-        onKeyDown={handleInlineKeyDown}
-        className="w-full text-stone-900 bg-stone-100 p-2 border border-rose-500 rounded-lg font-sans text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
-        style={{ minHeight: "40px" }}
+      <TagName
+        {...({} as any)}
+        ref={inlineEditRef as any}
+        contentEditable
+        suppressContentEditableWarning
+        onBlur={(e: React.FocusEvent<HTMLElement>) => {
+          const newText = e.currentTarget.textContent || "";
+          if (newText !== elem.content) {
+            designer.updateTree(() => ({ content: newText }));
+          }
+          setDoubleClickId(null);
+        }}
+        onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+          // prevent visual node wrapper commands from bleeding
+          e.stopPropagation();
+        }}
+        className={`${elem.classes || ""} outline-none ring-2 ring-rose-500 rounded-sm relative z-50 caret-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.3)] shadow-rose-500`}
+        dangerouslySetInnerHTML={{ __html: elem.content }}
       />
     );
   }
@@ -130,7 +148,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
         />
         {isSelected && (
           <motion.span
-            layoutId="focusedNodeOutline"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.35)] block"
             transition={{ type: "spring", stiffness: 380, damping: 28 }}
           >
@@ -291,7 +310,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
     >
       {isSelected && (
         <motion.span
-          layoutId="focusedNodeOutline"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.35)] block"
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
         >

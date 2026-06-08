@@ -9,6 +9,7 @@ export interface Option {
 }
 
 export interface PropertyControlProps {
+  key?: string | number;
   label?: string;
   type?: PropertyControlType;
   value: string;
