@@ -238,13 +238,15 @@ export function DeviceFrame({
     );
   } else {
     // DESKTOP
-    const baseW = customWidth || 1200;
-    const desktopWidth = baseW > 1280 ? "100%" : `${baseW}px`;
+    const baseW = customWidth || 1440;
+    const baseH = customHeight || 900;
+    const desktopWidth = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
+    const desktopHeight = canvasOrientation === "portrait" ? `${baseW}px` : `${baseH}px`;
 
     // Make the outer container emulate the "window" structure so `#workspace_canvas` aligns perfectly
-    outerClasses = "bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_30px_60px_-15px_rgba(0,0,0,0.2),0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group w-full";
-    // We give it a fixed height equivalent to what it had, so resizing animate scales correctly
-    outerStyle = { width: desktopWidth, height: "85vh", borderRadius: "14px", maxWidth: "100%" };
+    outerClasses = "bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_30px_60px_-15px_rgba(0,0,0,0.2),0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
+    // We give it a fixed height from preset configuration
+    outerStyle = { width: desktopWidth, height: desktopHeight, borderRadius: "14px", maxWidth: "100%" };
     canvasClasses = `flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-default relative border-0 flex flex-col z-10 rounded-b-[14px] transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-rose-500/50" : ""}`;
 
     decorationElements = (

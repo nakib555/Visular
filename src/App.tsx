@@ -50,7 +50,8 @@ import {
   Minus,
   Sliders,
   Bell,
-  Grid
+  Grid,
+  ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -149,6 +150,7 @@ function DesignerApp() {
 
   // Workstation preferences (kept as local state to maintain correct tabs compatibility)
   const [activeTab, setActiveTab] = useState<"presets" | "structure" | "elements" | "styles" | "ai_assist">("presets");
+  const [activePresetCategory, setActivePresetCategory] = useState<"all" | "heroes" | "cards" | "lists" | "calls-to-action">("all");
 
   // Synchronize desktop activeTab with mobileActiveView to ensure states carry over
   useEffect(() => {
@@ -185,9 +187,11 @@ function DesignerApp() {
   }, [selectedId, activeTab]);
 
   // Dynamic tree renderer for standard canvas workspace
-      const filteredPresets = COMPONENT_PRESETS.filter(
-    (p) => activeSearch === "" || p.name.toLowerCase().includes(activeSearch.toLowerCase())
-  );
+  const filteredPresets = COMPONENT_PRESETS.filter((p) => {
+    const matchesSearch = activeSearch === "" || p.name.toLowerCase().includes(activeSearch.toLowerCase());
+    const matchesCategory = activePresetCategory === "all" || p.category === activePresetCategory;
+    return matchesSearch && matchesCategory;
+  });
 
 
   const activeDeviceConfig = REAL_DEVICES.find(d => d.id === selectedDevicePreset) || REAL_DEVICES[0];
@@ -445,54 +449,143 @@ function DesignerApp() {
                   />
                 </div>
                 
-                <div className="space-y-3">
+                {/* Category Slider for Presets */}
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                  {(["all", "heroes", "cards", "lists", "calls-to-action"] as const).map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setActivePresetCategory(cat)}
+                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold transition-all duration-300 ${
+                        activePresetCategory === cat 
+                          ? "bg-stone-800 text-white shadow-md scale-105" 
+                          : "bg-white text-stone-500 border border-stone-200 hover:bg-stone-100 hover:text-stone-800"
+                      }`}
+                    >
+                      {cat.replace(/-/g, " ")}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={
+                  activePresetCategory === "cards" ? "grid grid-cols-2 gap-3" :
+                  activePresetCategory === "heroes" ? "space-y-4" :
+                  activePresetCategory === "lists" ? "space-y-1.5 bg-stone-50 rounded-xl p-2 border border-stone-100" :
+                  activePresetCategory === "calls-to-action" ? "space-y-3" :
+                  "space-y-4"
+                }>
                   {filteredPresets.map((preset) => {
-                    // Custom category badge tags for modern UI touch
-                    let tagLabel = "CARD";
-                    let tagBg = "bg-stone-100 text-stone-600";
-                    if (preset.name.includes("Bento")) {
-                      tagLabel = "BENTO";
-                      tagBg = "bg-emerald-50 text-emerald-700 border border-emerald-100";
-                    } else if (preset.name.includes("Newsletter")) {
-                      tagLabel = "CAMPAIGN";
-                      tagBg = "bg-amber-50 text-amber-700 border border-amber-100";
-                    } else if (preset.name.includes("Swiss")) {
-                      tagLabel = "SWISS GRID";
-                      tagBg = "bg-rose-50 text-rose-700 border border-rose-100";
-                    } else if (preset.name.includes("Hero")) {
-                      tagLabel = "HERO";
-                      tagBg = "bg-amber-50 text-amber-700 border border-amber-100";
-                    } else if (preset.name.includes("Testimonial")) {
-                      tagLabel = "REVIEWS";
-                      tagBg = "bg-rose-50 text-rose-700 border border-rose-100";
+                    const handleSelect = () => {
+                      changeComponentTree(cloneTreeWithNewIds(preset.root));
+                      if (window.innerWidth < 768) setMobileActiveView("canvas");
+                    };
+
+                    // ---- ALL / DEFAULT LAYOUT (Aesthetic Stacked Details) ----
+                    if (activePresetCategory === "all") {
+                      return (
+                        <div
+                          key={preset.name}
+                          onClick={handleSelect}
+                          className="p-4 bg-white hover:bg-gradient-to-br hover:from-white hover:to-stone-50/80 border border-stone-200/80 hover:border-stone-300 rounded-[18px] cursor-pointer group transition-all duration-300 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h4 className="text-xs font-bold text-stone-800 group-hover:text-stone-950 transition">
+                              {preset.name}
+                            </h4>
+                            <span className="text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-stone-100 text-stone-600">
+                              {preset.category}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-stone-500 leading-relaxed font-light font-sans line-clamp-2">
+                            {preset.description}
+                          </p>
+                        </div>
+                      );
                     }
 
-                    return (
-                      <div
-                        key={preset.name}
-                        onClick={() => {
-                          changeComponentTree(cloneTreeWithNewIds(preset.root));
-                          if (window.innerWidth < 768) {
-                            setMobileActiveView("canvas");
-                          }
-                        }}
-                        className="p-4 bg-white hover:bg-gradient-to-br hover:from-white hover:to-rose-50/15 border border-stone-200/80 hover:border-rose-300 rounded-2xl cursor-pointer group transition-all duration-300 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <h4 className="text-xs font-bold text-stone-800 group-hover:text-rose-600 transition">
+                    // ---- CARDS LAYOUT (Bento Grid Style) ----
+                    if (activePresetCategory === "cards") {
+                      return (
+                        <div
+                          key={preset.name}
+                          onClick={handleSelect}
+                          className="aspect-square bg-stone-50 hover:bg-white border border-stone-200/80 hover:border-emerald-300 rounded-[24px] cursor-pointer group transition-all duration-500 text-center flex flex-col items-center justify-center p-3 relative overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.95]"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-emerald-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <Layout size={24} strokeWidth={1.5} className="text-stone-300 group-hover:text-emerald-500 mb-3 transition-colors duration-300" />
+                          <h4 className="text-[11px] font-bold text-stone-700 group-hover:text-emerald-900 leading-tight">
                             {preset.name}
                           </h4>
-                          <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${tagBg}`}>
-                            {tagLabel}
-                          </span>
                         </div>
-                        <p className="text-[10px] text-stone-500 leading-relaxed font-light font-sans line-clamp-2">
-                          {preset.description}
-                        </p>
-                      </div>
-                    );
+                      );
+                    }
+
+                    // ---- HEROES LAYOUT (Cinematic Headers Style) ----
+                    if (activePresetCategory === "heroes") {
+                      return (
+                        <div
+                          key={preset.name}
+                          onClick={handleSelect}
+                          className="h-28 bg-stone-950 hover:bg-black border border-stone-800 hover:border-amber-500/50 rounded-2xl cursor-pointer group transition-all duration-500 flex flex-col justify-end p-4 relative overflow-hidden shadow-md hover:shadow-2xl hover:shadow-amber-500/10 active:scale-[0.98]"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0" />
+                          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.15),transparent_60%)]" />
+                          <div className="relative z-10">
+                            <h4 className="text-xs font-serif font-medium text-stone-100 group-hover:text-amber-100 transition-colors">
+                              {preset.name}
+                            </h4>
+                            <p className="text-[9px] text-stone-400 font-sans mt-0.5 line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                              {preset.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // ---- LISTS LAYOUT (Line-Item Index Style) ----
+                    if (activePresetCategory === "lists") {
+                      return (
+                        <div
+                          key={preset.name}
+                          onClick={handleSelect}
+                          className="px-3 py-2.5 bg-white hover:bg-stone-100 border border-stone-200/50 hover:border-stone-300 rounded-lg cursor-pointer group transition-all text-left flex items-center justify-between shadow-sm active:bg-stone-200"
+                        >
+                          <div className="flex items-center gap-2 overflow-hidden pr-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-stone-300 group-hover:bg-indigo-400 transition-colors shrink-0" />
+                            <h4 className="text-[11px] font-medium text-stone-700 truncate group-hover:text-indigo-900">
+                              {preset.name}
+                            </h4>
+                          </div>
+                          <PlusCircle size={12} className="text-stone-300 group-hover:text-indigo-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      );
+                    }
+
+                    // ---- CALLS TO ACTION LAYOUT (Vibrant Pill Buttons) ----
+                    if (activePresetCategory === "calls-to-action") {
+                      return (
+                        <div
+                          key={preset.name}
+                          onClick={handleSelect}
+                          className="px-4 py-3.5 bg-rose-500 hover:bg-rose-600 rounded-full cursor-pointer group transition-all duration-300 flex items-center justify-center text-center shadow-md hover:shadow-lg hover:shadow-rose-500/20 active:scale-[0.97]"
+                        >
+                          <h4 className="text-xs font-bold font-sans text-white uppercase tracking-widest flex items-center gap-2">
+                            {preset.name}
+                            <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                          </h4>
+                        </div>
+                      );
+                    }
+
+                    return null;
                   })}
                 </div>
+                
+                {filteredPresets.length === 0 && (
+                  <div className="py-10 text-center text-stone-400 text-xs font-medium">
+                    No components match your search.
+                  </div>
+                )}
               </div>
             )}
 
