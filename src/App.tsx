@@ -1071,7 +1071,7 @@ function DesignerApp() {
           {/* Scaler Wrapper Frame with layout-preserving container bounds */}
           <div
             id="scaler_outer_container"
-            className="flex-shrink-0 relative transition-all duration-500 ease-out select-none mb-12"
+            className="flex-shrink-0 relative transition-all duration-500 ease-out select-none mb-12 mx-auto self-center"
             style={{
               width: `${scaledWidthWithBezel * dynamicScale}px`,
               minWidth: `${scaledWidthWithBezel * dynamicScale}px`,

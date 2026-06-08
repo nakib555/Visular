@@ -84,7 +84,11 @@ export function useDesignerState() {
     if (!parentContainerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        if (entry.contentRect && entry.contentRect.width) {
+        if (parentContainerRef.current) {
+          // Use clientWidth to obtain the true visible layout viewport width,
+          // which ignores scrollable overflow and stops scaling feedback loops.
+          setParentWidth(parentContainerRef.current.clientWidth);
+        } else if (entry.contentRect && entry.contentRect.width) {
           setParentWidth(entry.contentRect.width);
         }
       }
