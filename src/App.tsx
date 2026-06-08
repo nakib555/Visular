@@ -200,8 +200,13 @@ function DesignerApp() {
     ? activeDeviceConfig.width
     : (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height);
 
+  let targetDeviceHeight = activeDeviceConfig.viewport === "desktop"
+    ? activeDeviceConfig.height
+    : (canvasOrientation === "portrait" ? activeDeviceConfig.height : activeDeviceConfig.width);
+
   const framePadding = activeDeviceConfig.viewport === "mobile" ? 24 : activeDeviceConfig.viewport === "tablet" ? 32 : 0;
   const scaledWidthWithBezel = targetDeviceWidth + framePadding;
+  const scaledHeightWithBezel = targetDeviceHeight + framePadding;
 
   const dynamicScale = zoomScale === "auto" 
     ? Math.min(1, (parentWidth - 48) / scaledWidthWithBezel)
@@ -1063,39 +1068,50 @@ function DesignerApp() {
             )}
           </AnimatePresence>
 
-          {/* Scaler Wrapper Frame */}
-          <div 
-            id="scaler_bounds"
-            className="w-full flex-1 flex items-start justify-center transition-transform duration-500 ease-out select-none pb-12"
-            style={{ 
-              transform: `scale(${dynamicScale})`,
-              transformOrigin: "top center",
+          {/* Scaler Wrapper Frame with layout-preserving container bounds */}
+          <div
+            id="scaler_outer_container"
+            className="flex-shrink-0 relative transition-all duration-500 ease-out select-none mb-12"
+            style={{
+              width: `${scaledWidthWithBezel * dynamicScale}px`,
+              height: `${scaledHeightWithBezel * dynamicScale}px`,
               margin: "0 auto",
             }}
           >
-            <DeviceFrame
-              canvasViewport={canvasViewport}
-              canvasOrientation={canvasOrientation}
-              backdropTheme={backdropTheme}
-              draggedId={draggedId}
-              dragDropTargetId={dragDropTargetId}
-              setDragDropTargetId={setDragDropTargetId}
-              setDragDropPosition={setDragDropPosition}
-              moveElement={moveElement}
-              isEmpty={!componentTree.children || componentTree.children.length === 0}
-              customWidth={activeDeviceConfig.width}
-              customHeight={activeDeviceConfig.height}
-              deviceName={activeDeviceConfig.name}
-              showGridGuides={showGridGuides}
-              batteryLevel={batteryLevel}
-              networkStatus={networkStatus}
-              simulatedTime={simulatedTime}
-              glossyOverlay={glossyOverlay}
-              notificationText={notificationText}
-              onClearNotification={() => setNotificationText(null)}
+            <div 
+              id="scaler_bounds"
+              className="absolute left-0 top-0 origin-top-left transition-all duration-500 ease-out select-none"
+              style={{ 
+                width: `${scaledWidthWithBezel}px`,
+                height: `${scaledHeightWithBezel}px`,
+                transform: `scale(${dynamicScale})`,
+                transformOrigin: "top left",
+              }}
             >
-              <VisualNode elem={componentTree} />
-            </DeviceFrame>
+              <DeviceFrame
+                canvasViewport={canvasViewport}
+                canvasOrientation={canvasOrientation}
+                backdropTheme={backdropTheme}
+                draggedId={draggedId}
+                dragDropTargetId={dragDropTargetId}
+                setDragDropTargetId={setDragDropTargetId}
+                setDragDropPosition={setDragDropPosition}
+                moveElement={moveElement}
+                isEmpty={!componentTree.children || componentTree.children.length === 0}
+                customWidth={activeDeviceConfig.width}
+                customHeight={activeDeviceConfig.height}
+                deviceName={activeDeviceConfig.name}
+                showGridGuides={showGridGuides}
+                batteryLevel={batteryLevel}
+                networkStatus={networkStatus}
+                simulatedTime={simulatedTime}
+                glossyOverlay={glossyOverlay}
+                notificationText={notificationText}
+                onClearNotification={() => setNotificationText(null)}
+              >
+                <VisualNode elem={componentTree} />
+              </DeviceFrame>
+            </div>
           </div>
           
           {/* Static WYSIWYG tip overlay displayed centered under the active frame */}

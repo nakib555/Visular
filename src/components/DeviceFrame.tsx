@@ -105,7 +105,7 @@ export function DeviceFrame({
     const height = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
     
     outerClasses = "bg-black p-[12px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.15),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
-    outerStyle = { width, height, borderRadius: "54px", maxWidth: "100%" };
+    outerStyle = { width, height, borderRadius: "54px", maxWidth: "none" };
     canvasClasses = `w-full h-full rounded-[42px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
 
     decorationElements = (
@@ -179,7 +179,7 @@ export function DeviceFrame({
     const height = canvasOrientation === "portrait" ? `${baseH}px` : `${baseW}px`;
 
     outerClasses = "bg-[#0f0f0f] p-[16px] shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.1),0_0_0_1px_#171717,0_0_0_4px_#3f3f46,0_0_0_5px_#18181b,0_40px_80px_-15px_rgba(0,0,0,0.5)] flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
-    outerStyle = { width, height, borderRadius: "44px", maxWidth: "100%" };
+    outerStyle = { width, height, borderRadius: "44px", maxWidth: "none" };
     canvasClasses = `w-full h-full rounded-[28px] overflow-y-auto overflow-x-hidden scrollbar-hide relative border flex flex-col z-10 transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "border-rose-500 ring-2 ring-rose-500/50" : "border-stone-200/50"}`;
 
     decorationElements = (
@@ -246,7 +246,7 @@ export function DeviceFrame({
     // Make the outer container emulate the "window" structure so `#workspace_canvas` aligns perfectly
     outerClasses = "bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_30px_60px_-15px_rgba(0,0,0,0.2),0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex-shrink-0 relative transition-all duration-500 ease-out flex flex-col group";
     // We give it a fixed height from preset configuration
-    outerStyle = { width: desktopWidth, height: desktopHeight, borderRadius: "14px", maxWidth: "100%" };
+    outerStyle = { width: desktopWidth, height: desktopHeight, borderRadius: "14px", maxWidth: "none" };
     canvasClasses = `flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-default relative border-0 flex flex-col z-10 rounded-b-[14px] transition-all duration-300 ${canvasBackground} ${dragDropTargetId === "root" ? "ring-2 ring-inset ring-rose-500/50" : ""}`;
 
     decorationElements = (
