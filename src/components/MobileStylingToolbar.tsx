@@ -41,22 +41,6 @@ import {
 import { useDesigner } from "../contexts/DesignerContext";
 import { InspectorSection } from "./InspectorPanel";
 import { CSS_HIERARCHY_DATA } from "./css-categories";
-import {
-  StylePropertyConfig,
-  SPACING_PROPS,
-  SIZING_PROPS,
-  DISPLAY_PROPS,
-  POSITION_PROPS,
-  FLEXBOX_PROPS,
-  GRID_PROPS,
-  OVERFLOW_PROPS,
-  TYPOGRAPHY_STYLES_PROPS,
-  TYPOGRAPHY_SPACING_PROPS,
-  COLOR_PROPS,
-  BORDER_PROPS,
-  TRANSITION_PROPS,
-  ANIMATION_PROPS
-} from "./css-categories/mobilePropertyConfigs";
 import { PropertyControl } from "./PropertyControl";
 import {
   setGroupClass,
@@ -67,55 +51,43 @@ import {
   STYLE_GROUPS,
 } from "../styleUtils";
 
+export interface StylePropertyConfig {
+  id: string;
+  label: string;
+  prefix: string;
+  values: string[];
+  group?: string;
+}
+
 const tabsInfo = [
-  { id: "layout", label: "Layout", icon: Maximize },
-  { id: "spacing", label: "Spacing", icon: Move },
-  { id: "sizing", label: "Sizing", icon: Sliders },
-  { id: "position", label: "Position", icon: Compass },
-  { id: "typography", label: "Text", icon: Type },
-  { id: "visuals", label: "Visuals", icon: Palette },
-  { id: "motion", label: "Effects", icon: Play },
-  { id: "animation", label: "Movement", icon: Wand2 },
-  { id: "interactivity", label: "Interact", icon: MousePointer },
-  { id: "media", label: "Media", icon: Image },
-  { id: "containerQueries", label: "Queries", icon: ZoomIn },
-  { id: "listsTables", label: "Lists", icon: List },
-  { id: "svgGraphics", label: "SVG", icon: PenTool },
-  { id: "writingModes", label: "Writing", icon: AlignLeft },
-  { id: "multiColumn", label: "Columns", icon: Columns },
-  { id: "scrollbars", label: "Scrolls", icon: Sliders },
-  { id: "masking", label: "Masks", icon: Scissors },
-  { id: "animations", label: "Paths", icon: Route },
-  { id: "touchGestures", label: "Touch", icon: Pointer },
-  { id: "viewTransitions", label: "View Trans", icon: Layers },
-  { id: "printSystem", label: "Print", icon: Printer },
-  { id: "advTypography", label: "Adv Text", icon: Type },
-  { id: "3dRendering", label: "3D", icon: Box },
-  { id: "varFonts", label: "Var Fonts", icon: Type },
-  { id: "popupsDialogs", label: "Popups", icon: Layers },
-  { id: "outlines", label: "Outlines", icon: MousePointer },
-  { id: "generatedContent", label: "Gen Content", icon: List },
-  { id: "stackingIsolation", label: "Stacking", icon: Palette },
-  { id: "globalValues", label: "Globals", icon: Settings },
-  { id: "anchorPositioning", label: "Anchors", icon: Anchor },
-  { id: "formAutoSizing", label: "Form Size", icon: Layout },
-  { id: "textBoxTrim", label: "Text Trim", icon: Type },
-  { id: "scrollStateQueries", label: "Scroll Qs", icon: ZoomIn },
-  { id: "readingFlow", label: "Reading", icon: Eye },
-  { id: "subgridLayout", label: "Subgrid", icon: Grid },
-  { id: "core", label: "Code", icon: Sparkles },
-  { id: "help", label: "Guide", icon: HelpCircle },
+  { id: "layoutBoxModel", label: "Layout & Box", icon: Maximize },
+  { id: "typographyText", label: "Text & Typo", icon: Type },
+  { id: "appearanceAestheticsSvg", label: "Appearance", icon: Palette },
+  { id: "motionTransforms", label: "Motion", icon: Play },
+  { id: "interactivityUiMisc", text: "Interact", label: "Interactivity", icon: MousePointer },
+  { id: "environmentMediaArchitecture", label: "Environment", icon: Layers },
 ];
 
-
-
-const getPropsForSubCategory = (subCat: string, section?: string): StylePropertyConfig[] => {
-  if (subCat.startsWith("dynamic_") && section && window.__dynamicCategoryMapping && window.__dynamicCategoryMapping[section]) {
+const getPropsForSubCategory = (
+  subCat: string,
+  section?: string,
+): StylePropertyConfig[] => {
+  if (
+    subCat.startsWith("dynamic_") &&
+    section &&
+    window.__dynamicCategoryMapping &&
+    window.__dynamicCategoryMapping[section]
+  ) {
     const idx = parseInt(subCat.split("_")[1]);
-    const hierarchy = CSS_HIERARCHY_DATA.find((c) => c.name === window.__dynamicCategoryMapping[section]);
+    const hierarchy = CSS_HIERARCHY_DATA.find(
+      (c) => c.name === window.__dynamicCategoryMapping[section],
+    );
     if (hierarchy && hierarchy.subCategories[idx]) {
-      return hierarchy.subCategories[idx].properties.map(prop => {
-        const vals = prop.values.split("|").map(v => v.replace(/<[^>]+>/g, "").trim()).filter(Boolean);
+      return hierarchy.subCategories[idx].properties.map((prop) => {
+        const vals = prop.values
+          .split("|")
+          .map((v) => v.replace(/<[^>]+>/g, "").trim())
+          .filter(Boolean);
         const uniqueVals = vals.filter((v, i, a) => a.indexOf(v) === i);
         return {
           id: prop.name,
@@ -127,36 +99,7 @@ const getPropsForSubCategory = (subCat: string, section?: string): StyleProperty
     }
   }
 
-  switch (subCat) {
-    case "display":
-      return DISPLAY_PROPS as StylePropertyConfig[];
-    case "spacingModel":
-      return SPACING_PROPS as StylePropertyConfig[];
-    case "sizingModel":
-      return SIZING_PROPS as StylePropertyConfig[];
-    case "positioning":
-      return POSITION_PROPS as StylePropertyConfig[];
-    case "flexbox":
-      return FLEXBOX_PROPS as StylePropertyConfig[];
-    case "grid":
-      return GRID_PROPS as StylePropertyConfig[];
-    case "overflow":
-      return OVERFLOW_PROPS as StylePropertyConfig[];
-    case "typographyStyles":
-      return TYPOGRAPHY_STYLES_PROPS as StylePropertyConfig[];
-    case "typographySpacing":
-      return TYPOGRAPHY_SPACING_PROPS as StylePropertyConfig[];
-    case "colors":
-      return COLOR_PROPS as StylePropertyConfig[];
-    case "borders":
-      return BORDER_PROPS as StylePropertyConfig[];
-    case "transitions":
-      return TRANSITION_PROPS as StylePropertyConfig[];
-    case "animations":
-      return ANIMATION_PROPS as StylePropertyConfig[];
-    default:
-      return [];
-  }
+  return [];
 };
 
 declare global {
@@ -177,6 +120,18 @@ export function MobileToolControls() {
   } = designer;
 
   const getInitialSubCategory = (section: string) => {
+    if (
+      [
+        "layoutBoxModel",
+        "typographyText",
+        "appearanceAestheticsSvg",
+        "motionTransforms",
+        "interactivityUiMisc",
+        "environmentMediaArchitecture",
+      ].includes(section)
+    ) {
+      return "dynamic_0";
+    }
     if (section === "layout") return "display";
     if (section === "spacing") return "spacingModel";
     if (section === "sizing") return "sizingModel";
@@ -188,8 +143,7 @@ export function MobileToolControls() {
     if (section === "viewTransitions") return "transitions";
     if (section === "interactivity") return "interact";
     if (section === "media") return "media";
-    if (section === "help") return "guide";
-    return "contentDetails";
+    return "dynamic_0";
   };
 
   const [subCategory, setSubCategory] = React.useState<string>(() =>
@@ -286,8 +240,13 @@ export function MobileToolControls() {
     updateTree((node) => {
       let nextClasses = node.classes || "";
       let tokens = nextClasses.split(/\s+/).filter(Boolean);
-      const isArbitrary = prop.prefix?.startsWith("[") && prop.prefix?.endsWith(":");
-      const classToApply = isArbitrary ? `${prop.prefix}${val}]` : (prop.prefix ? `${prop.prefix}${val}` : val);
+      const isArbitrary =
+        prop.prefix?.startsWith("[") && prop.prefix?.endsWith(":");
+      const classToApply = isArbitrary
+        ? `${prop.prefix}${val}]`
+        : prop.prefix
+          ? `${prop.prefix}${val}`
+          : val;
 
       if (!val || val === "none" || val === "") {
         // Clear/Remove style
@@ -408,42 +367,6 @@ export function MobileToolControls() {
     string,
     { id: string; label: string; icon: any }[]
   > = {
-    layout: [
-      { id: "display", label: "Display Mode", icon: Sliders },
-      { id: "positioning", label: "Positioning", icon: Move },
-      { id: "flexbox", label: "Flexbox Layout", icon: Cpu },
-      { id: "grid", label: "Grid Layout", icon: Grid },
-      { id: "overflow", label: "Overflow & Scroll", icon: Compass },
-    ],
-    spacing: [{ id: "spacingModel", label: "Spacing Controls", icon: Move }],
-    sizing: [{ id: "sizingModel", label: "Sizing Controls", icon: Sliders }],
-    typography: [
-      { id: "typographyStyles", label: "Font Styling", icon: Type },
-      { id: "typographySpacing", label: "Text Spacing", icon: AlignCenter },
-    ],
-    visuals: [
-      { id: "colors", label: "Color Palettes", icon: Palette },
-      { id: "borders", label: "Borders & Effects", icon: Layers },
-    ],
-    motion: [
-      { id: "transitions", label: "CSS Filters", icon: Play },
-      { id: "animations", label: "CSS Effects", icon: Sparkles },
-    ],
-    animation: [
-      { id: "movement", label: "Animations", icon: Wand2 },
-    ],
-    animations: [
-      { id: "paths", label: "Motion Paths", icon: Route },
-    ],
-    viewTransitions: [
-      { id: "transitions", label: "View Transitions", icon: Layers },
-    ],
-    interactivity: [
-      { id: "interact", label: "Interactive Settings", icon: MousePointer },
-    ],
-    media: [
-      { id: "media", label: "Media Objects", icon: Image },
-    ],
     core: [
       { id: "contentDetails", label: "Content Details", icon: Sparkles },
       { id: "utilityClasses", label: "Utility Classes", icon: Code },
@@ -452,29 +375,12 @@ export function MobileToolControls() {
   };
 
   const dynamicCategoryMapping: Record<string, string> = {
-    containerQueries: "CONTAINER QUERIES & CONTAINMENT",
-    listsTables: "LISTS & TABLES",
-    svgGraphics: "SVG & VECTOR GRAPHICS",
-    writingModes: "WRITING MODES & FLOW DIRECTION",
-    multiColumn: "MULTI-COLUMN & LAYOUT BREAKS",
-    scrollbars: "SCROLLBARS & OVERFLOW BEHAVIOR",
-    masking: "CSS MASKING & CLIPPING",
-    touchGestures: "TOUCH & GESTURE INTERACTIONS",
-    printSystem: "PRINT & SYSTEM ADJUSTMENT",
-    advTypography: "ADVANCED TYPOGRAPHY",
-    "3dRendering": "3D RENDERING & PERSPECTIVE",
-    varFonts: "VARIABLE FONTS & TYPOGRAPHIC FEATURES",
-    popupsDialogs: "POPUPS, DIALOGS & DISCRETE ANIMATIONS",
-    outlines: "FOCUS & INTERACTION OUTLINES",
-    generatedContent: "GENERATED CONTENT & COUNTERS",
-    stackingIsolation: "GRAPHICS & STACKING ISOLATION",
-    globalValues: "GLOBAL VALUES & RESETS",
-    anchorPositioning: "ADVANCED ANCHOR POSITIONING & ALIGNMENT",
-    formAutoSizing: "MODERN FORM AUTO-SIZING & DECORATION",
-    textBoxTrim: "NEXT-GEN TEXT-BOX TRIM & LEADING",
-    scrollStateQueries: "SCROLL-STATE CONTAINER QUERIES",
-    readingFlow: "ACCESSIBILITY & READING FLOW CONTROL",
-    subgridLayout: "ADVANCED GRID SUBGRID LAYOUT",
+    layoutBoxModel: "Layout & Box Model",
+    typographyText: "Typography & Text",
+    appearanceAestheticsSvg: "Appearance, Aesthetics & SVG",
+    motionTransforms: "Motion & Transforms",
+    interactivityUiMisc: "Interactivity, UI & Miscellaneous",
+    environmentMediaArchitecture: "Environment, Media & Architecture",
   };
 
   if (typeof window !== "undefined") {
@@ -926,7 +832,11 @@ export function MobileToolControls() {
               placeholder="none"
               options={activeProp.values.map((v) => ({
                 value: v,
-                label: (activeProp.prefix?.startsWith("[") && activeProp.prefix?.endsWith(":")) ? `${activeProp.prefix}${v}]` : `${activeProp.prefix || ""}${v}`,
+                label:
+                  activeProp.prefix?.startsWith("[") &&
+                  activeProp.prefix?.endsWith(":")
+                    ? `${activeProp.prefix}${v}]`
+                    : `${activeProp.prefix || ""}${v}`,
               }))}
               unit={activeProp.id === "rounding" ? "px" : "px"}
             />
@@ -936,49 +846,6 @@ export function MobileToolControls() {
     }
 
     switch (inspectorSection) {
-      case "core": {
-        if (subCategory === "contentDetails") {
-          return (
-            <div className="flex-1 min-w-0 flex items-center pr-1 animate-fade-in gap-2 select-none">
-              {selectedElement.content !== undefined ? (
-                <input
-                  type="text"
-                  value={selectedElement.content || ""}
-                  onChange={(e) =>
-                    updateTree(() => ({ content: e.target.value }))
-                  }
-                  className="flex-1 min-w-0 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-rose-500 font-sans text-stone-800"
-                  placeholder="Text content..."
-                />
-              ) : (
-                <span className="text-[10px] text-stone-400 font-mono italic truncate">
-                  No direct content (container element)
-                </span>
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <div className="flex-1 min-w-0 flex items-center pr-1 animate-fade-in gap-2 select-none">
-            <input
-              type="text"
-              value={selectedElement.classes || ""}
-              onChange={(e) => updateTree(() => ({ classes: e.target.value }))}
-              className="flex-1 min-w-0 bg-stone-50 border border-stone-200/85 rounded-xl px-2.5 py-1 text-[10px] focus:outline-none focus:border-rose-500 font-mono text-stone-800"
-              placeholder="Utilities classes list write..."
-            />
-          </div>
-        );
-      }
-
-      case "help":
-        return (
-          <div className="flex-1 flex items-center pr-1 animate-fade-in text-[10px] text-stone-500 font-mono italic">
-            <span>Scroll drawer up to browse full list</span>
-          </div>
-        );
-
       default:
         return null;
     }

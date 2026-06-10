@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -25,8 +25,17 @@
 
 /* Selected layout bounding box animation */
 @keyframes select-pulse {
-  0%, 100% { box-shadow: 0 0 0 2.5px rgba(168, 85, 247, 0.95), 0 0 16px rgba(168, 85, 247, 0.35) !important; }
-  50% { box-shadow: 0 0 0 2.5px rgba(168, 85, 247, 0.8), 0 0 22px rgba(168, 85, 247, 0.5) !important; }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2.5px rgba(168, 85, 247, 0.95),
+      0 0 16px rgba(168, 85, 247, 0.35) !important;
+  }
+  50% {
+    box-shadow:
+      0 0 0 2.5px rgba(168, 85, 247, 0.8),
+      0 0 22px rgba(168, 85, 247, 0.5) !important;
+  }
 }
 
 .selected-element-outline {
@@ -75,26 +84,28 @@
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Custom layout adjustments and fixes for the canvas responsiveness bar to remain constant size */
 #canvas_responsiveness_bar {
   height: 46px !important;
   min-height: 46px !important;
+  flex-wrap: nowrap !important;
   flex-shrink: 0 !important;
   border-radius: 9999px !important;
+  overflow-y: hidden !important;
 }
 
 @media (max-width: 767px) {
   #canvas_responsiveness_bar {
-    height: 42px !important; /* Elegant constant height fix for mobile */
-    min-height: 42px !important;
+    flex-wrap: nowrap !important;
+    height: 40px !important; /* Elegant constant height fix for mobile */
+    min-height: 40px !important;
     border-radius: 9999px !important; /* Fully rounded capsule */
-    padding: 4px 6px !important; /* Snug vertical padding to prevent clipping of scroll view container */
+    padding: 4px 12px !important; /* Snug vertical padding to prevent clipping of scroll view container */
     gap: 8px !important; /* Adjusted gap to save width */
     flex-shrink: 0 !important;
   }
 }
-

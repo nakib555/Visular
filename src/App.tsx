@@ -4,33 +4,33 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { 
-  Paintbrush, 
-  Layers, 
-  Settings, 
-  Code, 
-  Sparkles, 
-  Trash2, 
-  Copy, 
-  Plus, 
-  ChevronUp, 
-  ChevronDown, 
-  Download, 
-  Maximize, 
-  Eye, 
-  RefreshCw, 
-  Palette, 
-  Check, 
-  Type, 
-  Image as ImageIcon, 
-  Square, 
-  Play, 
-  MousePointer, 
-  HelpCircle, 
-  Lightbulb, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+import {
+  Paintbrush,
+  Layers,
+  Settings,
+  Code,
+  Sparkles,
+  Trash2,
+  Copy,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+  Download,
+  Maximize,
+  Eye,
+  RefreshCw,
+  Palette,
+  Check,
+  Type,
+  Image as ImageIcon,
+  Square,
+  Play,
+  MousePointer,
+  HelpCircle,
+  Lightbulb,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   AlignJustify,
   FileCode,
   Layout,
@@ -51,7 +51,7 @@ import {
   Sliders,
   Bell,
   Grid,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -60,90 +60,231 @@ import { VisualNode } from "./components/VisualNode";
 import { StructureNode } from "./components/StructureNode";
 import { DesignerProvider, useDesigner } from "./contexts/DesignerContext";
 import { InspectorPanel } from "./components/InspectorPanel";
-import { MobileStylingTabs, MobileToolControls } from "./components/MobileStylingToolbar";
+import {
+  MobileStylingTabs,
+  MobileToolControls,
+} from "./components/MobileStylingToolbar";
+
 import { COMPONENT_PRESETS, cloneTreeWithNewIds, generateId } from "./presets";
-import { 
-  STYLE_GROUPS, 
-  setGroupClass, 
-  getActiveGroupClass, 
-  setPrefixedClass, 
-  getPrefixedClass, 
-  setColorClass, 
-  compileTreeToHtml 
+import {
+  STYLE_GROUPS,
+  setGroupClass,
+  getActiveGroupClass,
+  setPrefixedClass,
+  getPrefixedClass,
+  setColorClass,
+  compileTreeToHtml,
 } from "./styleUtils";
 
 function DesignerApp() {
   // Read all designer state and operations directly from context
   const designer = useDesigner();
   const {
-    componentTree, setComponentTree,
-    selectedId, setSelectedId,
-    past, setPast,
-    future, setFuture,
-    backdropTheme, setBackdropTheme,
-    viewMode, setViewMode,
-    canvasViewport, setCanvasViewport,
-    canvasOrientation, setCanvasOrientation,
-    zoomScale, setZoomScale,
-    parentWidth, setParentWidth,
+    componentTree,
+    setComponentTree,
+    selectedId,
+    setSelectedId,
+    past,
+    setPast,
+    future,
+    setFuture,
+    backdropTheme,
+    setBackdropTheme,
+    viewMode,
+    setViewMode,
+    canvasViewport,
+    setCanvasViewport,
+    canvasOrientation,
+    setCanvasOrientation,
+    zoomScale,
+    setZoomScale,
+    parentWidth,
+    setParentWidth,
     parentContainerRef,
-    doubleClickId, setDoubleClickId,
-    inlineTextValue, setInlineTextValue,
+    doubleClickId,
+    setDoubleClickId,
+    inlineTextValue,
+    setInlineTextValue,
     inlineEditRef,
-    hasApiKey, setHasApiKey,
-    isAIWorking, setIsAIWorking,
-    aiPrompt, setAiPrompt,
-    aiAccent, setAiAccent,
-    aiGoal, setAiGoal,
-    isSidebarOpen, setIsSidebarOpen,
-    mobileActiveView, setMobileActiveView,
-    inspectorSection, setInspectorSection,
-    isMobileDrawerOpen, setIsMobileDrawerOpen,
-    draggedId, setDraggedId,
-    dragDropTargetId, setDragDropTargetId,
-    dragDropPosition, setDragDropPosition,
-    activeSearch, setActiveSearch,
-    showExportModal, setShowExportModal,
-    copied, setCopied,
-    
+    hasApiKey,
+    setHasApiKey,
+    isAIWorking,
+    setIsAIWorking,
+    aiPrompt,
+    setAiPrompt,
+    aiAccent,
+    setAiAccent,
+    aiGoal,
+    setAiGoal,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    mobileActiveView,
+    setMobileActiveView,
+    inspectorSection,
+    setInspectorSection,
+    isMobileDrawerOpen,
+    setIsMobileDrawerOpen,
+    draggedId,
+    setDraggedId,
+    dragDropTargetId,
+    setDragDropTargetId,
+    dragDropPosition,
+    setDragDropPosition,
+    activeSearch,
+    setActiveSearch,
+    showExportModal,
+    setShowExportModal,
+    copied,
+    setCopied,
+
     changeComponentTree,
-    undo, redo,
+    undo,
+    redo,
     selectedElement,
-    updateTree, duplicateElement, deleteElement, moveElement, addNewElement,
-    handleAIGenerate, runAutoOptimize, runAIResponsiveAudit, handleAIEnhanceCopy,
-    handleCopyCode, handleDownloadFile,
+    updateTree,
+    duplicateElement,
+    deleteElement,
+    moveElement,
+    addNewElement,
+    handleAIGenerate,
+    runAutoOptimize,
+    runAIResponsiveAudit,
+    handleAIEnhanceCopy,
+    handleCopyCode,
+    handleDownloadFile,
   } = designer;
 
   const [customDeviceWidth, setCustomDeviceWidth] = useState<number>(1024);
   const [customDeviceHeight, setCustomDeviceHeight] = useState<number>(768);
-  const [showCustomDeviceModal, setShowCustomDeviceModal] = useState<boolean>(false);
+  const [showCustomDeviceModal, setShowCustomDeviceModal] =
+    useState<boolean>(false);
 
   // PREMIUM INTERACTIVE SIMULATION PRESETS
   const REAL_DEVICES = [
-    { id: "iphone-15", name: "iPhone 15 Pro", viewport: "mobile" as const, width: 393, height: 852, badge: "iOS" },
-    { id: "iphone-se", name: "iPhone SE", viewport: "mobile" as const, width: 375, height: 667, badge: "iOS" },
-    { id: "pixel-8", name: "Google Pixel 8", viewport: "mobile" as const, width: 412, height: 915, badge: "Android" },
-    { id: "galaxy-s23", name: "Galaxy S23", viewport: "mobile" as const, width: 360, height: 800, badge: "Android" },
-    { id: "ipad-pro", name: "iPad Pro 11\"", viewport: "tablet" as const, width: 834, height: 1194, badge: "iPadOS" },
-    { id: "ipad-mini", name: "iPad Mini 8.3\"", viewport: "tablet" as const, width: 744, height: 1133, badge: "iPadOS" },
-    { id: "galaxy-tab", name: "Galaxy Tab S9", viewport: "tablet" as const, width: 800, height: 1280, badge: "Android" },
-    { id: "macbook-14", name: "MacBook Pro 14\"", viewport: "desktop" as const, width: 1440, height: 900, badge: "macOS" },
-    { id: "full-hd", name: "Full HD Monitor", viewport: "desktop" as const, width: 1920, height: 1080, badge: "16:9" },
-    { id: "custom", name: "Custom Canvas", viewport: (customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop") as "mobile"|"tablet"|"desktop", width: customDeviceWidth, height: customDeviceHeight, badge: "Custom" }
+    {
+      id: "iphone-15",
+      name: "iPhone 15 Pro",
+      viewport: "mobile" as const,
+      width: 393,
+      height: 852,
+      physicalWidth: 2.78, // inches
+      physicalHeight: 6.02, // inches
+      badge: "iOS",
+    },
+    {
+      id: "iphone-se",
+      name: "iPhone SE",
+      viewport: "mobile" as const,
+      width: 375,
+      height: 667,
+      physicalWidth: 2.65,
+      physicalHeight: 4.71,
+      badge: "iOS",
+    },
+    {
+      id: "pixel-8",
+      name: "Google Pixel 8",
+      viewport: "mobile" as const,
+      width: 412,
+      height: 915,
+      physicalWidth: 2.79,
+      physicalHeight: 6.20,
+      badge: "Android",
+    },
+    {
+      id: "galaxy-s23",
+      name: "Galaxy S23",
+      viewport: "mobile" as const,
+      width: 360,
+      height: 800,
+      physicalWidth: 2.79,
+      physicalHeight: 6.20,
+      badge: "Android",
+    },
+    {
+      id: "ipad-pro",
+      name: 'iPad Pro 11"',
+      viewport: "tablet" as const,
+      width: 834,
+      height: 1194,
+      physicalWidth: 7.02,
+      physicalHeight: 10.06,
+      badge: "iPadOS",
+    },
+    {
+      id: "ipad-mini",
+      name: 'iPad Mini 8.3"',
+      viewport: "tablet" as const,
+      width: 744,
+      height: 1133,
+      physicalWidth: 5.30,
+      physicalHeight: 8.08,
+      badge: "iPadOS",
+    },
+    {
+      id: "galaxy-tab",
+      name: "Galaxy Tab S9",
+      viewport: "tablet" as const,
+      width: 800,
+      height: 1280,
+      physicalWidth: 6.53,
+      physicalHeight: 10.45,
+      badge: "Android",
+    },
+    {
+      id: "macbook-14",
+      name: 'MacBook Pro 14"',
+      viewport: "desktop" as const,
+      width: 1440,
+      height: 900,
+      physicalWidth: 11.97,
+      physicalHeight: 7.48,
+      badge: "macOS",
+    },
+    {
+      id: "full-hd",
+      name: "Full HD Monitor",
+      viewport: "desktop" as const,
+      width: 1920,
+      height: 1080,
+      physicalWidth: 20.92,
+      physicalHeight: 11.77,
+      badge: "16:9",
+    },
+    {
+      id: "custom",
+      name: "Custom Canvas",
+      viewport: (customDeviceWidth < 640
+        ? "mobile"
+        : customDeviceWidth < 1024
+          ? "tablet"
+          : "desktop") as "mobile" | "tablet" | "desktop",
+      width: customDeviceWidth,
+      height: customDeviceHeight,
+      physicalWidth: customDeviceWidth / 96,
+      physicalHeight: customDeviceHeight / 96,
+      badge: "Custom",
+    },
   ];
 
-  const [selectedDevicePreset, setSelectedDevicePreset] = useState<string>("macbook-14");
+  const [selectedDevicePreset, setSelectedDevicePreset] =
+    useState<string>("macbook-14");
   const [batteryLevel, setBatteryLevel] = useState<number>(100);
-  const [networkStatus, setNetworkStatus] = useState<"5G" | "4G" | "Wi-Fi" | "Offline">("Wi-Fi");
+  const [networkStatus, setNetworkStatus] = useState<
+    "5G" | "4G" | "Wi-Fi" | "Offline"
+  >("Wi-Fi");
   const [simulatedTime, setSimulatedTime] = useState<string>("09:41");
   const [showGridGuides, setShowGridGuides] = useState<boolean>(false);
   const [glossyOverlay, setGlossyOverlay] = useState<boolean>(true);
   const [simulatePointer, setSimulatePointer] = useState<boolean>(false);
   const [notificationText, setNotificationText] = useState<string | null>(null);
-  const [showSimulatorSettings, setShowSimulatorSettings] = useState<boolean>(false);
+  const [showSimulatorSettings, setShowSimulatorSettings] =
+    useState<boolean>(false);
 
   // Sync preset if viewport changes
-  const selectViewportAndResetPreset = (vp: "desktop" | "tablet" | "mobile") => {
+  const selectViewportAndResetPreset = (
+    vp: "desktop" | "tablet" | "mobile",
+  ) => {
     setCanvasViewport(vp);
     if (vp === "mobile") {
       setSelectedDevicePreset("iphone-15");
@@ -158,8 +299,12 @@ function DesignerApp() {
   };
 
   // Workstation preferences (kept as local state to maintain correct tabs compatibility)
-  const [activeTab, setActiveTab] = useState<"presets" | "structure" | "elements" | "styles" | "ai_assist">("presets");
-  const [activePresetCategory, setActivePresetCategory] = useState<"all" | "heroes" | "cards" | "lists" | "calls-to-action">("all");
+  const [activeTab, setActiveTab] = useState<
+    "presets" | "structure" | "elements" | "styles" | "ai_assist"
+  >("presets");
+  const [activePresetCategory, setActivePresetCategory] = useState<
+    "all" | "heroes" | "cards" | "lists" | "calls-to-action"
+  >("all");
 
   const prevActiveTabRef = useRef(activeTab);
   const prevMobileActiveViewRef = useRef(mobileActiveView);
@@ -168,7 +313,12 @@ function DesignerApp() {
   useEffect(() => {
     if (prevActiveTabRef.current !== activeTab) {
       if (activeTab === "styles") setMobileActiveView("inspector");
-      else if (activeTab === "presets" || activeTab === "elements" || activeTab === "structure") setMobileActiveView("library");
+      else if (
+        activeTab === "presets" ||
+        activeTab === "elements" ||
+        activeTab === "structure"
+      )
+        setMobileActiveView("library");
       prevActiveTabRef.current = activeTab;
     }
   }, [activeTab, setMobileActiveView]);
@@ -207,15 +357,21 @@ function DesignerApp() {
   // Dynamic tree renderer for standard canvas workspace
   const filteredPresets = useMemo(() => {
     return COMPONENT_PRESETS.filter((p) => {
-      const matchesSearch = activeSearch === "" || p.name.toLowerCase().includes(activeSearch.toLowerCase());
-      const matchesCategory = activePresetCategory === "all" || p.category === activePresetCategory;
+      const matchesSearch =
+        activeSearch === "" ||
+        p.name.toLowerCase().includes(activeSearch.toLowerCase());
+      const matchesCategory =
+        activePresetCategory === "all" || p.category === activePresetCategory;
       return matchesSearch && matchesCategory;
     });
   }, [activeSearch, activePresetCategory]);
 
   const lineage = useMemo(() => {
     if (!selectedId) return null;
-    const findPath = (current: VisualElement, path: VisualElement[]): VisualElement[] | null => {
+    const findPath = (
+      current: VisualElement,
+      path: VisualElement[],
+    ): VisualElement[] | null => {
       if (current.id === selectedId) return [...path, current];
       if (current.children) {
         for (const child of current.children) {
@@ -228,8 +384,10 @@ function DesignerApp() {
     return findPath(componentTree, []);
   }, [componentTree, selectedId]);
 
-
-  const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
+  const [parentDimensions, setParentDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     if (!parentContainerRef.current) return;
@@ -240,7 +398,7 @@ function DesignerApp() {
         for (let entry of entries) {
           setParentDimensions({
             width: entry.contentRect.width,
-            height: entry.contentRect.height
+            height: entry.contentRect.height,
           });
         }
       });
@@ -252,19 +410,33 @@ function DesignerApp() {
     };
   }, []);
 
-  const activeDeviceConfig = REAL_DEVICES.find(d => d.id === selectedDevicePreset) || REAL_DEVICES[0];
+  const activeDeviceConfig =
+    REAL_DEVICES.find((d) => d.id === selectedDevicePreset) || REAL_DEVICES[0];
 
   const isDesktop = activeDeviceConfig.viewport === "desktop";
 
   let targetDeviceWidth = isDesktop
-    ? (canvasOrientation === "portrait" ? activeDeviceConfig.height : activeDeviceConfig.width)
-    : (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height);
+    ? canvasOrientation === "portrait"
+      ? activeDeviceConfig.height
+      : activeDeviceConfig.width
+    : canvasOrientation === "portrait"
+      ? activeDeviceConfig.width
+      : activeDeviceConfig.height;
 
   let targetDeviceHeight = isDesktop
-    ? (canvasOrientation === "portrait" ? activeDeviceConfig.width : activeDeviceConfig.height)
-    : (canvasOrientation === "portrait" ? activeDeviceConfig.height : activeDeviceConfig.width);
+    ? canvasOrientation === "portrait"
+      ? activeDeviceConfig.width
+      : activeDeviceConfig.height
+    : canvasOrientation === "portrait"
+      ? activeDeviceConfig.height
+      : activeDeviceConfig.width;
 
-  const framePadding = activeDeviceConfig.viewport === "mobile" ? 24 : activeDeviceConfig.viewport === "tablet" ? 32 : 0;
+  const framePadding =
+    activeDeviceConfig.viewport === "mobile"
+      ? 24
+      : activeDeviceConfig.viewport === "tablet"
+        ? 32
+        : 0;
   const scaledWidthWithBezel = targetDeviceWidth + framePadding;
   const scaledHeightWithBezel = targetDeviceHeight + framePadding;
 
@@ -272,26 +444,51 @@ function DesignerApp() {
   if (parentDimensions.width > 0 && parentDimensions.height > 0) {
     const isMobile = window.innerWidth < 768;
     const paddingX = isMobile ? 24 : 48; // padding left/right
-    const paddingY = isMobile 
-      ? (showSimulatorSettings ? 465 : 272)
-      : (showSimulatorSettings ? 300 : 120); // top toolbar space + bottom space, dynamically adjusting for simulator settings menu
+    const paddingY = isMobile
+      ? showSimulatorSettings
+        ? 465
+        : 272
+      : showSimulatorSettings
+        ? 300
+        : 120; // top toolbar space + bottom space, dynamically adjusting for simulator settings menu
     const scaleX = (parentDimensions.width - paddingX) / scaledWidthWithBezel;
     const scaleY = (parentDimensions.height - paddingY) / scaledHeightWithBezel;
     fitScale = Math.min(scaleX, scaleY, 2.0); // max zoom 200%
     if (fitScale < 0.1) fitScale = 0.1; // zoom limit 10%
   }
 
-  const dynamicScale = zoomScale === "auto" 
-    ? fitScale 
-    : zoomScale;
+  const targetDevicePhysicalWidth = isDesktop
+    ? canvasOrientation === "portrait"
+      ? activeDeviceConfig.physicalHeight
+      : activeDeviceConfig.physicalWidth
+    : canvasOrientation === "portrait"
+      ? activeDeviceConfig.physicalWidth
+      : activeDeviceConfig.physicalHeight;
 
-  const [simulatedCursorPos, setSimulatedCursorPos] = useState({ x: -100, y: -100 });
+  // Real-world physical measurements math:
+  // viewportWidth is rendered as targetDeviceWidth. Ensure targetDeviceWidth is scaled
+  // to targetDevicePhysicalWidth inches (which is exactly targetDevicePhysicalWidth * 96 CSS pixels).
+  const physicalScale = (targetDevicePhysicalWidth * 96) / targetDeviceWidth;
+
+  const dynamicScale =
+    zoomScale === "auto"
+      ? fitScale
+      : zoomScale === "physical"
+        ? physicalScale
+        : zoomScale;
+
+  const [simulatedCursorPos, setSimulatedCursorPos] = useState({
+    x: -100,
+    y: -100,
+  });
   const [isCanvasClicking, setIsCanvasClicking] = useState(false);
   const [isPointerInCanvas, setIsPointerInCanvas] = useState(false);
 
   return (
-    <div id="builder_root" className="min-h-screen bg-stone-50 font-sans text-stone-800 flex flex-col antialiased">
-      
+    <div
+      id="builder_root"
+      className="min-h-screen bg-stone-50 font-sans text-stone-800 flex flex-col antialiased"
+    >
       {/* SIMULATED CUSTOM POINTER OVERLAY */}
       {simulatePointer && isPointerInCanvas && (
         <>
@@ -300,12 +497,12 @@ function DesignerApp() {
               cursor: none !important;
             }
           `}</style>
-          <div 
+          <div
             className="fixed pointer-events-none z-[9999] transition-transform ease-out duration-75 mix-blend-difference"
-            style={{ 
-              left: simulatedCursorPos.x, 
-              top: simulatedCursorPos.y, 
-              transform: `translate(-50%, -50%) scale(${isCanvasClicking ? 0.8 : 1})` 
+            style={{
+              left: simulatedCursorPos.x,
+              top: simulatedCursorPos.y,
+              transform: `translate(-50%, -50%) scale(${isCanvasClicking ? 0.8 : 1})`,
             }}
           >
             <div className="w-8 h-8 rounded-full border-2 border-white/50 bg-white/30 flex items-center justify-center backdrop-blur-sm shadow-[0_0_15px_rgba(255,255,255,0.3)]">
@@ -316,8 +513,10 @@ function DesignerApp() {
       )}
 
       {/* UPPER HIGH-CONTRAST HEADER */}
-      <header id="control_bar" className="h-[64px] border-b border-stone-100 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none gap-4 overflow-x-auto scrollbar-hide">
-        
+      <header
+        id="control_bar"
+        className="h-[64px] border-b border-stone-100 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none gap-4 overflow-x-auto scrollbar-hide"
+      >
         {/* Editorial Logo Frame */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="w-[38px] h-[38px] rounded-xl bg-[#1a1a1a] flex items-center justify-center text-white font-serif text-xl shadow-sm flex-shrink-0">
@@ -343,8 +542,8 @@ function DesignerApp() {
               disabled={past.length === 0}
               title="Undo (Ctrl+Z)"
               className={`p-1.5 px-3 rounded-lg transition-all ${
-                past.length > 0 
-                  ? "text-stone-600 hover:text-stone-900 hover:bg-white shadow-sm cursor-pointer" 
+                past.length > 0
+                  ? "text-stone-600 hover:text-stone-900 hover:bg-white shadow-sm cursor-pointer"
                   : "text-stone-300 bg-transparent cursor-not-allowed"
               }`}
             >
@@ -356,8 +555,8 @@ function DesignerApp() {
               disabled={future.length === 0}
               title="Redo (Ctrl+Y)"
               className={`p-1.5 px-3 rounded-lg transition-all ${
-                future.length > 0 
-                  ? "text-stone-600 hover:text-stone-900 hover:bg-white shadow-sm cursor-pointer" 
+                future.length > 0
+                  ? "text-stone-600 hover:text-stone-900 hover:bg-white shadow-sm cursor-pointer"
                   : "text-stone-300 bg-transparent cursor-not-allowed"
               }`}
             >
@@ -369,8 +568,14 @@ function DesignerApp() {
           <button
             type="button"
             onClick={() => {
-              if (window.confirm("Are you sure you want to reset the canvas tree back to the default initial newsletter preset? This can be undone with Undo/Ctrl+Z.")) {
-                changeComponentTree(cloneTreeWithNewIds(COMPONENT_PRESETS[0].root));
+              if (
+                window.confirm(
+                  "Are you sure you want to reset the canvas tree back to the default initial newsletter preset? This can be undone with Undo/Ctrl+Z.",
+                )
+              ) {
+                changeComponentTree(
+                  cloneTreeWithNewIds(COMPONENT_PRESETS[0].root),
+                );
                 setSelectedId(null);
               }
             }}
@@ -388,7 +593,9 @@ function DesignerApp() {
             <button
               onClick={() => setBackdropTheme("grid")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                backdropTheme === "grid" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                backdropTheme === "grid"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
               <Layout size={12} />
@@ -397,7 +604,9 @@ function DesignerApp() {
             <button
               onClick={() => setBackdropTheme("stone")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                backdropTheme === "stone" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                backdropTheme === "stone"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
               <Monitor size={12} />
@@ -406,7 +615,9 @@ function DesignerApp() {
             <button
               onClick={() => setBackdropTheme("zinc")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                backdropTheme === "zinc" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                backdropTheme === "zinc"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
               <Smartphone size={12} />
@@ -417,16 +628,28 @@ function DesignerApp() {
           <div className="h-5 w-[1px] bg-stone-200 mx-1 hidden sm:block shrink-0"></div>
 
           {/* Device Viewport Selector */}
-          <div className="flex bg-stone-50 p-1 rounded-xl items-center gap-1 border border-stone-200/50 flex-shrink-0" id="device_viewport_selector">
+          <div
+            className="flex bg-stone-50 p-1 rounded-xl items-center gap-1 border border-stone-200/50 flex-shrink-0"
+            id="device_viewport_selector"
+          >
             <button
               type="button"
               onClick={() => selectViewportAndResetPreset("desktop")}
               title="Desktop canvas view"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
-                canvasViewport === "desktop" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                canvasViewport === "desktop"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
-              <Monitor size={14} className={canvasViewport === "desktop" ? "text-stone-800" : "text-stone-400"} />
+              <Monitor
+                size={14}
+                className={
+                  canvasViewport === "desktop"
+                    ? "text-stone-800"
+                    : "text-stone-400"
+                }
+              />
               <span className="hidden lg:inline">Desktop</span>
             </button>
             <button
@@ -434,10 +657,19 @@ function DesignerApp() {
               onClick={() => selectViewportAndResetPreset("tablet")}
               title="Tablet viewport view"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
-                canvasViewport === "tablet" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                canvasViewport === "tablet"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
-              <Tablet size={14} className={canvasViewport === "tablet" ? "text-stone-800" : "text-stone-400"} />
+              <Tablet
+                size={14}
+                className={
+                  canvasViewport === "tablet"
+                    ? "text-stone-800"
+                    : "text-stone-400"
+                }
+              />
               <span className="hidden lg:inline">Tablet</span>
             </button>
             <button
@@ -445,10 +677,19 @@ function DesignerApp() {
               onClick={() => selectViewportAndResetPreset("mobile")}
               title="Mobile viewport mockup"
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 text-[11px] ${
-                canvasViewport === "mobile" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-900"
+                canvasViewport === "mobile"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
-              <Smartphone size={14} className={canvasViewport === "mobile" ? "text-stone-800" : "text-stone-400"} />
+              <Smartphone
+                size={14}
+                className={
+                  canvasViewport === "mobile"
+                    ? "text-stone-800"
+                    : "text-stone-400"
+                }
+              />
               <span className="hidden lg:inline">Mobile</span>
             </button>
           </div>
@@ -461,24 +702,29 @@ function DesignerApp() {
             className="px-4 py-2 bg-[#1a1a1a] text-white text-[11px] font-bold rounded-xl hover:bg-black hover:shadow-lg active:scale-95 transition-all shadow-sm flex items-center gap-2 cursor-pointer border border-stone-800 flex-shrink-0"
           >
             <FileCode size={14} className="text-white/80 flex-shrink-0" />
-            <span><span className="hidden xl:inline">Compile & </span>Export</span>
+            <span>
+              <span className="hidden xl:inline">Compile & </span>Export
+            </span>
           </button>
         </div>
       </header>
 
       {/* CORE WORKSPACE SPLIT (Left sidebar | Interactive Center Canvas | Style Inspector right sidebar) */}
       <div id="main_split_container" className="flex-1 flex overflow-hidden">
-        
         {/* LEFT PANEL: Elements library, Presets, Layout outlines & AI assistant */}
-        <div id="library_panel" className={`w-full md:w-[350px] border-r border-stone-200/60 bg-white shadow-[2px_0_24px_rgba(0,0,0,0.02)] h-[calc(100vh-64px)] overflow-hidden flex-shrink-0 flex-col z-10 ${mobileActiveView === "library" ? "flex" : "hidden md:flex"}`}>
-          
+        <div
+          id="library_panel"
+          className={`w-full md:w-[350px] border-r border-stone-200/60 bg-white shadow-[2px_0_24px_rgba(0,0,0,0.02)] h-[calc(100vh-64px)] overflow-hidden flex-shrink-0 flex-col z-10 ${mobileActiveView === "library" ? "flex" : "hidden md:flex"}`}
+        >
           {/* Visual Header Branding for Left Dock */}
           <div className="p-4 flex items-center justify-between border-b border-stone-100">
             <span className="text-[10px] font-mono tracking-widest font-bold text-stone-800 uppercase flex items-center gap-2 bg-rose-50/50 text-rose-700 px-3.5 py-2 rounded-full select-none">
               <Sparkles size={12} className="text-rose-600" />
               Creator Panel
             </span>
-            <span className="text-[10px] font-mono text-stone-400">v1.2 Active</span>
+            <span className="text-[10px] font-mono text-stone-400">
+              v1.2 Active
+            </span>
           </div>
 
           {/* Navigation tabs Segmented Control (Pills) */}
@@ -486,61 +732,96 @@ function DesignerApp() {
             <div className="bg-stone-50/50 p-1 rounded-[20px] flex gap-1 border border-stone-200/50">
               <button
                 type="button"
-                onClick={() => { setActiveTab("presets"); }}
+                onClick={() => {
+                  setActiveTab("presets");
+                }}
                 title="Aesthetic Presets"
                 className={`flex-1 py-2.5 text-center text-[11px] font-bold rounded-[16px] transition-all duration-200 flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "presets" 
-                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50" 
+                  activeTab === "presets"
+                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50"
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <Layout size={14} className={activeTab === "presets" ? "text-stone-800" : "text-stone-400"} />
+                <Layout
+                  size={14}
+                  className={
+                    activeTab === "presets"
+                      ? "text-stone-800"
+                      : "text-stone-400"
+                  }
+                />
                 <span>Presets</span>
               </button>
               <button
                 type="button"
-                onClick={() => { setActiveTab("elements"); }}
+                onClick={() => {
+                  setActiveTab("elements");
+                }}
                 title="Add HTML elements"
                 className={`flex-1 py-2.5 text-center text-[11px] font-bold rounded-[16px] transition-all duration-200 flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "elements" 
-                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50" 
+                  activeTab === "elements"
+                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50"
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <PlusCircle size={14} className={activeTab === "elements" ? "text-rose-600" : "text-stone-400"} />
+                <PlusCircle
+                  size={14}
+                  className={
+                    activeTab === "elements"
+                      ? "text-rose-600"
+                      : "text-stone-400"
+                  }
+                />
                 <span>Add</span>
               </button>
               <button
                 type="button"
-                onClick={() => { setActiveTab("structure"); }}
+                onClick={() => {
+                  setActiveTab("structure");
+                }}
                 title="Hierarchical Outline"
                 className={`flex-1 py-2.5 text-center text-[11px] font-bold rounded-[16px] transition-all duration-200 flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "structure" 
-                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50" 
+                  activeTab === "structure"
+                    ? "bg-white text-stone-900 shadow-sm border border-stone-200/50"
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <Layers size={14} className={activeTab === "structure" ? "text-amber-500" : "text-stone-400"} />
+                <Layers
+                  size={14}
+                  className={
+                    activeTab === "structure"
+                      ? "text-amber-500"
+                      : "text-stone-400"
+                  }
+                />
                 <span>Tree</span>
               </button>
               <button
                 type="button"
-                onClick={() => { setActiveTab("styles"); }}
+                onClick={() => {
+                  setActiveTab("styles");
+                }}
                 title="Style Inspector"
                 className={`hidden md:flex flex-1 py-2.5 text-center text-[11px] font-bold rounded-[16px] transition-all duration-200 flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "styles" 
-                    ? "bg-[#8000FF] text-white shadow-md" 
+                  activeTab === "styles"
+                    ? "bg-[#8000FF] text-white shadow-md"
                     : "text-stone-500 hover:text-stone-800 hover:bg-stone-100/50"
                 }`}
               >
-                <Settings size={14} className={activeTab === "styles" ? "text-white" : "text-rose-500"} />
+                <Settings
+                  size={14}
+                  className={
+                    activeTab === "styles" ? "text-white" : "text-rose-500"
+                  }
+                />
                 <span>Styles</span>
               </button>
             </div>
           </div>
 
-          <div className={`flex-1 overflow-y-auto ${activeTab === "styles" ? "p-0" : "p-4 space-y-4"}`}>
-            
+          <div
+            className={`flex-1 overflow-y-auto ${activeTab === "styles" ? "p-0" : "p-4 space-y-4"}`}
+          >
             {/* TAB CONTENT: PRESET BLOCKS */}
             {activeTab === "presets" && (
               <div className="space-y-4">
@@ -553,17 +834,25 @@ function DesignerApp() {
                     className="w-full px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl text-xs font-sans placeholder-stone-400 focus:outline-none focus:border-rose-300 focus:ring-1 focus:ring-rose-300 transition duration-200 shadow-inner"
                   />
                 </div>
-                
+
                 {/* Category Slider for Presets */}
                 <div className="flex flex-row flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-                  {(["all", "heroes", "cards", "lists", "calls-to-action"] as const).map(cat => (
+                  {(
+                    [
+                      "all",
+                      "heroes",
+                      "cards",
+                      "lists",
+                      "calls-to-action",
+                    ] as const
+                  ).map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setActivePresetCategory(cat)}
                       className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold transition-all duration-300 ${
-                        activePresetCategory === cat 
-                          ? "bg-stone-800 text-white shadow-md scale-105" 
+                        activePresetCategory === cat
+                          ? "bg-stone-800 text-white shadow-md scale-105"
                           : "bg-white text-stone-500 border border-stone-200 hover:bg-stone-100 hover:text-stone-800"
                       }`}
                     >
@@ -572,17 +861,24 @@ function DesignerApp() {
                   ))}
                 </div>
 
-                <div className={
-                  activePresetCategory === "cards" ? "grid grid-cols-2 gap-3" :
-                  activePresetCategory === "heroes" ? "space-y-4" :
-                  activePresetCategory === "lists" ? "space-y-1.5 bg-stone-50 rounded-xl p-2 border border-stone-100" :
-                  activePresetCategory === "calls-to-action" ? "space-y-3" :
-                  "space-y-4"
-                }>
+                <div
+                  className={
+                    activePresetCategory === "cards"
+                      ? "grid grid-cols-2 gap-3"
+                      : activePresetCategory === "heroes"
+                        ? "space-y-4"
+                        : activePresetCategory === "lists"
+                          ? "space-y-1.5 bg-stone-50 rounded-xl p-2 border border-stone-100"
+                          : activePresetCategory === "calls-to-action"
+                            ? "space-y-3"
+                            : "space-y-4"
+                  }
+                >
                   {filteredPresets.map((preset) => {
                     const handleSelect = () => {
                       changeComponentTree(cloneTreeWithNewIds(preset.root));
-                      if (window.innerWidth < 768) setMobileActiveView("canvas");
+                      if (window.innerWidth < 768)
+                        setMobileActiveView("canvas");
                     };
 
                     // ---- ALL / DEFAULT LAYOUT (Aesthetic Stacked Details) ----
@@ -617,7 +913,11 @@ function DesignerApp() {
                           className="aspect-square bg-stone-50 hover:bg-white border border-stone-200/80 hover:border-emerald-300 rounded-[24px] cursor-pointer group transition-all duration-500 text-center flex flex-col items-center justify-center p-3 relative overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.95]"
                         >
                           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-emerald-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <Layout size={24} strokeWidth={1.5} className="text-stone-300 group-hover:text-emerald-500 mb-3 transition-colors duration-300" />
+                          <Layout
+                            size={24}
+                            strokeWidth={1.5}
+                            className="text-stone-300 group-hover:text-emerald-500 mb-3 transition-colors duration-300"
+                          />
                           <h4 className="text-[11px] font-bold text-stone-700 group-hover:text-emerald-900 leading-tight">
                             {preset.name}
                           </h4>
@@ -661,7 +961,10 @@ function DesignerApp() {
                               {preset.name}
                             </h4>
                           </div>
-                          <PlusCircle size={12} className="text-stone-300 group-hover:text-indigo-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <PlusCircle
+                            size={12}
+                            className="text-stone-300 group-hover:text-indigo-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          />
                         </div>
                       );
                     }
@@ -676,7 +979,10 @@ function DesignerApp() {
                         >
                           <h4 className="text-xs font-bold font-sans text-white uppercase tracking-widest flex items-center gap-2">
                             {preset.name}
-                            <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight
+                              size={12}
+                              className="group-hover:translate-x-1 transition-transform"
+                            />
                           </h4>
                         </div>
                       );
@@ -685,7 +991,7 @@ function DesignerApp() {
                     return null;
                   })}
                 </div>
-                
+
                 {filteredPresets.length === 0 && (
                   <div className="py-10 text-center text-stone-400 text-xs font-medium">
                     No components match your search.
@@ -699,134 +1005,236 @@ function DesignerApp() {
               <div className="space-y-4 text-left">
                 <div className="p-3.5 bg-gradient-to-r from-stone-50 to-stone-100 border border-stone-200 rounded-2xl mb-4 shadow-sm">
                   <p className="text-[10.5px] text-stone-500 leading-relaxed font-light">
-                    Select any container block, then click items below to append them inside. If no element is marked, builders append items at the root.
+                    Select any container block, then click items below to append
+                    them inside. If no element is marked, builders append items
+                    at the root.
                   </p>
                 </div>
 
                 {/* STRUCTUAL elements */}
                 <div className="space-y-2.5">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">Containers & Blocks</h5>
-                  
+                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
+                    Containers & Blocks
+                  </h5>
+
                   <button
                     type="button"
-                    onClick={() => addNewElement("container", "div", "p-8 bg-white rounded-3xl border border-stone-200 flex flex-col gap-5 shadow-sm")}
+                    onClick={() =>
+                      addNewElement(
+                        "container",
+                        "div",
+                        "p-8 bg-white rounded-3xl border border-stone-200 flex flex-col gap-5 shadow-sm",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
                         <Square size={13} className="fill-orange-100" />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Aesthetic Light Card</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Aesthetic Light Card
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-orange-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-orange-500"
+                    />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("container", "div", "grid grid-cols-1 md:grid-cols-2 gap-6 w-full py-4")}
+                    onClick={() =>
+                      addNewElement(
+                        "container",
+                        "div",
+                        "grid grid-cols-1 md:grid-cols-2 gap-6 w-full py-4",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
                         <Layout size={13} />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Dual Column Grid (1/2)</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Dual Column Grid (1/2)
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-orange-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-orange-500"
+                    />
                   </button>
                 </div>
 
                 {/* TYPOGRAPHY elements */}
                 <div className="space-y-2.5 pt-2">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">Text & Editorial</h5>
-                  
+                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
+                    Text & Editorial
+                  </h5>
+
                   <button
                     type="button"
-                    onClick={() => addNewElement("text", "h2", "text-3xl font-serif text-stone-900 tracking-tight font-medium mb-3 leading-tight", "Aesthetic Editorial Title")}
+                    onClick={() =>
+                      addNewElement(
+                        "text",
+                        "h2",
+                        "text-3xl font-serif text-stone-900 tracking-tight font-medium mb-3 leading-tight",
+                        "Aesthetic Editorial Title",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
                         <Type size={13} className="font-serif" />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Serif Luxe Title (H2)</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Serif Luxe Title (H2)
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-amber-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-amber-500"
+                    />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("text", "h3", "text-xl font-sans text-stone-900 tracking-tight font-semibold mb-2", "Modern Feature Header")}
+                    onClick={() =>
+                      addNewElement(
+                        "text",
+                        "h3",
+                        "text-xl font-sans text-stone-900 tracking-tight font-semibold mb-2",
+                        "Modern Feature Header",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
                         <Type size={13} />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Sans Display Title (H3)</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Sans Display Title (H3)
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-amber-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-amber-500"
+                    />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("text", "p", "text-stone-500 text-sm leading-relaxed mb-6 font-light", "Write description text here. Choose custom styling & font size values later.")}
+                    onClick={() =>
+                      addNewElement(
+                        "text",
+                        "p",
+                        "text-stone-500 text-sm leading-relaxed mb-6 font-light",
+                        "Write description text here. Choose custom styling & font size values later.",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
                         <AlignLeft size={13} />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Body Paragraph (P)</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Body Paragraph (P)
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-amber-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-amber-500"
+                    />
                   </button>
                 </div>
 
                 {/* DYNAMIC ACTIONS elements */}
                 <div className="space-y-2.5 pt-2">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">Interactive Elements</h5>
-                  
+                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
+                    Interactive Elements
+                  </h5>
+
                   <button
                     type="button"
-                    onClick={() => addNewElement("button", "button", "px-6 py-3 bg-stone-900 text-white font-medium text-xs hover:bg-stone-800 rounded-xl shadow-md transition-all cursor-pointer font-sans active:scale-95", "Primary Action")}
+                    onClick={() =>
+                      addNewElement(
+                        "button",
+                        "button",
+                        "px-6 py-3 bg-stone-900 text-white font-medium text-xs hover:bg-stone-800 rounded-xl shadow-md transition-all cursor-pointer font-sans active:scale-95",
+                        "Primary Action",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
                         <Play size={11} className="fill-rose-200" />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Micro Solid Button</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Micro Solid Button
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-rose-500"
+                    />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("badge", "span", "inline-block px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold", "FEATURED TAG")}
+                    onClick={() =>
+                      addNewElement(
+                        "badge",
+                        "span",
+                        "inline-block px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold",
+                        "FEATURED TAG",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
                         <CheckCircle2 size={13} />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Aesthetic Tag Capsule</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Aesthetic Tag Capsule
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-rose-500"
+                    />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => addNewElement("image", "img", "w-full h-48 rounded-2xl object-cover shadow-sm mb-4 bg-stone-100", "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80")}
+                    onClick={() =>
+                      addNewElement(
+                        "image",
+                        "img",
+                        "w-full h-48 rounded-2xl object-cover shadow-sm mb-4 bg-stone-100",
+                        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+                      )
+                    }
                     className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
                         <ImageIcon size={13} />
                       </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">Image Cover Box</span>
+                      <span className="group-hover:text-stone-900 transition font-sans">
+                        Image Cover Box
+                      </span>
                     </div>
-                    <Plus size={11} className="text-stone-400 group-hover:text-rose-500" />
+                    <Plus
+                      size={11}
+                      className="text-stone-400 group-hover:text-rose-500"
+                    />
                   </button>
                 </div>
               </div>
@@ -837,7 +1245,8 @@ function DesignerApp() {
               <div className="space-y-2 text-left">
                 <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl mb-4">
                   <p className="text-[11px] text-stone-500 leading-relaxed font-light">
-                    Tree nesting representation of visual layers. Click nodes to focus on canvas, or drag elements inside.
+                    Tree nesting representation of visual layers. Click nodes to
+                    focus on canvas, or drag elements inside.
                   </p>
                 </div>
                 <div className="border-l border-stone-200 pl-1.5 py-1 space-y-1">
@@ -860,342 +1269,464 @@ function DesignerApp() {
               </div>
             )}
           </div>
-
-
         </div>
 
         {/* INTERACTIVE CENTER VIEWPORT CANVAS */}
-        <div 
-          ref={parentContainerRef} 
-          id="visual_canvas_backyard_wrapper" 
+        <div
+          ref={parentContainerRef}
+          id="visual_canvas_backyard_wrapper"
           className={`flex-1 bg-stone-100 flex flex-col items-stretch justify-start relative h-[calc(100vh-64px)] overflow-hidden ${mobileActiveView === "canvas" || mobileActiveView === "inspector" ? "flex" : "hidden md:flex"}`}
         >
           {/* STATIC OVERLAYS & TOOLBAR */}
           <div className="absolute top-0 left-0 right-0 w-full z-40 p-3 sm:p-5 md:p-6 pointer-events-none">
             <div className="pointer-events-auto w-full max-w-[1024px] mx-auto">
-          
-          {/* Subtle loading indicator overlay */}
-          <AnimatePresence>
-            {isAIWorking && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[9999] flex flex-col justify-center items-center text-white text-center p-6"
+              {/* Subtle loading indicator overlay */}
+              <AnimatePresence>
+                {isAIWorking && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[9999] flex flex-col justify-center items-center text-white text-center p-6"
+                  >
+                    <div
+                      id="rotating_spinner"
+                      className="flex flex-col items-center gap-4"
+                    >
+                      <RefreshCw
+                        className="animate-spin text-rose-400"
+                        size={32}
+                      />
+                      <div className="text-center">
+                        <p className="text-sm font-semibold tracking-wide font-mono">
+                          AUTOLAYOUT RECONSTRUCTING
+                        </p>
+                        <p className="text-xs text-stone-300 mt-1 max-w-sm">
+                          Dressing visual nodes, calculating viewport layout, &
+                          balancing typography...
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
+              <div
+                id="canvas_responsiveness_bar"
+                className="w-full max-w-[1024px] mx-auto bg-white/95 backdrop-blur-md border border-stone-200/60 py-1.5 md:py-2 px-4 md:px-5 mb-4 shadow-md flex flex-row flex-nowrap items-center justify-between gap-3 overflow-x-auto scrollbar-hide text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0"
+                style={{ minHeight: "46px", borderRadius: "50px" }}
               >
-                <div id="rotating_spinner" className="flex flex-col items-center gap-4">
-                  <RefreshCw className="animate-spin text-rose-400" size={32} />
-                  <div className="text-center">
-                    <p className="text-sm font-semibold tracking-wide font-mono">AUTOLAYOUT RECONSTRUCTING</p>
-                    <p className="text-xs text-stone-300 mt-1 max-w-sm">Dressing visual nodes, calculating viewport layout, & balancing typography...</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                {/* Left Column: Landscape vs Portrait + Device Selector */}
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
+                  {canvasViewport !== "desktop" && (
+                    <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setCanvasOrientation("portrait")}
+                        title="Vertical Mode"
+                        className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                          canvasOrientation === "portrait"
+                            ? "bg-white text-stone-900 shadow-sm"
+                            : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
+                        }`}
+                      >
+                        <Smartphone
+                          size={11}
+                          className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`}
+                        />
+                        <span className="hidden sm:inline">Portrait</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCanvasOrientation("landscape")}
+                        title="Landscape Mode"
+                        className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                          canvasOrientation === "landscape"
+                            ? "bg-white text-stone-900 shadow-sm"
+                            : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
+                        }`}
+                      >
+                        <Smartphone
+                          size={11}
+                          className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`}
+                        />
+                        <span className="hidden sm:inline">Landscape</span>
+                      </button>
+                    </div>
+                  )}
 
-          {/* CANVAS RESPONSIVENESS CONTROLS TOOLBAR */}
-          <div id="canvas_responsiveness_bar" className="w-full max-w-[1024px] mx-auto bg-white border border-stone-200/50 rounded-[18px] py-0 px-2 md:py-0 md:px-3 mb-4 shadow-sm flex flex-row flex-nowrap items-center justify-between gap-2 md:gap-4 overflow-x-auto scrollbar-hide lg:overflow-x-visible text-xs select-none z-10 box-border whitespace-nowrap flex-shrink-0" style={{ height: "46px", borderRadius: "50px" }}>
-            
-            {/* Left Column: Landscape vs Portrait + Device Selector */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
-              {canvasViewport !== "desktop" && (
-                <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => setCanvasOrientation("portrait")}
-                    title="Vertical Mode"
-                    className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
-                      canvasOrientation === "portrait"
-                        ? "bg-white text-stone-900 shadow-sm"
-                        : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
-                    }`}
-                  >
-                    <Smartphone size={11} className={`transition-transform duration-300 shrink-0 ${canvasOrientation === "portrait" ? "text-stone-800" : "text-stone-400"}`} />
-                    <span className="hidden sm:inline">Portrait</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCanvasOrientation("landscape")}
-                    title="Landscape Mode"
-                    className={`px-2 md:px-2.5 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
-                      canvasOrientation === "landscape"
-                        ? "bg-white text-stone-900 shadow-sm"
-                        : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
-                    }`}
-                  >
-                    <Smartphone size={11} className={`rotate-90 transition-transform duration-300 shrink-0 ${canvasOrientation === "landscape" ? "text-stone-800" : "text-stone-400"}`} />
-                    <span className="hidden sm:inline">Landscape</span>
-                  </button>
-                </div>
-              )}
+                  {/* Real Preset Selector Dropdown */}
+                  <div className="flex items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0">
+                    <select
+                      value={selectedDevicePreset}
+                      onChange={(e) => {
+                        const targetId = e.target.value;
+                        if (targetId === "custom") {
+                          setSelectedDevicePreset("custom");
+                          setShowCustomDeviceModal(true);
+                          setCanvasViewport(
+                            customDeviceWidth < 640
+                              ? "mobile"
+                              : customDeviceWidth < 1024
+                                ? "tablet"
+                                : "desktop",
+                          );
+                        } else {
+                          setSelectedDevicePreset(targetId);
+                          const matched = REAL_DEVICES.find(
+                            (d) => d.id === targetId,
+                          );
+                          if (matched) {
+                            setCanvasViewport(matched.viewport);
+                            setCanvasOrientation(
+                              matched.viewport === "desktop"
+                                ? "landscape"
+                                : "portrait",
+                            );
+                          }
+                        }
+                      }}
+                      className="bg-transparent border-0 text-stone-850 text-[10px] md:text-[11px] font-bold py-1 px-2.5 outline-none cursor-pointer focus:ring-0"
+                    >
+                      <optgroup label="Mobile Devices">
+                        {REAL_DEVICES.filter(
+                          (d) => d.viewport === "mobile" && d.id !== "custom",
+                        ).map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.width} x {d.height}px)
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Tablet Devices">
+                        {REAL_DEVICES.filter(
+                          (d) => d.viewport === "tablet" && d.id !== "custom",
+                        ).map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.width} x {d.height}px)
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Desktop Screens">
+                        {REAL_DEVICES.filter(
+                          (d) => d.viewport === "desktop" && d.id !== "custom",
+                        ).map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.width} x {d.height}px)
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Custom">
+                        <option value="custom">
+                          Custom Dimensions ({customDeviceWidth} x{" "}
+                          {customDeviceHeight}px)
+                        </option>
+                      </optgroup>
+                    </select>
 
-              {/* Real Preset Selector Dropdown */}
-              <div className="flex items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0">
-                <select
-                  value={selectedDevicePreset}
-                  onChange={(e) => {
-                    const targetId = e.target.value;
-                    if (targetId === "custom") {
-                      setSelectedDevicePreset("custom");
-                      setShowCustomDeviceModal(true);
-                      setCanvasViewport(customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop");
-                    } else {
-                      setSelectedDevicePreset(targetId);
-                      const matched = REAL_DEVICES.find(d => d.id === targetId);
-                      if (matched) {
-                        setCanvasViewport(matched.viewport);
-                        setCanvasOrientation(matched.viewport === "desktop" ? "landscape" : "portrait");
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowSimulatorSettings(!showSimulatorSettings)
                       }
+                      title="Configure simulated device network, battery & grids"
+                      className={`px-2 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
+                        showSimulatorSettings
+                          ? "bg-stone-900 text-white shadow-xs font-bold"
+                          : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/20"
+                      }`}
+                    >
+                      <Sliders size={11} />
+                      <span className="hidden sm:inline">Simulate</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Middle Column: Auto Layout Adjustments Quick Actions */}
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={runAIResponsiveAudit}
+                    disabled={!hasApiKey}
+                    title={
+                      hasApiKey
+                        ? "Rewrite styles for outstanding mobile/tablet layout presentation"
+                        : "Active Gemini API key is required"
                     }
-                  }}
-                  className="bg-transparent border-0 text-stone-850 text-[10px] md:text-[11px] font-bold py-1 px-2.5 outline-none cursor-pointer focus:ring-0"
-                >
-                  <optgroup label="Mobile Devices">
-                    {REAL_DEVICES.filter(d => d.viewport === "mobile" && d.id !== "custom").map(d => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Tablet Devices">
-                    {REAL_DEVICES.filter(d => d.viewport === "tablet" && d.id !== "custom").map(d => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Desktop Screens">
-                    {REAL_DEVICES.filter(d => d.viewport === "desktop" && d.id !== "custom").map(d => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.width} x {d.height}px)</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Custom">
-                    <option value="custom">Custom Dimensions ({customDeviceWidth} x {customDeviceHeight}px)</option>
-                  </optgroup>
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSimulatorSettings(!showSimulatorSettings)}
-                  title="Configure simulated device network, battery & grids"
-                  className={`px-2 py-1 md:py-1.5 rounded-[30px] transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-semibold shrink-0 whitespace-nowrap ${
-                    showSimulatorSettings 
-                      ? "bg-stone-900 text-white shadow-xs font-bold" 
-                      : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/20"
-                  }`}
-                >
-                  <Sliders size={11} />
-                  <span className="hidden sm:inline">Simulate</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Middle Column: Auto Layout Adjustments Quick Actions */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
-              <button
-                type="button"
-                onClick={runAIResponsiveAudit}
-                disabled={!hasApiKey}
-                title={hasApiKey ? "Rewrite styles for outstanding mobile/tablet layout presentation" : "Active Gemini API key is required"}
-                className={`px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 transition cursor-pointer active:scale-95 border shrink-0 whitespace-nowrap ${
-                  hasApiKey 
-                    ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-700" 
-                    : "bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200"
-                }`}
-                style={{ borderRadius: "50px" }}
-              >
-                <Sparkles size={11} className={hasApiKey ? "text-rose-200 shrink-0" : "text-stone-300 shrink-0"} />
-                <span>AI Audit</span>
-              </button>
-            </div>
-
-            {/* Right Column: Custom Scaling Slider with click Adjustments */}
-            <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap">
-              <div className="flex flex-row flex-nowrap bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = zoomScale === "auto" ? fitScale : zoomScale;
-                    setZoomScale(Math.max(0.1, Number((current - 0.05).toFixed(2))));
-                  }}
-                  title="Zoom Out (-5%)"
-                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
-                  style={{ borderRadius: "50px" }}
-                >
-                  <ZoomOut size={12} className="shrink-0" />
-                </button>
-                
-                <input 
-                  type="range"
-                  min="0.1"
-                  max="2.0"
-                  step="0.05"
-                  value={zoomScale === "auto" ? fitScale : zoomScale}
-                  onChange={(e) => setZoomScale(parseFloat(e.target.value))}
-                  className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
-                  title="Drag zoom level"
-                  style={{ borderRadius: "50px" }}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = zoomScale === "auto" ? fitScale : zoomScale;
-                    setZoomScale(Math.min(2.0, Number((current + 0.05).toFixed(2))));
-                  }}
-                  title="Zoom In (+5%)"
-                  className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
-                  style={{ borderRadius: "50px" }}
-                >
-                  <ZoomIn size={12} className="shrink-0" />
-                </button>
-
-                <div className="h-4 w-px bg-stone-200 mx-0.5 md:mx-1 shrink-0" />
-
-                <button
-                  type="button"
-                  onClick={() => setZoomScale(zoomScale === "auto" ? 1.0 : "auto")}
-                  title="Toggle auto-fit / 100%"
-                  className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[40px] md:min-w-[50px] text-center shrink-0 whitespace-nowrap ${
-                    zoomScale === "auto" 
-                      ? "bg-stone-800 text-white font-bold shadow-sm" 
-                      : "bg-white text-stone-600 hover:bg-stone-50 font-semibold shadow-sm border border-stone-200/60"
-                  }`}
-                  style={{ borderRadius: "50px" }}
-                >
-                  {zoomScale === "auto" ? "Fit" : `${Math.round((zoomScale as number) * 100)}%`}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* EXPANDED SIMULATOR SETTINGS PANEL */}
-          <AnimatePresence>
-            {showSimulatorSettings && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="w-full max-w-[1024px] mx-auto bg-stone-900 text-stone-100 border border-stone-800 rounded-[22px] p-4 mb-4 shadow-md flex flex-wrap md:flex-row md:items-center justify-between gap-4 text-xs select-none z-10 box-border"
-              >
-                {/* Mock Time Field */}
-                <div className="flex flex-col gap-1 min-w-[100px]">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Simulator Time</label>
-                  <input
-                    type="text"
-                    value={simulatedTime}
-                    onChange={(e) => setSimulatedTime(e.target.value)}
-                    placeholder="09:41"
-                    className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-mono font-bold p-1 px-2.5 w-24 outline-none focus:border-rose-500"
-                  />
-                </div>
-
-                {/* Battery Slider */}
-                <div className="flex flex-col gap-1 min-w-[130px]">
-                  <div className="flex justify-between items-center pr-1">
-                    <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Battery Charge</label>
-                    <span className="text-[10px] font-mono text-stone-300 font-bold">{batteryLevel}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={batteryLevel}
-                    onChange={(e) => setBatteryLevel(parseInt(e.target.value))}
-                    className="accent-rose-500 rounded-lg cursor-pointer h-1 bg-stone-800 w-32"
-                  />
-                </div>
-
-                {/* Connection Select */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Network State</label>
-                  <select
-                    value={networkStatus}
-                    onChange={(e) => setNetworkStatus(e.target.value as any)}
-                    className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-bold p-1 px-2 w-28 cursor-pointer outline-none focus:border-rose-500"
-                  >
-                    <option value="Wi-Fi">Wi-Fi Wireless</option>
-                    <option value="5G">5G Speed</option>
-                    <option value="4G">4G Speed</option>
-                    <option value="Offline">Offline State</option>
-                  </select>
-                </div>
-
-                {/* Display Overlays */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Simulator Overlays</label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowGridGuides(!showGridGuides)}
-                      className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
-                        showGridGuides
-                          ? "bg-rose-500/10 border-rose-500 text-rose-300"
-                          : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
-                      }`}
-                    >
-                      <Grid size={11} />
-                      <span>{showGridGuides ? "Grids ON" : "Grids OFF"}</span>
-                    </button>
-                    <button
-                      onClick={() => setSimulatePointer(!simulatePointer)}
-                      className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
-                        simulatePointer
-                          ? "bg-sky-500/10 border-sky-500 text-sky-300"
-                          : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
-                      }`}
-                    >
-                      <MousePointer size={11} />
-                      <span>{simulatePointer ? "Pointer ON" : "Pointer OFF"}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Gloss toggle trigger */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Reflection glare</label>
-                  <button
-                    onClick={() => setGlossyOverlay(!glossyOverlay)}
-                    className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
-                      glossyOverlay
-                        ? "bg-rose-500/10 border-rose-500 text-rose-300"
-                        : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                    className={`px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-[11px] font-bold rounded-[30px] shadow-sm flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 transition cursor-pointer active:scale-95 border shrink-0 whitespace-nowrap ${
+                      hasApiKey
+                        ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-700"
+                        : "bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200"
                     }`}
+                    style={{ borderRadius: "50px" }}
                   >
-                    <Eye size={11} />
-                    <span>{glossyOverlay ? "Glare Refraction: On" : "Glare Refraction: Off"}</span>
+                    <Sparkles
+                      size={11}
+                      className={
+                        hasApiKey
+                          ? "text-rose-200 shrink-0"
+                          : "text-stone-300 shrink-0"
+                      }
+                    />
+                    <span>AI Audit</span>
                   </button>
                 </div>
 
-                {/* Notification Triggerer */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">Notification Box</label>
-                  <button
-                    onClick={() => {
-                      const sampleAlerts = [
-                        "🔔 Double click text blocks anywhere to customize words inline!",
-                        "🔔 Layout updated successfully! Spacing matches structural criteria.",
-                        "🔔 Simulated incoming push message: 'Deploy build complete.'",
-                        "🔔 Grid guides enabled! You can now align coordinates.",
-                        "🔔 Simulated message: 'We need to check the iPad screen layout next.'"
-                      ];
-                      const randomMsg = sampleAlerts[Math.floor(Math.random() * sampleAlerts.length)];
-                      setNotificationText(randomMsg);
-                      setTimeout(() => {
-                        setNotificationText(prev => prev === randomMsg ? null : prev);
-                      }, 7000);
-                    }}
-                    className="flex items-center gap-1.5 p-1 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs select-none transition shadow-sm border border-rose-750 cursor-pointer"
-                  >
-                    <Bell size={11} />
-                    <span>Test Notification</span>
-                  </button>
+                {/* Right Column: Custom Scaling Slider with click Adjustments */}
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap">
+                  <div className="flex flex-row flex-nowrap bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current =
+                          zoomScale === "auto"
+                            ? fitScale
+                            : zoomScale === "physical"
+                              ? physicalScale
+                              : zoomScale;
+                        setZoomScale(
+                          Math.max(0.1, Number((current - 0.05).toFixed(2))),
+                        );
+                      }}
+                      title="Zoom Out (-5%)"
+                      className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
+                      style={{ borderRadius: "50px" }}
+                    >
+                      <ZoomOut size={12} className="shrink-0" />
+                    </button>
+
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="2.0"
+                      step="0.05"
+                      value={
+                        zoomScale === "auto"
+                          ? fitScale
+                          : zoomScale === "physical"
+                            ? physicalScale
+                            : zoomScale
+                      }
+                      onChange={(e) => setZoomScale(parseFloat(e.target.value))}
+                      className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
+                      title="Drag zoom level"
+                      style={{ borderRadius: "50px" }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current =
+                          zoomScale === "auto"
+                            ? fitScale
+                            : zoomScale === "physical"
+                              ? physicalScale
+                              : zoomScale;
+                        setZoomScale(
+                          Math.min(2.0, Number((current + 0.05).toFixed(2))),
+                        );
+                      }}
+                      title="Zoom In (+5%)"
+                      className="p-1 px-1.5 md:p-1.5 md:px-2 hover:bg-white rounded-lg text-stone-400 hover:text-stone-800 transition-all cursor-pointer shadow-sm border border-transparent hover:border-stone-200 shrink-0 whitespace-nowrap"
+                      style={{ borderRadius: "50px" }}
+                    >
+                      <ZoomIn size={12} className="shrink-0" />
+                    </button>
+
+                    <div className="h-4 w-px bg-stone-200 mx-0.5 md:mx-1 shrink-0" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (zoomScale === "physical") {
+                          setZoomScale("auto");
+                        } else if (zoomScale === "auto") {
+                          setZoomScale(1.0);
+                        } else {
+                          setZoomScale("physical");
+                        }
+                      }}
+                      title="Cycle between Physical 1:1, Auto-Fit, or 100% Viewport Pixels"
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[50px] md:min-w-[65px] text-center shrink-0 whitespace-nowrap font-bold shadow-sm border ${
+                        zoomScale === "physical"
+                          ? "bg-stone-800 text-white border-stone-800"
+                          : zoomScale === "auto"
+                            ? "bg-amber-600 text-white border-amber-600"
+                            : "bg-white text-stone-600 border-stone-200/60 hover:bg-stone-50"
+                      }`}
+                      style={{ borderRadius: "50px" }}
+                    >
+                      {zoomScale === "physical"
+                        ? "Physical (1:1)"
+                        : zoomScale === "auto"
+                          ? "Fit"
+                          : `${Math.round((zoomScale as number) * 100)}%`}
+                    </button>
+                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+
+              {/* EXPANDED SIMULATOR SETTINGS PANEL */}
+              <AnimatePresence>
+                {showSimulatorSettings && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full max-w-[1024px] mx-auto bg-stone-900 text-stone-100 border border-stone-800 rounded-[22px] p-4 mb-4 shadow-md flex flex-wrap md:flex-row md:items-center justify-between gap-4 text-xs select-none z-10 box-border"
+                  >
+                    {/* Mock Time Field */}
+                    <div className="flex flex-col gap-1 min-w-[100px]">
+                      <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                        Simulator Time
+                      </label>
+                      <input
+                        type="text"
+                        value={simulatedTime}
+                        onChange={(e) => setSimulatedTime(e.target.value)}
+                        placeholder="09:41"
+                        className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-mono font-bold p-1 px-2.5 w-24 outline-none focus:border-rose-500"
+                      />
+                    </div>
+
+                    {/* Battery Slider */}
+                    <div className="flex flex-col gap-1 min-w-[130px]">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                          Battery Charge
+                        </label>
+                        <span className="text-[10px] font-mono text-stone-300 font-bold">
+                          {batteryLevel}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="100"
+                        value={batteryLevel}
+                        onChange={(e) =>
+                          setBatteryLevel(parseInt(e.target.value))
+                        }
+                        className="accent-rose-500 rounded-lg cursor-pointer h-1 bg-stone-800 w-32"
+                      />
+                    </div>
+
+                    {/* Connection Select */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                        Network State
+                      </label>
+                      <select
+                        value={networkStatus}
+                        onChange={(e) =>
+                          setNetworkStatus(e.target.value as any)
+                        }
+                        className="bg-stone-950 border border-stone-850 text-white rounded-lg text-xs font-bold p-1 px-2 w-28 cursor-pointer outline-none focus:border-rose-500"
+                      >
+                        <option value="Wi-Fi">Wi-Fi Wireless</option>
+                        <option value="5G">5G Speed</option>
+                        <option value="4G">4G Speed</option>
+                        <option value="Offline">Offline State</option>
+                      </select>
+                    </div>
+
+                    {/* Display Overlays */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                        Simulator Overlays
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowGridGuides(!showGridGuides)}
+                          className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                            showGridGuides
+                              ? "bg-rose-500/10 border-rose-500 text-rose-300"
+                              : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                          }`}
+                        >
+                          <Grid size={11} />
+                          <span>
+                            {showGridGuides ? "Grids ON" : "Grids OFF"}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => setSimulatePointer(!simulatePointer)}
+                          className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                            simulatePointer
+                              ? "bg-sky-500/10 border-sky-500 text-sky-300"
+                              : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                          }`}
+                        >
+                          <MousePointer size={11} />
+                          <span>
+                            {simulatePointer ? "Pointer ON" : "Pointer OFF"}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Gloss toggle trigger */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                        Reflection glare
+                      </label>
+                      <button
+                        onClick={() => setGlossyOverlay(!glossyOverlay)}
+                        className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                          glossyOverlay
+                            ? "bg-rose-500/10 border-rose-500 text-rose-300"
+                            : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                        }`}
+                      >
+                        <Eye size={11} />
+                        <span>
+                          {glossyOverlay
+                            ? "Glare Refraction: On"
+                            : "Glare Refraction: Off"}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Notification Triggerer */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[9px] uppercase tracking-wider text-stone-400 font-mono font-bold">
+                        Notification Box
+                      </label>
+                      <button
+                        onClick={() => {
+                          const sampleAlerts = [
+                            "🔔 Double click text blocks anywhere to customize words inline!",
+                            "🔔 Layout updated successfully! Spacing matches structural criteria.",
+                            "🔔 Simulated incoming push message: 'Deploy build complete.'",
+                            "🔔 Grid guides enabled! You can now align coordinates.",
+                            "🔔 Simulated message: 'We need to check the iPad screen layout next.'",
+                          ];
+                          const randomMsg =
+                            sampleAlerts[
+                              Math.floor(Math.random() * sampleAlerts.length)
+                            ];
+                          setNotificationText(randomMsg);
+                          setTimeout(() => {
+                            setNotificationText((prev) =>
+                              prev === randomMsg ? null : prev,
+                            );
+                          }, 7000);
+                        }}
+                        className="flex items-center gap-1.5 p-1 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs select-none transition shadow-sm border border-rose-750 cursor-pointer"
+                      >
+                        <Bell size={11} />
+                        <span>Test Notification</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          <div 
-            id="visual_canvas_backyard" 
+          <div
+            id="visual_canvas_backyard"
             className={`flex-1 overflow-auto flex flex-col bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] ${simulatePointer ? "cursor-none" : ""} relative px-3 sm:px-5 md:px-6`}
             onMouseMove={(e) => {
               if (simulatePointer) {
@@ -1209,21 +1740,24 @@ function DesignerApp() {
           >
             {/* Breadcrumb parent-child hierarchy navigation displaying at the top of the canvas */}
             {lineage && lineage.length > 0 && (
-              <div 
+              <div
                 id="canvas_breadcrumbs"
                 className="flex justify-center items-center select-none pt-4 pb-1 px-4 shrink-0 max-w-full z-10 animate-in fade-in slide-in-from-top-1.5 duration-200"
               >
                 <div className="flex flex-row items-center gap-1 bg-white/95 backdrop-blur-md border border-stone-200/80 shadow-xs rounded-full px-3.5 py-1.5 text-[11px] text-stone-600 max-w-full overflow-x-auto scrollbar-hide">
                   {lineage.map((elem, idx) => {
                     const isLast = idx === lineage.length - 1;
-                    const displayLabel = elem.type === "container" 
-                      ? `${elem.tag}` 
-                      : `${elem.type} (${elem.tag})`;
+                    const displayLabel =
+                      elem.type === "container"
+                        ? `${elem.tag}`
+                        : `${elem.type} (${elem.tag})`;
 
                     return (
                       <React.Fragment key={elem.id}>
                         {idx > 0 && (
-                          <span className="text-stone-300 font-bold mx-0.5 select-none shrink-0 text-[10px]">/</span>
+                          <span className="text-stone-300 font-bold mx-0.5 select-none shrink-0 text-[10px]">
+                            /
+                          </span>
                         )}
                         <button
                           onClick={() => setSelectedId(elem.id)}
@@ -1233,13 +1767,27 @@ function DesignerApp() {
                               : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
                           }`}
                         >
-                          {elem.type === "container" && <Layout size={10} className="text-stone-400" />}
-                          {elem.type === "text" && <Type size={10} className="text-stone-400" />}
-                          {elem.type === "image" && <ImageIcon size={10} className="text-stone-400" />}
-                          {elem.type === "button" && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />}
-                          {elem.type === "badge" && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
-                          <span className="font-mono lowercase">{displayLabel}</span>
-                          <span className="text-[9px] text-stone-400 font-mono">#{elem.id.substring(0, 4)}</span>
+                          {elem.type === "container" && (
+                            <Layout size={10} className="text-stone-400" />
+                          )}
+                          {elem.type === "text" && (
+                            <Type size={10} className="text-stone-400" />
+                          )}
+                          {elem.type === "image" && (
+                            <ImageIcon size={10} className="text-stone-400" />
+                          )}
+                          {elem.type === "button" && (
+                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                          )}
+                          {elem.type === "badge" && (
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                          )}
+                          <span className="font-mono lowercase">
+                            {displayLabel}
+                          </span>
+                          <span className="text-[9px] text-stone-400 font-mono">
+                            #{elem.id.substring(0, 4)}
+                          </span>
                         </button>
                       </React.Fragment>
                     );
@@ -1258,57 +1806,70 @@ function DesignerApp() {
                   minWidth: scaledWidthWithBezel * dynamicScale,
                   height: scaledHeightWithBezel * dynamicScale,
                 }}
-                transition={{ type: "spring", stiffness: 200, damping: 25, mass: 0.8 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 25,
+                  mass: 0.8,
+                }}
               >
-                <motion.div 
+                <motion.div
                   id="scaler_bounds"
                   className="absolute left-0 top-0 select-none origin-top-left"
                   style={{ originX: 0, originY: 0 }}
-                  animate={{ 
+                  animate={{
                     width: scaledWidthWithBezel,
                     minWidth: scaledWidthWithBezel,
                     height: scaledHeightWithBezel,
                     scale: dynamicScale,
                   }}
-                  transition={{ type: "spring", stiffness: 200, damping: 25, mass: 0.8 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 25,
+                    mass: 0.8,
+                  }}
                 >
-              <DeviceFrame
-                canvasViewport={canvasViewport}
-                canvasOrientation={canvasOrientation}
-                backdropTheme={backdropTheme}
-                draggedId={draggedId}
-                dragDropTargetId={dragDropTargetId}
-                setDragDropTargetId={setDragDropTargetId}
-                setDragDropPosition={setDragDropPosition}
-                moveElement={moveElement}
-                isEmpty={!componentTree.children || componentTree.children.length === 0}
-                customWidth={activeDeviceConfig.width}
-                customHeight={activeDeviceConfig.height}
-                deviceName={activeDeviceConfig.name}
-                showGridGuides={showGridGuides}
-                batteryLevel={batteryLevel}
-                networkStatus={networkStatus}
-                simulatedTime={simulatedTime}
-                glossyOverlay={glossyOverlay}
-                notificationText={notificationText}
-                onClearNotification={() => setNotificationText(null)}
-              >
-                <VisualNode elem={componentTree} />
-              </DeviceFrame>
-            </motion.div>
-          </motion.div>
-          
-          {/* Static WYSIWYG tip overlay displayed centered under the active frame */}
-          <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-stone-400 uppercase font-mono tracking-wider z-10 pointer-events-none shrink-0 mx-auto w-fit">
-            <MousePointer size={11} />
-            <span>Click element to select • Double click text fields to modify inline</span>
+                  <DeviceFrame
+                    canvasViewport={canvasViewport}
+                    canvasOrientation={canvasOrientation}
+                    backdropTheme={backdropTheme}
+                    draggedId={draggedId}
+                    dragDropTargetId={dragDropTargetId}
+                    setDragDropTargetId={setDragDropTargetId}
+                    setDragDropPosition={setDragDropPosition}
+                    moveElement={moveElement}
+                    isEmpty={
+                      !componentTree.children ||
+                      componentTree.children.length === 0
+                    }
+                    customWidth={activeDeviceConfig.width}
+                    customHeight={activeDeviceConfig.height}
+                    deviceName={activeDeviceConfig.name}
+                    showGridGuides={showGridGuides}
+                    batteryLevel={batteryLevel}
+                    networkStatus={networkStatus}
+                    simulatedTime={simulatedTime}
+                    glossyOverlay={glossyOverlay}
+                    notificationText={notificationText}
+                    onClearNotification={() => setNotificationText(null)}
+                  >
+                    <VisualNode elem={componentTree} />
+                  </DeviceFrame>
+                </motion.div>
+              </motion.div>
+
+              {/* Static WYSIWYG tip overlay displayed centered under the active frame */}
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-stone-400 uppercase font-mono tracking-wider z-10 pointer-events-none shrink-0 mx-auto w-fit">
+                <MousePointer size={11} />
+                <span>
+                  Click element to select • Double click text fields to modify
+                  inline
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        </div>
-        </div>
-
-
-
       </div>
 
       {/* CUSTOM DEVICE MODAL */}
@@ -1328,8 +1889,12 @@ function DesignerApp() {
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-sm font-bold text-stone-900">Custom Dimensions</h3>
-                  <p className="text-xs text-stone-500 mt-1">Set exact viewport pixel size</p>
+                  <h3 className="text-sm font-bold text-stone-900">
+                    Custom Dimensions
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Set exact viewport pixel size
+                  </p>
                 </div>
                 <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center">
                   <Maximize size={18} className="text-rose-600" />
@@ -1338,21 +1903,29 @@ function DesignerApp() {
 
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">Width (px)</label>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">
+                    Width (px)
+                  </label>
                   <input
                     type="number"
                     value={customDeviceWidth}
-                    onChange={(e) => setCustomDeviceWidth(Number(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setCustomDeviceWidth(Number(e.target.value) || 0)
+                    }
                     className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div className="text-stone-300 font-bold mt-6">×</div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">Height (px)</label>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 block">
+                    Height (px)
+                  </label>
                   <input
                     type="number"
                     value={customDeviceHeight}
-                    onChange={(e) => setCustomDeviceHeight(Number(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setCustomDeviceHeight(Number(e.target.value) || 0)
+                    }
                     className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
@@ -1369,7 +1942,13 @@ function DesignerApp() {
                 <button
                   type="button"
                   onClick={() => {
-                    setCanvasViewport(customDeviceWidth < 640 ? "mobile" : customDeviceWidth < 1024 ? "tablet" : "desktop");
+                    setCanvasViewport(
+                      customDeviceWidth < 640
+                        ? "mobile"
+                        : customDeviceWidth < 1024
+                          ? "tablet"
+                          : "desktop",
+                    );
                     setShowCustomDeviceModal(false);
                   }}
                   className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
@@ -1401,8 +1980,12 @@ function DesignerApp() {
                 <div className="flex items-center gap-2">
                   <FileCode size={20} className="text-rose-600" />
                   <div>
-                    <h2 className="text-sm font-semibold text-stone-900">Your Compiled HTML & Tailwind Output</h2>
-                    <p className="text-[10px] text-stone-500 font-mono tracking-wide">COPY OR DOWNLOAD THE BLUEPRINT ROUTINE</p>
+                    <h2 className="text-sm font-semibold text-stone-900">
+                      Your Compiled HTML & Tailwind Output
+                    </h2>
+                    <p className="text-[10px] text-stone-500 font-mono tracking-wide">
+                      COPY OR DOWNLOAD THE BLUEPRINT ROUTINE
+                    </p>
                   </div>
                 </div>
                 <button
@@ -1415,14 +1998,23 @@ function DesignerApp() {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div className="p-3.5 bg-rose-50 rounded-2xl border border-rose-100 flex items-start gap-2 text-left">
-                  <Lightbulb size={16} className="text-rose-600 mt-0.5 flex-shrink-0" />
+                  <Lightbulb
+                    size={16}
+                    className="text-rose-600 mt-0.5 flex-shrink-0"
+                  />
                   <p className="text-xs text-rose-900 leading-relaxed font-light">
-                    This component is fully responsive and self-contained. It contains pure HTML inline utilities styled specifically via Tailwind CSS. To see a live preview in a static browser environment, load the single `.html` document bundle by clicking "Download Static Layout" below.
+                    This component is fully responsive and self-contained. It
+                    contains pure HTML inline utilities styled specifically via
+                    Tailwind CSS. To see a live preview in a static browser
+                    environment, load the single `.html` document bundle by
+                    clicking "Download Static Layout" below.
                   </p>
                 </div>
 
                 <div className="space-y-1.5 text-left">
-                  <span className="text-[10px] font-mono tracking-wider font-semibold text-stone-400 uppercase">Compiled Source Code</span>
+                  <span className="text-[10px] font-mono tracking-wider font-semibold text-stone-400 uppercase">
+                    Compiled Source Code
+                  </span>
                   <pre className="relative p-4 md:p-6 bg-stone-950 text-emerald-400 rounded-2xl text-xs font-mono overflow-x-auto text-left leading-normal ring-1 ring-stone-800">
                     <code>{compileTreeToHtml(componentTree)}</code>
                   </pre>
@@ -1464,8 +2056,11 @@ function DesignerApp() {
         {isMobileDrawerOpen && (
           <div className="md:hidden fixed inset-0 bg-stone-900/45 backdrop-blur-xs z-50 flex items-end justify-center">
             {/* Backdrop click close */}
-            <div className="absolute inset-0" onClick={() => setIsMobileDrawerOpen(false)} />
-            
+            <div
+              className="absolute inset-0"
+              onClick={() => setIsMobileDrawerOpen(false)}
+            />
+
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -1474,12 +2069,14 @@ function DesignerApp() {
               className="bg-white rounded-t-[32px] w-full max-h-[82vh] border-t border-stone-200/60 shadow-[0_-8px_40px_rgba(0,0,0,0.18)] flex flex-col z-10 relative overflow-hidden"
             >
               {/* Top Drag/Close Handle Area */}
-              <div 
+              <div
                 className="w-full h-8 flex flex-col justify-center items-center cursor-pointer hover:bg-stone-50 transition border-b border-stone-100/60"
                 onClick={() => setIsMobileDrawerOpen(false)}
               >
                 <div className="w-12 h-1 bg-stone-300 rounded-full mb-0.5" />
-                <span className="text-[9px] uppercase font-mono tracking-wider font-semibold text-stone-400">Tap to Minimize</span>
+                <span className="text-[9px] uppercase font-mono tracking-wider font-semibold text-stone-400">
+                  Tap to Minimize
+                </span>
               </div>
 
               {/* Title Header with Close Button */}
@@ -1487,7 +2084,9 @@ function DesignerApp() {
                 <div className="flex items-center gap-2">
                   <Sliders size={15} className="text-rose-600 animate-pulse" />
                   <div className="text-left">
-                    <h3 className="text-xs font-bold text-stone-900 font-sans">Detailed Styling Inspector</h3>
+                    <h3 className="text-xs font-bold text-stone-900 font-sans">
+                      Detailed Styling Inspector
+                    </h3>
                     {selectedElement && (
                       <p className="text-[9px] font-mono text-rose-600 uppercase font-bold tracking-wider mt-0.5">
                         Editing &lt;{selectedElement.tag}&gt; element
@@ -1518,7 +2117,9 @@ function DesignerApp() {
 
               {/* Footer Panel Close CTA */}
               <div className="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between gap-2.5">
-                <span className="text-[10px] text-stone-400 font-mono italic">Adjustments previewed above</span>
+                <span className="text-[10px] text-stone-400 font-mono italic">
+                  Adjustments previewed above
+                </span>
                 <button
                   type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
@@ -1537,14 +2138,16 @@ function DesignerApp() {
       <MobileToolControls />
 
       {/* Mobile view sub-tabs navigator */}
-      <div 
+      <div
         className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md px-3 py-2 flex items-center justify-around gap-1 z-40 shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-stone-200/85 flex-shrink-0 w-[92vw] max-w-[390px]"
         style={{ height: "44.9931px", borderRadius: "50px" }}
       >
         <button
           onClick={() => setMobileActiveView("library")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "library" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "library"
+              ? "text-rose-600 bg-rose-50/50"
+              : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <Layout size={16} />
@@ -1553,7 +2156,9 @@ function DesignerApp() {
         <button
           onClick={() => setMobileActiveView("canvas")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "canvas" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "canvas"
+              ? "text-rose-600 bg-rose-50/50"
+              : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <MousePointer size={16} />
@@ -1562,18 +2167,18 @@ function DesignerApp() {
         <button
           onClick={() => setMobileActiveView("inspector")}
           className={`flex-1 py-1 rounded-xl flex flex-col items-center gap-0.5 text-[9px] font-semibold transition cursor-pointer ${
-            mobileActiveView === "inspector" ? "text-rose-600 bg-rose-50/50" : "text-stone-400 hover:text-stone-600"
+            mobileActiveView === "inspector"
+              ? "text-rose-600 bg-rose-50/50"
+              : "text-stone-400 hover:text-stone-600"
           }`}
         >
           <Settings size={16} />
           <span>Inspector</span>
         </button>
       </div>
-
     </div>
   );
 }
-
 
 export default function App() {
   return (

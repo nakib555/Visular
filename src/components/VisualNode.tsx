@@ -35,6 +35,29 @@ export function VisualNode({ elem }: VisualNodeProps) {
   const isDoubleClicked = doubleClickId === elem.id;
   const TagName = elem.tag || "div";
 
+  const getInlineStylesFromClasses = (classesString: string): React.CSSProperties => {
+    const styles: Record<string, string> = {};
+    if (!classesString) return styles;
+    
+    // Extract any matching arbitrary properties of the form [prop-name:value_string]
+    const matches = classesString.matchAll(/\[([a-zA-Z0-9-]+):([^\]]+)\]/g);
+    for (const match of matches) {
+      const propName = match[1];
+      const propVal = match[2].replace(/_/g, " ");
+      
+      // Convert style keys to camelCase for standard React component compatibility, except custom CSS properties (--)
+      const reactStyleKey = propName.startsWith("--")
+        ? propName
+        : propName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        
+      styles[reactStyleKey] = propVal;
+    }
+    
+    return styles as React.CSSProperties;
+  };
+
+  const inlineStyles = getInlineStylesFromClasses(elem.classes || "");
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedId(elem.id);
@@ -74,6 +97,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
       <TagName
         {...({} as any)}
         ref={inlineEditRef as any}
+        style={inlineStyles}
         contentEditable
         suppressContentEditableWarning
         onBlur={(e: React.FocusEvent<HTMLElement>) => {
@@ -107,6 +131,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
       <div
         id={elem.id}
         onClick={handleClick}
+        style={inlineStyles}
         onDragOver={(e: any) => {
           if (!draggedId || draggedId === elem.id) return;
           e.preventDefault();
@@ -269,6 +294,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
     <TagName
       id={elem.id}
       key={elem.id}
+      style={inlineStyles}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onDragOver={(e: any) => {

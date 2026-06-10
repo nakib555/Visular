@@ -29,7 +29,9 @@ export function useDesignerState() {
   const [canvasOrientation, setCanvasOrientation] = useState<
     "portrait" | "landscape"
   >("portrait");
-  const [zoomScale, setZoomScale] = useState<number | "auto">("auto");
+  const [zoomScale, setZoomScale] = useState<number | "auto" | "physical">(
+    "physical",
+  );
   const [parentWidth, setParentWidth] = useState(1000);
   const parentContainerRef = useRef<HTMLDivElement>(null);
 
@@ -49,21 +51,13 @@ export function useDesignerState() {
     "library" | "canvas" | "inspector"
   >("canvas");
   const [inspectorSection, setInspectorSection] = useState<
-    | "layout"
-    | "spacing"
-    | "sizing"
-    | "position"
-    | "typography"
-    | "visuals"
-    | "motion"
-    | "animation"
-    | "interactivity"
-    | "media"
-    | "core"
-    | "help"
-    | "animations"
-    | "viewTransitions"
-  >("layout");
+    | "layoutBoxModel"
+    | "typographyText"
+    | "appearanceAestheticsSvg"
+    | "motionTransforms"
+    | "interactivityUiMisc"
+    | "environmentMediaArchitecture"
+  >("layoutBoxModel");
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -107,15 +101,18 @@ export function useDesignerState() {
   useEffect(() => {
     if (doubleClickId && inlineEditRef.current) {
       inlineEditRef.current.focus();
-      
+
       // Handle selection for contentEditable
-      if (inlineEditRef.current.nodeName !== 'TEXTAREA' && inlineEditRef.current.nodeName !== 'INPUT') {
+      if (
+        inlineEditRef.current.nodeName !== "TEXTAREA" &&
+        inlineEditRef.current.nodeName !== "INPUT"
+      ) {
         const range = document.createRange();
         range.selectNodeContents(inlineEditRef.current);
         const sel = window.getSelection();
         sel?.removeAllRanges();
         sel?.addRange(range);
-      } else if (typeof inlineEditRef.current.select === 'function') {
+      } else if (typeof inlineEditRef.current.select === "function") {
         inlineEditRef.current.select();
       }
     }
@@ -130,8 +127,21 @@ export function useDesignerState() {
     }
   }, [selectedId, activeTab]);
 
+  const lastHistorySave = useRef<number>(Date.now());
+  const historyDraft = useRef<VisualElement>(componentTree);
+
   const changeComponentTree = (newTree: VisualElement) => {
-    setPast((p) => [...p, componentTree]);
+    const now = Date.now();
+    if (now - lastHistorySave.current > 1000) {
+      setPast((p) => {
+        const newPast = [...p, historyDraft.current];
+        return newPast.length > 25
+          ? newPast.slice(newPast.length - 25)
+          : newPast;
+      });
+      lastHistorySave.current = now;
+    }
+    historyDraft.current = newTree;
     setFuture([]);
     setComponentTree(newTree);
   };
@@ -141,6 +151,8 @@ export function useDesignerState() {
     const previous = past[past.length - 1];
     setPast(past.slice(0, past.length - 1));
     setFuture((f) => [componentTree, ...f]);
+    historyDraft.current = previous;
+    lastHistorySave.current = Date.now();
     setComponentTree(previous);
   };
 
@@ -148,7 +160,12 @@ export function useDesignerState() {
     if (future.length === 0) return;
     const next = future[0];
     setFuture(future.slice(1));
-    setPast((p) => [...p, componentTree]);
+    setPast((p) => {
+      const newPast = [...p, componentTree];
+      return newPast.length > 25 ? newPast.slice(newPast.length - 25) : newPast;
+    });
+    historyDraft.current = next;
+    lastHistorySave.current = Date.now();
     setComponentTree(next);
   };
 
