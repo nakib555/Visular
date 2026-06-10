@@ -429,7 +429,7 @@ function DesignerApp() {
   // Capture current state values inside refs to avoid stale closures in non-reactive event listeners
   const currentFitScaleRef = useRef(1);
   const currentPhysicalScaleRef = useRef(1);
-  const currentZoomScaleRef = useRef<number | "auto" | "physical">("auto");
+  const currentZoomScaleRef = useRef<number | "auto">("auto");
 
   useEffect(() => {
     const canvasElement = document.getElementById("visual_canvas_backyard");
@@ -444,9 +444,7 @@ function DesignerApp() {
         const currentVal =
           currentZoom === "auto"
             ? currentFitScaleRef.current
-            : currentZoom === "physical"
-              ? currentPhysicalScaleRef.current
-              : currentZoom;
+            : currentZoom;
 
         // Positive delta means zooming out (pinch closed), negative means zooming in (pinch open)
         const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
@@ -470,9 +468,7 @@ function DesignerApp() {
         const currentVal =
           currentZoom === "auto"
             ? currentFitScaleRef.current
-            : currentZoom === "physical"
-              ? currentPhysicalScaleRef.current
-              : currentZoom;
+            : currentZoom;
         touchStartScaleRef.current = currentVal;
       }
     };
@@ -585,9 +581,7 @@ function DesignerApp() {
   const dynamicScale =
     zoomScale === "auto"
       ? fitScale
-      : zoomScale === "physical"
-        ? physicalScale
-        : zoomScale;
+      : zoomScale;
 
   // Synchronize state-tracked scales to mutable refs for live non-reactive event listener use
   currentFitScaleRef.current = fitScale;
@@ -1632,9 +1626,7 @@ function DesignerApp() {
                         const current =
                           zoomScale === "auto"
                             ? fitScale
-                            : zoomScale === "physical"
-                              ? physicalScale
-                              : zoomScale;
+                            : zoomScale;
                         setZoomScale(
                           Math.max(0.1, Number((current - 0.05).toFixed(2))),
                         );
@@ -1654,9 +1646,7 @@ function DesignerApp() {
                       value={
                         zoomScale === "auto"
                           ? fitScale
-                          : zoomScale === "physical"
-                            ? physicalScale
-                            : zoomScale
+                          : zoomScale
                       }
                       onChange={(e) => setZoomScale(parseFloat(e.target.value))}
                       className="w-12 md:w-16 accent-stone-800 h-[3px] bg-stone-200 rounded-lg cursor-pointer mx-1 shrink-0"
@@ -1670,9 +1660,7 @@ function DesignerApp() {
                         const current =
                           zoomScale === "auto"
                             ? fitScale
-                            : zoomScale === "physical"
-                              ? physicalScale
-                              : zoomScale;
+                            : zoomScale;
                         setZoomScale(
                           Math.min(2.0, Number((current + 0.05).toFixed(2))),
                         );
@@ -1689,29 +1677,23 @@ function DesignerApp() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (zoomScale === "physical") {
-                          setZoomScale("auto");
-                        } else if (zoomScale === "auto") {
+                        if (zoomScale === "auto") {
                           setZoomScale(1.0);
                         } else {
-                          setZoomScale("physical");
+                          setZoomScale("auto");
                         }
                       }}
-                      title="Cycle between Physical 1:1, Auto-Fit, or 100% Viewport Pixels"
+                      title="Toggle between Auto-Fit and 100% Viewport Pixels"
                       className={`px-2 md:px-3 py-1 md:py-1.5 rounded-[30px] text-[9px] md:text-[10px] uppercase transition cursor-pointer min-w-[50px] md:min-w-[65px] text-center shrink-0 whitespace-nowrap font-bold shadow-sm border ${
-                        zoomScale === "physical"
-                          ? "bg-stone-800 text-white border-stone-800"
-                          : zoomScale === "auto"
-                            ? "bg-amber-600 text-white border-amber-600"
-                            : "bg-white text-stone-600 border-stone-200/60 hover:bg-stone-50"
+                        zoomScale === "auto"
+                          ? "bg-amber-600 text-white border-amber-600"
+                          : "bg-white text-stone-600 border-stone-200/60 hover:bg-stone-50"
                       }`}
                       style={{ borderRadius: "50px" }}
                     >
-                      {zoomScale === "physical"
-                        ? "Physical (1:1)"
-                        : zoomScale === "auto"
-                          ? "Fit"
-                          : `${Math.round((zoomScale as number) * 100)}%`}
+                      {zoomScale === "auto"
+                        ? "Fit"
+                        : `${Math.round((zoomScale as number) * 100)}%`}
                     </button>
                   </div>
                 </div>

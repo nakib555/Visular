@@ -240,7 +240,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
   const renderFloatingToolbar = () => {
     return (
-      <motion.div
+      <motion.span
         initial={{ opacity: 0, y: 8, scale: 0.95, x: "-50%" }}
         animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
         transition={{ type: "spring", stiffness: 450, damping: 26 }}
@@ -254,7 +254,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         <span className="h-4 w-px bg-zinc-805" />
 
         {/* Reposition/Drag Handle */}
-        <div
+        <span
           draggable
           onDragStart={(e) => {
             e.stopPropagation();
@@ -272,7 +272,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         >
           <Layout size={12} className="shrink-0" />
           <span>Move</span>
-        </div>
+        </span>
 
         <span className="h-4 w-px bg-zinc-805" />
 
@@ -305,7 +305,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
           <Trash2 size={12} className="shrink-0" />
           <span>Delete</span>
         </button>
-      </motion.div>
+      </motion.span>
     );
   };
 
@@ -412,51 +412,51 @@ export function VisualNode({ elem }: VisualNodeProps) {
       return (
         <React.Fragment key={child.id}>
           {showBefore && (
-            <div 
-              className="w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
+            <span 
+              className="block w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
               style={{ contentVisibility: "auto" }}
             >
               {/* Pulsing Horizontal Gradient Line */}
-              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
+              <span className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
               {/* Point Indicator Dot */}
-              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+              <span className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              </div>
+              </span>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
+              <span className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
                 <span>Insert here</span>
                 {dragSnapCoords && (
                   <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
                     X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px
                   </span>
                 )}
-              </div>
-            </div>
+              </span>
+            </span>
           )}
           
           <VisualNode elem={child} />
           
           {showAfter && (
-            <div 
-              className="w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
+            <span 
+              className="block w-full h-1 my-2 flex items-center justify-start pointer-events-none relative transition-all duration-300 z-40"
               style={{ contentVisibility: "auto" }}
             >
               {/* Pulsing Horizontal Gradient Line */}
-              <div className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
+              <span className="absolute inset-x-0 h-1 rounded-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.85)]" />
               {/* Point Indicator Dot */}
-              <div className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
+              <span className="absolute left-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center -translate-y-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              </div>
+              </span>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
+              <span className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
                 <span>Insert here</span>
                 {dragSnapCoords && (
                   <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
                     X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px
                   </span>
                 )}
-              </div>
-            </div>
+              </span>
+            </span>
           )}
         </React.Fragment>
       );
@@ -554,7 +554,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
       
       {/* Highlight inside container placeholder area */}
       {dragDropTargetId === elem.id && dragDropPosition === "inside" && (
-        <div className="w-full min-h-[50px] border-2 border-dashed border-rose-500/70 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl flex items-center justify-center p-4 my-2 pointer-events-none animate-pulse transition-all">
+        <span className="block w-full min-h-[50px] border-2 border-dashed border-rose-500/70 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl flex items-center justify-center p-4 my-2 pointer-events-none animate-pulse transition-all">
           <span className="text-[10px] sm:text-xs font-semibold text-rose-700 uppercase tracking-widest font-mono flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -569,7 +569,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
               </span>
             )}
           </span>
-        </div>
+        </span>
       )}
     </MotionTag>
   );

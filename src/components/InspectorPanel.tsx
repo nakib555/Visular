@@ -514,81 +514,21 @@ export function InspectorPanel({
   });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isScrollingRef = useRef(false);
 
   const scrollToCategory = (catId: string) => {
-    isScrollingRef.current = true;
-    
     // Automatically expand the section if minimized
     setExpandedCategories((prev) => ({ ...prev, [catId]: true }));
     setInspectorSection(catId as InspectorSection);
 
-    setTimeout(() => {
-      const el = document.getElementById(`category-sec-${catId}`);
-      const container = scrollContainerRef.current;
-      if (el && container) {
-        const containerTop = container.getBoundingClientRect().top;
-        const elTop = el.getBoundingClientRect().top;
-        const offset = elTop - containerTop + container.scrollTop;
-        
-        container.scrollTo({
-          top: Math.max(0, offset - 10),
-          behavior: "smooth",
-        });
-      }
-      
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 600);
-    }, 50);
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isScrollingRef.current) return;
-      const container = scrollContainerRef.current;
-      if (!container) return;
-
-      const containerTop = container.getBoundingClientRect().top;
-      let minDistance = Infinity;
-      let currentActive = inspectorSection;
-
-      const categoryIds = [
-        "layoutBoxModel",
-        "typographyText",
-        "appearanceAestheticsSvg",
-        "motionTransforms",
-        "interactivityUiMisc",
-        "environmentMediaArchitecture",
-      ];
-
-      for (const id of categoryIds) {
-        const el = document.getElementById(`category-sec-${id}`);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          const distance = Math.abs(rect.top - (containerTop + 16));
-          if (distance < minDistance) {
-            minDistance = distance;
-            currentActive = id as any;
-          }
-        }
-      }
-
-      if (currentActive !== inspectorSection) {
-        setInspectorSection(currentActive as any);
-      }
-    };
-
+    // Reset scroll back to the top of the container
     const container = scrollContainerRef.current;
     if (container) {
-      container.addEventListener("scroll", handleScroll, { passive: true });
+      container.scrollTo({
+        top: 0,
+        behavior: "auto",
+      });
     }
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [inspectorSection, setInspectorSection]);
+  };
 
   if (!selectedElement)
     return (
@@ -639,7 +579,7 @@ export function InspectorPanel({
       ...cfg,
       subCategories: filteredSubCategories,
     };
-  }).filter((cfg) => cfg.subCategories.length > 0);
+  }).filter((cfg) => cfg.subCategories.length > 0 && cfg.id === inspectorSection);
 
   return (
     <div className="flex flex-col h-full overflow-hidden w-full bg-white select-none">

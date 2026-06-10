@@ -29,8 +29,8 @@ export function useDesignerState() {
   const [canvasOrientation, setCanvasOrientation] = useState<
     "portrait" | "landscape"
   >("portrait");
-  const [zoomScale, setZoomScale] = useState<number | "auto" | "physical">(
-    "physical",
+  const [zoomScale, setZoomScale] = useState<number | "auto">(
+    "auto",
   );
   const [parentWidth, setParentWidth] = useState(1000);
   const parentContainerRef = useRef<HTMLDivElement>(null);
