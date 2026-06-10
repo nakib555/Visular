@@ -68,6 +68,7 @@ export function useDesignerState() {
   const [dragSnapCoords, setDragSnapCoords] = useState<{ x: number; y: number } | null>(null);
   const [isSnapToGridEnabled, setIsSnapToGridEnabled] = useState<boolean>(true);
   const [smartGuides, setSmartGuides] = useState<SmartGuide[] | null>(null);
+  const [isTouchZoomActive, setIsTouchZoomActive] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<
     "library" | "structure" | "styles" | "ai"
@@ -707,6 +708,8 @@ ${rawHtml}
     setIsSnapToGridEnabled,
     smartGuides,
     setSmartGuides,
+    isTouchZoomActive,
+    setIsTouchZoomActive,
     activeTab,
     setActiveTab,
     activeSearch,

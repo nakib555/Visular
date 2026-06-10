@@ -53,6 +53,7 @@ import {
   Grid,
   ArrowRight,
   Magnet,
+  Hand,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -99,6 +100,8 @@ function DesignerApp() {
     setCanvasOrientation,
     zoomScale,
     setZoomScale,
+    isTouchZoomActive,
+    setIsTouchZoomActive,
     parentWidth,
     setParentWidth,
     parentContainerRef,
@@ -428,6 +431,7 @@ function DesignerApp() {
 
     // Wheel event handler for modern desktop trackpad/mouse ctrlKey zooming (pinch-to-zoom simulation)
     const handleWheel = (e: WheelEvent) => {
+      if (!isTouchZoomActive) return;
       if (e.ctrlKey) {
         e.preventDefault();
         const currentZoom = currentZoomScaleRef.current;
@@ -447,6 +451,7 @@ function DesignerApp() {
 
     // Touch event handlers for actual multi-touch/2-finger pinch gesture on mobile/tablet screens
     const handleTouchStart = (e: TouchEvent) => {
+      if (!isTouchZoomActive) return;
       if (e.touches.length === 2) {
         // Calculate original physical distance between the active fingers
         const dist = Math.hypot(
@@ -467,6 +472,7 @@ function DesignerApp() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (!isTouchZoomActive) return;
       if (
         e.touches.length === 2 &&
         touchStartDistRef.current !== null &&
@@ -508,7 +514,7 @@ function DesignerApp() {
       canvasElement.removeEventListener("touchend", handleTouchEnd);
       canvasElement.removeEventListener("touchcancel", handleTouchEnd);
     };
-  }, [setZoomScale]);
+  }, [setZoomScale, isTouchZoomActive]);
 
   const activeDeviceConfig =
     REAL_DEVICES.find((d) => d.id === selectedDevicePreset) || REAL_DEVICES[0];
@@ -1534,6 +1540,26 @@ function DesignerApp() {
                     >
                       <Maximize size={11} className="text-rose-600 animate-pulse" />
                       <span>Custom Size</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsTouchZoomActive(!isTouchZoomActive)}
+                      title="Toggle touch zoom gesture. When active, use two fingers pinch key/actions on your trackpad or touch screen to zoom."
+                      className={`px-2 py-1 md:py-1.5 rounded-[30px] border transition-all flex flex-row flex-nowrap items-center gap-1 md:gap-1.5 cursor-pointer text-[10px] md:text-[11px] font-bold shrink-0 whitespace-nowrap shadow-sm ${
+                        isTouchZoomActive
+                          ? "bg-rose-600 text-white border-rose-700 hover:bg-rose-700"
+                          : "bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border-rose-200/60"
+                      }`}
+                    >
+                      <Hand size={11} className={isTouchZoomActive ? "text-rose-100 animate-bounce" : "text-rose-600"} />
+                      <span>Touch Zoom</span>
+                      {isTouchZoomActive && (
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-100"></span>
+                        </span>
+                      )}
                     </button>
 
                     <button
