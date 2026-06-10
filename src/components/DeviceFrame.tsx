@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout, Layers, Lock, Wifi, WifiOff, Battery, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useDesigner } from "../contexts/DesignerContext";
 
 interface DeviceFrameProps {
   canvasViewport: "desktop" | "tablet" | "mobile";
@@ -51,6 +52,9 @@ export function DeviceFrame({
   notificationText = null,
   onClearNotification
 }: DeviceFrameProps) {
+
+  const designer = useDesigner();
+  const { smartGuides } = designer;
 
   const canvasBackground = backdropTheme === "grid" 
     ? "bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]"
@@ -406,6 +410,41 @@ export function DeviceFrame({
 
           {/* User Built Application Content */}
           {children}
+
+          {/* SMART GUIDES OVERLAY SYSTEM */}
+          {smartGuides && smartGuides.map((guide) => {
+            if (guide.type === "v") {
+              return (
+                <div
+                  key={guide.id}
+                  className="absolute top-0 bottom-0 pointer-events-none z-50"
+                  style={{ left: guide.pos }}
+                >
+                  <div className="h-full border-l border-dashed border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
+                  <div className="absolute top-[20%] bg-rose-600/90 text-white font-mono text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-lg border border-rose-500/30 flex items-center gap-1 shrink-0 whitespace-nowrap -translate-x-1/2 select-none">
+                    <span className="uppercase text-[7.5px] opacity-75">{guide.targetTag}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white opacity-85" />
+                    <span>{guide.alignType}</span>
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div
+                  key={guide.id}
+                  className="absolute left-0 right-0 pointer-events-none z-50"
+                  style={{ top: guide.pos }}
+                >
+                  <div className="w-full border-t border-dashed border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
+                  <div className="absolute left-[20%] bg-rose-600/90 text-white font-mono text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-lg border border-rose-500/30 flex items-center gap-1 shrink-0 whitespace-nowrap -translate-y-1/2 select-none">
+                    <span className="uppercase text-[7.5px] opacity-75">{guide.targetTag}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white opacity-85" />
+                    <span>{guide.alignType}</span>
+                  </div>
+                </div>
+              );
+            }
+          })}
 
         </div>
       </div>

@@ -52,6 +52,7 @@ import {
   Bell,
   Grid,
   ArrowRight,
+  Magnet,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -130,6 +131,8 @@ function DesignerApp() {
     setDragDropTargetId,
     dragDropPosition,
     setDragDropPosition,
+    isSnapToGridEnabled,
+    setIsSnapToGridEnabled,
     activeSearch,
     setActiveSearch,
     showExportModal,
@@ -1757,6 +1760,27 @@ function DesignerApp() {
                           <Grid size={11} />
                           <span>
                             {showGridGuides ? "Grids ON" : "Grids OFF"}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsSnapToGridEnabled(!isSnapToGridEnabled);
+                            setNotificationText(
+                              !isSnapToGridEnabled
+                                ? "🧲 Snap-to-Grid: active (8px snap calculations)"
+                                : "🧲 Snap-to-Grid: disabled"
+                            );
+                          }}
+                          className={`flex items-center gap-1.5 p-1 px-3 rounded-lg border text-xs font-semibold cursor-pointer select-none transition-all ${
+                            isSnapToGridEnabled
+                              ? "bg-amber-500/10 border-amber-500 text-amber-300"
+                              : "bg-stone-950 border-stone-800 text-stone-400 hover:text-white"
+                          }`}
+                          title="Toggles whether pixel coordinates snap to nearest 8px increments during movement"
+                        >
+                          <Magnet size={11} />
+                          <span>
+                            {isSnapToGridEnabled ? "Snap ON (8px)" : "Snap OFF"}
                           </span>
                         </button>
                         <button

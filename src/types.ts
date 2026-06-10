@@ -16,3 +16,12 @@ export interface ComponentPreset {
   category: "all" | "heroes" | "cards" | "lists" | "calls-to-action";
   root: VisualElement;
 }
+
+export interface SmartGuide {
+  id: string;
+  type: "v" | "h";
+  pos: number; // relative to canvas
+  targetTag?: string;
+  alignType?: string;
+}
+

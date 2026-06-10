@@ -27,8 +27,121 @@ export function VisualNode({ elem }: VisualNodeProps) {
     duplicateElement,
     deleteElement,
     setSelectedId,
-    inlineEditRef
+    inlineEditRef,
+    dragSnapCoords,
+    setDragSnapCoords,
+    isSnapToGridEnabled,
+    smartGuides,
+    setSmartGuides
   } = designer;
+
+  const calculateAlignmentGuides = (e: React.DragEvent) => {
+    if (!draggedId || !setSmartGuides) return;
+
+    const canvasDom = document.getElementById("workspace_canvas");
+    const draggedDom = document.getElementById(draggedId);
+
+    if (!canvasDom || !draggedDom) return;
+
+    const canvasRect = canvasDom.getBoundingClientRect();
+    const draggedRect = draggedDom.getBoundingClientRect();
+
+    // Sibling elements of the dragged node
+    const parent = draggedDom.parentElement;
+    if (!parent) return;
+
+    // Filter siblings that are not standard layout elements or the dragged element itself
+    const siblingDoms = Array.from(parent.children).filter(
+      (child) => child.id && child.id !== draggedId && child.id !== "empty_view"
+    ) as HTMLElement[];
+
+    // If there are no siblings, we can also align with the parent container boundaries
+    const alignmentTargets = [...siblingDoms];
+    if (parent.id && parent.id !== "workspace_canvas") {
+      alignmentTargets.push(parent as HTMLElement);
+    }
+
+    const calculatedGuides: any[] = [];
+    const threshold = 8; // standard matching speed-snap threshold
+
+    // Get dragged element edges relative to canvas
+    const dragWidth = draggedRect.width;
+    const dragHeight = draggedRect.height;
+
+    // We assume the dragged element center tracks the current mouse pointer in e.clientX, e.clientY
+    const dLeft = e.clientX - dragWidth / 2 - canvasRect.left;
+    const dCenterX = e.clientX - canvasRect.left;
+    const dRight = dLeft + dragWidth;
+
+    const dTop = e.clientY - dragHeight / 2 - canvasRect.top;
+    const dCenterY = e.clientY - canvasRect.top;
+    const dBottom = dTop + dragHeight;
+
+    alignmentTargets.forEach((target) => {
+      const tRect = target.getBoundingClientRect();
+      const tLeft = tRect.left - canvasRect.left;
+      const tCenterX = (tRect.left + tRect.width / 2) - canvasRect.left;
+      const tRight = tRect.right - canvasRect.left;
+
+      const tTop = tRect.top - canvasRect.top;
+      const tCenterY = (tRect.top + tRect.height / 2) - canvasRect.top;
+      const tBottom = tRect.bottom - canvasRect.top;
+
+      const tag = target.tagName.toLowerCase();
+
+      // Check vertical alignments (X coordinates match -> draw vertical guide line)
+      if (Math.abs(dLeft - tLeft) < threshold) {
+        calculatedGuides.push({ id: `v-l-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "left edges" });
+      } else if (Math.abs(dLeft - tCenterX) < threshold) {
+        calculatedGuides.push({ id: `v-l-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "left center" });
+      } else if (Math.abs(dLeft - tRight) < threshold) {
+        calculatedGuides.push({ id: `v-l-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "left right" });
+      }
+
+      if (Math.abs(dCenterX - tLeft) < threshold) {
+        calculatedGuides.push({ id: `v-c-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "center align" });
+      } else if (Math.abs(dCenterX - tCenterX) < threshold) {
+        calculatedGuides.push({ id: `v-c-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "centers aligned" });
+      } else if (Math.abs(dCenterX - tRight) < threshold) {
+        calculatedGuides.push({ id: `v-c-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "center align" });
+      }
+
+      if (Math.abs(dRight - tLeft) < threshold) {
+        calculatedGuides.push({ id: `v-r-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "right left" });
+      } else if (Math.abs(dRight - tCenterX) < threshold) {
+        calculatedGuides.push({ id: `v-r-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "right center" });
+      } else if (Math.abs(dRight - tRight) < threshold) {
+        calculatedGuides.push({ id: `v-r-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "right edges" });
+      }
+
+      // Check horizontal alignments (Y coordinates match -> draw horizontal guide line)
+      if (Math.abs(dTop - tTop) < threshold) {
+        calculatedGuides.push({ id: `h-t-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "top edges" });
+      } else if (Math.abs(dTop - tCenterY) < threshold) {
+        calculatedGuides.push({ id: `h-t-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "top center" });
+      } else if (Math.abs(dTop - tBottom) < threshold) {
+        calculatedGuides.push({ id: `h-t-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "top bottom" });
+      }
+
+      if (Math.abs(dCenterY - tTop) < threshold) {
+        calculatedGuides.push({ id: `h-c-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "middle align" });
+      } else if (Math.abs(dCenterY - tCenterY) < threshold) {
+        calculatedGuides.push({ id: `h-c-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "middles aligned" });
+      } else if (Math.abs(dCenterY - tBottom) < threshold) {
+        calculatedGuides.push({ id: `h-c-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "middle align" });
+      }
+
+      if (Math.abs(dBottom - tTop) < threshold) {
+        calculatedGuides.push({ id: `h-b-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "bottom top" });
+      } else if (Math.abs(dBottom - tCenterY) < threshold) {
+        calculatedGuides.push({ id: `h-b-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "bottom center" });
+      } else if (Math.abs(dBottom - tBottom) < threshold) {
+        calculatedGuides.push({ id: `h-b-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "bottom edges" });
+      }
+    });
+
+    setSmartGuides(calculatedGuides.slice(0, 4)); // limit to active guides
+  };
 
   const isSelected = selectedId === elem.id;
   const isCurrentlyDragged = draggedId === elem.id;
@@ -214,15 +327,26 @@ export function VisualNode({ elem }: VisualNodeProps) {
           
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
           const y = e.clientY - rect.top;
+          const x = e.clientX - rect.left;
+          
+          if (setDragSnapCoords) {
+            const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
+            const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
+            setDragSnapCoords({ x: snapX, y: snapY });
+          }
           
           if (y < rect.height / 2) setDragDropPosition("before");
           else setDragDropPosition("after");
+
+          calculateAlignmentGuides(e);
         }}
         onDragLeave={(e: any) => {
           e.stopPropagation();
           if (dragDropTargetId === elem.id) {
             setDragDropTargetId(null);
             setDragDropPosition(null);
+            if (setDragSnapCoords) setDragSnapCoords(null);
+            if (setSmartGuides) setSmartGuides(null);
           }
         }}
         onDrop={(e: any) => {
@@ -234,11 +358,20 @@ export function VisualNode({ elem }: VisualNodeProps) {
           setDraggedId(null);
           setDragDropTargetId(null);
           setDragDropPosition(null);
+          if (setDragSnapCoords) setDragSnapCoords(null);
+          if (setSmartGuides) setSmartGuides(null);
         }}
         className={`relative inline-block ${elem.classes || ""} ${
           isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
         } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-rose-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-rose-500" : ""} transition-all duration-200 cursor-pointer`}
       >
+        {dragDropTargetId === elem.id && dragSnapCoords && (
+          <div className="absolute top-2 right-2 bg-rose-605 border border-rose-500 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded shadow-lg z-[99] pointer-events-none flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+            <span>X: {dragSnapCoords.x}px, Y: {dragSnapCoords.y}px</span>
+            {isSnapToGridEnabled && <span className="opacity-75 bg-rose-700 px-1 rounded text-[8px]">8px Snap</span>}
+          </div>
+        )}
         <img
           src={imgSrc}
           alt="Visual asset"
@@ -290,8 +423,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1">
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
                 <span>Insert here</span>
+                {dragSnapCoords && (
+                  <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
+                    X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -310,8 +448,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
                 <span className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
               {/* Ghost Indicator Label Badge */}
-              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1">
+              <div className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
                 <span>Insert here</span>
+                {dragSnapCoords && (
+                  <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
+                    X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -344,6 +487,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
         
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         const y = e.clientY - rect.top;
+        const x = e.clientX - rect.left;
+        
+        if (setDragSnapCoords) {
+          const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
+          const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
+          setDragSnapCoords({ x: snapX, y: snapY });
+        }
         
         if (elem.type === "container") {
           if (y < rect.height * 0.25) setDragDropPosition("before");
@@ -353,12 +503,16 @@ export function VisualNode({ elem }: VisualNodeProps) {
           if (y < rect.height / 2) setDragDropPosition("before");
           else setDragDropPosition("after");
         }
+
+        calculateAlignmentGuides(e);
       }}
       onDragLeave={(e: any) => {
         e.stopPropagation();
         if (dragDropTargetId === elem.id) {
           setDragDropTargetId(null);
           setDragDropPosition(null);
+          if (setDragSnapCoords) setDragSnapCoords(null);
+          if (setSmartGuides) setSmartGuides(null);
         }
       }}
       onDrop={(e: any) => {
@@ -370,6 +524,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
         setDraggedId(null);
         setDragDropTargetId(null);
         setDragDropPosition(null);
+        if (setDragSnapCoords) setDragSnapCoords(null);
+        if (setSmartGuides) setSmartGuides(null);
       }}
       className={`${updatedClassList} transition-all ${dragDropTargetId === elem.id && dragDropPosition === "inside" ? "ring-2 ring-rose-500 ring-inset opacity-80 bg-rose-500/5" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "before" ? "border-t-[3px] border-t-rose-500" : ""} ${dragDropTargetId === elem.id && dragDropPosition === "after" ? "border-b-[3px] border-b-rose-500" : ""}`}
     >
@@ -405,6 +561,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
             </span>
             Nest inside {elem.tag}
+            {dragSnapCoords && (
+              <span className="text-[9px] bg-rose-605 font-extrabold text-white font-mono tracking-normal px-1.5 py-0.5 rounded ml-1.5 shadow border border-rose-500/50 flex items-center gap-1 lowercase">
+                <span className="uppercase text-[8.5px] opacity-75">grid ref</span>
+                <span>X: {dragSnapCoords.x}px, Y: {dragSnapCoords.y}px</span>
+                {isSnapToGridEnabled && <span className="opacity-75 bg-rose-700 px-1 rounded text-[8.5px] uppercase">8px</span>}
+              </span>
+            )}
           </span>
         </div>
       )}

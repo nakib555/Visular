@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { VisualElement, ElementType } from "../types";
+import { VisualElement, ElementType, SmartGuide } from "../types";
 import { COMPONENT_PRESETS, cloneTreeWithNewIds, generateId } from "../presets";
 import { compileTreeToHtml } from "../styleUtils";
 
@@ -65,6 +65,9 @@ export function useDesignerState() {
   const [dragDropPosition, setDragDropPosition] = useState<
     "before" | "after" | "inside" | null
   >(null);
+  const [dragSnapCoords, setDragSnapCoords] = useState<{ x: number; y: number } | null>(null);
+  const [isSnapToGridEnabled, setIsSnapToGridEnabled] = useState<boolean>(true);
+  const [smartGuides, setSmartGuides] = useState<SmartGuide[] | null>(null);
 
   const [activeTab, setActiveTab] = useState<
     "library" | "structure" | "styles" | "ai"
@@ -715,6 +718,12 @@ ${rawHtml}
     setDragDropTargetId,
     dragDropPosition,
     setDragDropPosition,
+    dragSnapCoords,
+    setDragSnapCoords,
+    isSnapToGridEnabled,
+    setIsSnapToGridEnabled,
+    smartGuides,
+    setSmartGuides,
     activeTab,
     setActiveTab,
     activeSearch,
