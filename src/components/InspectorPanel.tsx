@@ -454,21 +454,6 @@ export function InspectorPanel({
     );
   };
 
-  if (!selectedElement)
-    return (
-      <div className="flex flex-col items-center justify-center h-full w-full text-stone-400 p-8 text-center bg-stone-50/30 animate-fade-in">
-        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-stone-200/60 flex items-center justify-center mb-4 text-stone-300">
-          <Settings size={24} />
-        </div>
-        <p className="text-sm font-semibold text-stone-600">
-          No Element Selected
-        </p>
-        <p className="text-xs text-stone-400 mt-1 max-w-[200px]">
-          Click any element on the canvas to inspect and edit its properties.
-        </p>
-      </div>
-    );
-
   // Expanded status for Accordion categories
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     layoutBoxModel: true,
@@ -555,6 +540,21 @@ export function InspectorPanel({
       }
     };
   }, [inspectorSection, setInspectorSection]);
+
+  if (!selectedElement)
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full text-stone-400 p-8 text-center bg-stone-50/30 animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-stone-200/60 flex items-center justify-center mb-4 text-stone-300">
+          <Settings size={24} />
+        </div>
+        <p className="text-sm font-semibold text-stone-600">
+          No Element Selected
+        </p>
+        <p className="text-xs text-stone-400 mt-1 max-w-[200px]">
+          Click any element on the canvas to inspect and edit its properties.
+        </p>
+      </div>
+    );
 
   const categoryConfigs = [
     { id: "layoutBoxModel", label: "Layout & Box Model", icon: Maximize, name: "Layout & Box Model" },

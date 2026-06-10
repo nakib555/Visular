@@ -410,6 +410,103 @@ function DesignerApp() {
     };
   }, []);
 
+  // Refs to tracking touch details for pinch gesture zooming
+  const touchStartDistRef = useRef<number | null>(null);
+  const touchStartScaleRef = useRef<number | null>(null);
+
+  // Capture current state values inside refs to avoid stale closures in non-reactive event listeners
+  const currentFitScaleRef = useRef(1);
+  const currentPhysicalScaleRef = useRef(1);
+  const currentZoomScaleRef = useRef<number | "auto" | "physical">("auto");
+
+  useEffect(() => {
+    const canvasElement = document.getElementById("visual_canvas_backyard");
+    if (!canvasElement) return;
+
+    // Wheel event handler for modern desktop trackpad/mouse ctrlKey zooming (pinch-to-zoom simulation)
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const currentZoom = currentZoomScaleRef.current;
+        const currentVal =
+          currentZoom === "auto"
+            ? currentFitScaleRef.current
+            : currentZoom === "physical"
+              ? currentPhysicalScaleRef.current
+              : currentZoom;
+
+        // Positive delta means zooming out (pinch closed), negative means zooming in (pinch open)
+        const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
+        const nextScale = Math.min(2.0, Math.max(0.1, Number((currentVal * zoomFactor).toFixed(2))));
+        setZoomScale(nextScale);
+      }
+    };
+
+    // Touch event handlers for actual multi-touch/2-finger pinch gesture on mobile/tablet screens
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        // Calculate original physical distance between the active fingers
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        touchStartDistRef.current = dist;
+
+        const currentZoom = currentZoomScaleRef.current;
+        const currentVal =
+          currentZoom === "auto"
+            ? currentFitScaleRef.current
+            : currentZoom === "physical"
+              ? currentPhysicalScaleRef.current
+              : currentZoom;
+        touchStartScaleRef.current = currentVal;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (
+        e.touches.length === 2 &&
+        touchStartDistRef.current !== null &&
+        touchStartScaleRef.current !== null
+      ) {
+        // Prevent default browser-native elastic bouncing and zoom actions
+        e.preventDefault();
+
+        // Calculate dynamic relative physical distance changes
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        
+        const scaleRatio = currentDist / touchStartDistRef.current;
+        const targetScale = touchStartScaleRef.current * scaleRatio;
+        const nextScale = Math.min(2.0, Math.max(0.1, Number(targetScale.toFixed(2))));
+        setZoomScale(nextScale);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      // Clear references as soon as fingers leave standard interactions
+      touchStartDistRef.current = null;
+      touchStartScaleRef.current = null;
+    };
+
+    // Add passive: false to allow e.preventDefault() to actually prevent native zoom on gesture
+    canvasElement.addEventListener("wheel", handleWheel, { passive: false });
+    canvasElement.addEventListener("touchstart", handleTouchStart, { passive: false });
+    canvasElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+    canvasElement.addEventListener("touchend", handleTouchEnd, { passive: false });
+    canvasElement.addEventListener("touchcancel", handleTouchEnd, { passive: false });
+
+    return () => {
+      canvasElement.removeEventListener("wheel", handleWheel);
+      canvasElement.removeEventListener("touchstart", handleTouchStart);
+      canvasElement.removeEventListener("touchmove", handleTouchMove);
+      canvasElement.removeEventListener("touchend", handleTouchEnd);
+      canvasElement.removeEventListener("touchcancel", handleTouchEnd);
+    };
+  }, [setZoomScale]);
+
   const activeDeviceConfig =
     REAL_DEVICES.find((d) => d.id === selectedDevicePreset) || REAL_DEVICES[0];
 
@@ -476,6 +573,11 @@ function DesignerApp() {
       : zoomScale === "physical"
         ? physicalScale
         : zoomScale;
+
+  // Synchronize state-tracked scales to mutable refs for live non-reactive event listener use
+  currentFitScaleRef.current = fitScale;
+  currentPhysicalScaleRef.current = physicalScale;
+  currentZoomScaleRef.current = zoomScale;
 
   const [simulatedCursorPos, setSimulatedCursorPos] = useState({
     x: -100,
@@ -1416,13 +1518,20 @@ function DesignerApp() {
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="Custom">
-                        <option value="custom">
-                          Custom Dimensions ({customDeviceWidth} x{" "}
-                          {customDeviceHeight}px)
-                        </option>
-                      </optgroup>
                     </select>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedDevicePreset("custom");
+                        setShowCustomDeviceModal(true);
+                      }}
+                      title="Set custom viewport dimensions"
+                      className="px-2 py-1 md:py-1.5 rounded-[30px] bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-bold shrink-0 whitespace-nowrap shadow-sm border border-rose-200/60"
+                    >
+                      <Maximize size={11} className="text-rose-600 animate-pulse" />
+                      <span>Custom Size</span>
+                    </button>
 
                     <button
                       type="button"
@@ -1795,12 +1904,12 @@ function DesignerApp() {
                 </div>
               </div>
             )}
-            {/* Inner centering wrapper - using modern 'm-auto' alignment for perfect scroll-safe viewport centering */}
-            <div className="m-auto flex flex-col items-center justify-center p-4 sm:p-8 shrink-0">
+            {/* Inner centering wrapper - using modern 'my-auto mx-auto' alignment for perfect scroll-safe viewport centering */}
+            <div className="my-auto mx-auto flex flex-col items-center justify-center p-4 sm:p-8 shrink-0">
               {/* Scaler Wrapper Frame animated smoothly with layout-preserving dynamic motion physics */}
               <motion.div
                 id="scaler_outer_container"
-                className="flex-shrink-0 relative select-none m-auto"
+                className="flex-shrink-0 relative select-none my-auto mx-auto"
                 animate={{
                   width: scaledWidthWithBezel * dynamicScale,
                   minWidth: scaledWidthWithBezel * dynamicScale,
@@ -1942,6 +2051,7 @@ function DesignerApp() {
                 <button
                   type="button"
                   onClick={() => {
+                    setSelectedDevicePreset("custom");
                     setCanvasViewport(
                       customDeviceWidth < 640
                         ? "mobile"

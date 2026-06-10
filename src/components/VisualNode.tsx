@@ -125,11 +125,85 @@ export function VisualNode({ elem }: VisualNodeProps) {
     );
   }
 
+  const renderFloatingToolbar = () => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8, scale: 0.95, x: "-50%" }}
+        animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+        transition={{ type: "spring", stiffness: 450, damping: 26 }}
+        className="absolute -top-12 left-1/2 flex items-center gap-1.5 bg-zinc-950 border border-zinc-850 px-3 py-1.5 rounded-2xl shadow-[0_16px_36px_rgba(0,0,0,0.65),0_0_0_1px_rgba(244,63,94,0.15)] z-50 pointer-events-auto shrink-0 select-none backdrop-blur-md"
+      >
+        {/* Tag Name Badge */}
+        <span className="text-[10px] uppercase font-mono font-bold text-rose-400 px-2 py-0.5 bg-rose-500/10 rounded-lg border border-rose-500/20 mr-1.5">
+          {elem.tag}
+        </span>
+        
+        <span className="h-4 w-px bg-zinc-805" />
+
+        {/* Reposition/Drag Handle */}
+        <div
+          draggable
+          onDragStart={(e) => {
+            e.stopPropagation();
+            e.dataTransfer.setData("text/plain", elem.id);
+            setDraggedId(elem.id);
+          }}
+          onDragEnd={(e) => {
+            e.stopPropagation();
+            setDraggedId(null);
+            setDragDropTargetId(null);
+            setDragDropPosition(null);
+          }}
+          title="Drag to reposition element"
+          className="p-1 px-1.5 text-zinc-400 hover:text-white hover:bg-zinc-900 active:bg-zinc-850 rounded-lg transition cursor-grab active:cursor-grabbing flex items-center justify-center gap-1 text-[10.5px] font-sans font-medium"
+        >
+          <Layout size={12} className="shrink-0" />
+          <span>Move</span>
+        </div>
+
+        <span className="h-4 w-px bg-zinc-805" />
+
+        {/* Duplicate Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            duplicateElement(elem.id);
+          }}
+          title="Duplicate Element"
+          className="flex items-center gap-1.5 px-2 py-1 text-zinc-300 hover:text-rose-400 hover:bg-rose-500/10 active:scale-95 rounded-lg transition-all cursor-pointer font-sans font-medium text-[10.5px] border border-transparent hover:border-rose-500/20"
+        >
+          <Copy size={12} className="shrink-0" />
+          <span>Duplicate</span>
+        </button>
+
+        <span className="h-4 w-px bg-zinc-805" />
+
+        {/* Delete Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteElement(elem.id);
+          }}
+          title="Delete Element"
+          className="flex items-center gap-1.5 px-2 py-1 text-zinc-300 hover:text-red-400 hover:bg-red-500/15 active:scale-95 rounded-lg transition-all cursor-pointer font-sans font-medium text-[10.5px] border border-transparent hover:border-red-500/20"
+        >
+          <Trash2 size={12} className="shrink-0" />
+          <span>Delete</span>
+        </button>
+      </motion.div>
+    );
+  };
+
   if (elem.type === "image") {
     const imgSrc = elem.content || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80";
     return (
-      <div
+      <motion.div
         id={elem.id}
+        key={elem.id}
+        layout
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={handleClick}
         style={inlineStyles}
         onDragOver={(e: any) => {
@@ -185,49 +259,10 @@ export function VisualNode({ elem }: VisualNodeProps) {
             <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
 
             {/* Quick Actions Bar */}
-            <span className="absolute -top-11 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-stone-950/95 text-stone-100 border border-stone-800 px-3 py-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(168,85,247,0.15)] text-[10px] uppercase font-mono tracking-widest z-50 pointer-events-auto backdrop-blur-md shrink-0">
-              <span className="text-rose-400 font-bold px-1.5 bg-rose-500/10 rounded-md ring-1 ring-rose-500/20">{elem.tag}</span>
-              <span className="h-3 w-px bg-stone-800"></span>
-              
-              <span
-                draggable
-                onDragStart={(e) => {
-                  e.stopPropagation();
-                  e.dataTransfer.setData("text/plain", elem.id);
-                  setDraggedId(elem.id);
-                }}
-                onDragEnd={(e) => {
-                  e.stopPropagation();
-                  setDraggedId(null);
-                  setDragDropTargetId(null);
-                  setDragDropPosition(null);
-                }}
-                title="Drag to reposition"
-                className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
-              >
-                <Layout size={11.5} />
-              </span>
-
-              <span
-                role="button"
-                onClick={(e) => { e.stopPropagation(); duplicateElement(elem.id); }}
-                title="Duplicate node"
-                className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
-              >
-                <Copy size={11.5} />
-              </span>
-              <span
-                role="button"
-                onClick={(e) => { e.stopPropagation(); deleteElement(elem.id); }}
-                title="Delete node"
-                className="p-1 text-red-400 hover:text-red-300 hover:bg-red-950/20 rounded-md transition cursor-pointer flex items-center justify-center"
-              >
-                <Trash2 size={11.5} />
-              </span>
-            </span>
+            {renderFloatingToolbar()}
           </motion.span>
         )}
-      </div>
+      </motion.div>
     );
   }
 
@@ -290,10 +325,14 @@ export function VisualNode({ elem }: VisualNodeProps) {
     isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
   } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
+  const MotionTag = motion(TagName as any);
+
   return (
-    <TagName
+    <MotionTag
       id={elem.id}
       key={elem.id}
+      layout
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
       style={inlineStyles}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -348,46 +387,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
           <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
 
           {/* Quick Actions Bar */}
-          <span className="absolute -top-11 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-stone-950/95 text-stone-100 border border-stone-800 px-3 py-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(168,85,247,0.15)] text-[10px] uppercase font-mono tracking-widest z-50 pointer-events-auto backdrop-blur-md shrink-0">
-            <span className="text-rose-400 font-bold px-1.5 bg-rose-500/10 rounded-md ring-1 ring-rose-500/20">{elem.tag}</span>
-            <span className="h-3 w-px bg-stone-800"></span>
-            
-            <span
-              draggable
-              onDragStart={(e) => {
-                e.stopPropagation();
-                e.dataTransfer.setData("text/plain", elem.id);
-                setDraggedId(elem.id);
-              }}
-              onDragEnd={(e) => {
-                e.stopPropagation();
-                setDraggedId(null);
-                setDragDropTargetId(null);
-                setDragDropPosition(null);
-              }}
-              title="Drag to reposition"
-              className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-grab active:cursor-grabbing flex items-center justify-center"
-            >
-              <Layout size={11.5} />
-            </span>
-
-            <span
-              role="button"
-              onClick={(e) => { e.stopPropagation(); duplicateElement(elem.id); }}
-              title="Duplicate node"
-              className="p-1 hover:text-rose-400 hover:bg-stone-900 rounded-md transition cursor-pointer flex items-center justify-center animate-hover"
-            >
-              <Copy size={11.5} />
-            </span>
-            <span
-              role="button"
-              onClick={(e) => { e.stopPropagation(); deleteElement(elem.id); }}
-              title="Delete node"
-              className="p-1 text-red-400 hover:text-red-300 hover:bg-red-950/20 rounded-md transition cursor-pointer flex items-center justify-center"
-            >
-              <Trash2 size={11.5} />
-            </span>
-          </span>
+          {renderFloatingToolbar()}
         </motion.span>
       )}
 
@@ -408,6 +408,6 @@ export function VisualNode({ elem }: VisualNodeProps) {
           </span>
         </div>
       )}
-    </TagName>
+    </MotionTag>
   );
 }
