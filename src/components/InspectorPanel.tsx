@@ -315,6 +315,9 @@ export function InspectorPanel({
         { color: "#8b5cf6", bg: "bg-violet-500" },
       ];
 
+      const isHex = currentVal && /^#[0-9A-F]{6}$/i.test(currentVal);
+      const hexValue = isHex ? currentVal : "#6366f1";
+
       return (
         <div
           key={propIdx}
@@ -326,27 +329,73 @@ export function InspectorPanel({
               {currentVal || "default"}
             </span>
           </label>
-          <div className="flex flex-col gap-2 p-3 bg-white border border-stone-200/90 rounded-2xl shadow-xs">
-            <div className="flex flex-wrap gap-1.5">
-              {swatches.map((sw, swIdx) => {
-                const isSelected = currentVal === sw.color;
-                return (
-                  <button
-                    key={swIdx}
-                    type="button"
-                    onClick={() => setPropValue(propName, sw.color)}
-                    className={`w-6 h-6 rounded-lg transition-transform active:scale-95 duration-150 cursor-pointer ${sw.bg} ${
-                      isSelected
-                        ? "ring-2 ring-rose-500 ring-offset-1 scale-110 shadow-sm"
-                        : "hover:scale-105"
-                    }`}
-                    title={sw.color}
-                  />
-                );
-              })}
+          <div className="flex flex-col gap-3 p-3 bg-white border border-stone-200/90 rounded-2xl shadow-xs">
+            {/* Quick Palette Swatches */}
+            <div>
+              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono block mb-1.5 pl-0.5">
+                Swatches:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {swatches.map((sw, swIdx) => {
+                  const isSelected = currentVal === sw.color;
+                  return (
+                    <button
+                      key={swIdx}
+                      type="button"
+                      onClick={() => setPropValue(propName, sw.color)}
+                      className={`w-6 h-6 rounded-lg transition-transform active:scale-95 duration-150 cursor-pointer ${sw.bg} ${
+                        isSelected
+                          ? "ring-2 ring-rose-500 ring-offset-1 scale-110 shadow-sm"
+                          : "hover:scale-105"
+                      }`}
+                      title={sw.color}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 mt-1 border-t border-stone-100 pt-2">
-              <span className="text-[9px] font-bold text-stone-400 uppercase font-mono">
+
+            {/* Visual Color Picker Option */}
+            <div className="border-t border-stone-100/80 pt-2.5">
+              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono block mb-1.5 pl-0.5">
+                Visual Picker:
+              </span>
+              <div className="relative flex items-center justify-between gap-3 p-2 bg-stone-50 border border-stone-200/60 rounded-xl hover:border-stone-300 transition-all">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-stone-200 shadow-sm flex-shrink-0 cursor-pointer"
+                       style={{ backgroundColor: currentVal && currentVal !== "transparent" && currentVal !== "currentColor" ? currentVal : "#e2e8f0" }}>
+                    <input
+                      type="color"
+                      value={hexValue}
+                      onChange={(e) => setPropValue(propName, e.target.value)}
+                      className="absolute inset-[-6px] w-[200%] h-[200%] cursor-pointer border-0 p-0 opacity-0"
+                    />
+                    {(!currentVal || currentVal === "transparent" || currentVal === "currentColor") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
+                        <span className="text-stone-400 text-[10px] font-bold">🎨</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10.5px] font-bold text-stone-700 font-mono">
+                      Select Custom Color
+                    </span>
+                    <span className="text-[8.5px] text-stone-450 font-mono font-medium">
+                      Click box to open visual spectrum
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 pr-1">
+                  <span className={`text-[8px] font-extrabold font-mono tracking-wider px-1.5 py-0.5 rounded-sm ${isHex ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-stone-200/65 text-stone-500'}`}>
+                    {isHex ? "HEX" : "PRESET"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Hex/Value Direct Input */}
+            <div className="flex items-center gap-1.5 border-t border-stone-100 pt-2.5">
+              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono">
                 Hex / Val:
               </span>
               <input

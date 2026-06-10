@@ -61,7 +61,13 @@ import { DeviceFrame } from "./components/DeviceFrame";
 import { VisualNode } from "./components/VisualNode";
 import { StructureNode } from "./components/StructureNode";
 import { DesignerProvider, useDesigner } from "./contexts/DesignerContext";
-import { InspectorPanel } from "./components/InspectorPanel";
+
+const InspectorPanel = React.lazy(() =>
+  import("./components/InspectorPanel").then((module) => ({
+    default: module.InspectorPanel,
+  }))
+);
+
 import {
   MobileStylingTabs,
   MobileToolControls,
@@ -1369,14 +1375,21 @@ function DesignerApp() {
             {/* TAB CONTENT: STYLES PANEL */}
             {activeTab === "styles" && (
               <div className="text-left transition-all h-full shrink-0 flex flex-col">
-                <InspectorPanel
-                  selectedElement={selectedElement}
-                  inspectorSection={inspectorSection}
-                  setInspectorSection={setInspectorSection}
-                  updateTree={updateTree}
-                  deleteElement={deleteElement}
-                  duplicateElement={duplicateElement}
-                />
+                <React.Suspense fallback={
+                  <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
+                    <div className="w-5 h-5 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+                    <span className="text-xs text-stone-400 font-mono">Loading styles...</span>
+                  </div>
+                }>
+                  <InspectorPanel
+                    selectedElement={selectedElement}
+                    inspectorSection={inspectorSection}
+                    setInspectorSection={setInspectorSection}
+                    updateTree={updateTree}
+                    deleteElement={deleteElement}
+                    duplicateElement={duplicateElement}
+                  />
+                </React.Suspense>
               </div>
             )}
           </div>
@@ -2265,14 +2278,21 @@ function DesignerApp() {
 
               {/* Inspector Content Panel wrapped with its properties inside the sheet container */}
               <div className="flex-1 overflow-y-auto max-h-[70vh] text-left">
-                <InspectorPanel
-                  selectedElement={selectedElement}
-                  inspectorSection={inspectorSection}
-                  setInspectorSection={setInspectorSection}
-                  updateTree={updateTree}
-                  deleteElement={deleteElement}
-                  duplicateElement={duplicateElement}
-                />
+                <React.Suspense fallback={
+                  <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
+                    <div className="w-5 h-5 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+                    <span className="text-xs text-stone-400 font-mono font-medium">Preparing options...</span>
+                  </div>
+                }>
+                  <InspectorPanel
+                    selectedElement={selectedElement}
+                    inspectorSection={inspectorSection}
+                    setInspectorSection={setInspectorSection}
+                    updateTree={updateTree}
+                    deleteElement={deleteElement}
+                    duplicateElement={duplicateElement}
+                  />
+                </React.Suspense>
               </div>
 
               {/* Footer Panel Close CTA */}

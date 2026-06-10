@@ -19,13 +19,16 @@ export default defineConfig(() => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 500,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-                return 'vendor-react';
+              if (id.includes('react-dom')) {
+                return 'vendor-react-dom';
+              }
+              if (id.includes('react/') || id.includes('scheduler') || id.includes('react-compiler')) {
+                return 'vendor-react-core';
               }
               if (id.includes('lucide')) {
                 return 'vendor-icons';
