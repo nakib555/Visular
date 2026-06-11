@@ -46,7 +46,7 @@ import { CSSCategory, CSSSubCategory, CSSProperty } from "../types-css";
 import { PropertyControl } from "./PropertyControl";
 import { DisplayDropdown } from "./DisplayDropdown";
 import { FlexDirectionControl } from "./FlexDirectionControl";
-import { JustifyContentControl } from "./JustifyContentControl";
+import { GapControl } from "./GapControl";
 import { VisualElement } from "../types";
 import {
   setGroupClass,
@@ -315,31 +315,34 @@ export function InspectorPanel({
 
     if (propName === "display") {
       return (
-        <DisplayDropdown
-          key={propIdx}
-          value={currentVal}
-          onChange={(val) => setPropValue(propName, val)}
-        />
+        <div key={propIdx} className="w-full animate-fade-in">
+          <DisplayDropdown
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
       );
     }
 
     if (propName === "flex-direction") {
       return (
-        <FlexDirectionControl
-          key={propIdx}
-          value={currentVal}
-          onChange={(val) => setPropValue(propName, val)}
-        />
+        <div key={propIdx} className="w-full animate-fade-in">
+          <FlexDirectionControl
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
       );
     }
 
-    if (propName === "justify-content") {
+    if (propName === "gap") {
       return (
-        <JustifyContentControl
-          key={propIdx}
-          value={currentVal}
-          onChange={(val) => setPropValue(propName, val)}
-        />
+        <div key={propIdx} className="w-full animate-fade-in">
+          <GapControl
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
       );
     }
 

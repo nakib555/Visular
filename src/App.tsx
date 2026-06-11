@@ -840,17 +840,6 @@ function DesignerApp() {
           id="library_panel"
           className={`w-full md:w-[350px] border-r border-stone-200/60 bg-white shadow-[2px_0_24px_rgba(0,0,0,0.02)] h-[calc(100vh-64px)] overflow-hidden flex-shrink-0 flex-col z-10 ${mobileActiveView === "library" ? "flex" : "hidden md:flex"}`}
         >
-          {/* Visual Header Branding for Left Dock */}
-          <div className="p-4 flex items-center justify-between border-b border-stone-100">
-            <span className="text-[10px] font-mono tracking-widest font-bold text-stone-800 uppercase flex items-center gap-2 bg-rose-50/50 text-rose-700 px-3.5 py-2 rounded-full select-none">
-              <Sparkles size={12} className="text-rose-600" />
-              Creator Panel
-            </span>
-            <span className="text-[10px] font-mono text-stone-400">
-              v1.2 Active
-            </span>
-          </div>
-
           {/* Navigation tabs Segmented Control (Pills) */}
           <div className="p-4 border-b border-stone-100">
             <div className="bg-stone-50/50 p-1 rounded-[20px] flex gap-1 border border-stone-200/50">
