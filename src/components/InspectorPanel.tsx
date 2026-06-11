@@ -44,6 +44,9 @@ import {
 import { CSS_HIERARCHY_DATA } from "./css-categories";
 import { CSSCategory, CSSSubCategory, CSSProperty } from "../types-css";
 import { PropertyControl } from "./PropertyControl";
+import { DisplayDropdown } from "./DisplayDropdown";
+import { FlexDirectionControl } from "./FlexDirectionControl";
+import { JustifyContentControl } from "./JustifyContentControl";
 import { VisualElement } from "../types";
 import {
   setGroupClass,
@@ -218,6 +221,28 @@ export function InspectorPanel({
   };
 
   const getPropValue = (propName: string): string => {
+    if (propName === "display") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "display");
+      if (groupClass === "hidden") return "none";
+      if (groupClass) return groupClass;
+    }
+    if (propName === "justify-content") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "justify");
+      if (groupClass) return groupClass;
+      
+      const arbitrary = parseArbitraryProperty(
+        selectedElement?.classes || "",
+        propName,
+      );
+      if (arbitrary === "flex-start") return "justify-start";
+      if (arbitrary === "flex-end") return "justify-end";
+      if (arbitrary === "center") return "justify-center";
+      if (arbitrary === "space-between") return "justify-between";
+      if (arbitrary === "space-around") return "justify-around";
+      if (arbitrary === "space-evenly") return "justify-evenly";
+      if (arbitrary === "stretch") return "justify-stretch";
+      return arbitrary;
+    }
     return parseArbitraryProperty(
       selectedElement?.classes || "",
       propName,
@@ -226,6 +251,33 @@ export function InspectorPanel({
 
   const setPropValue = (propName: string, val: string) => {
     if (!selectedElement) return;
+
+    if (propName === "display") {
+      const mappedVal = val === "none" ? "hidden" : val;
+      // also strip out any arbitrary [display:... ] properties
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[display:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "display", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "justify-content") {
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[justify-content:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "justify", val),
+      }));
+      return;
+    }
+
     const withoutOld = (selectedElement.classes || "")
       .split(" ")
       .filter((c) => !c.startsWith(`[${propName}:`));
@@ -289,6 +341,37 @@ export function InspectorPanel({
     }
 
     const currentVal = getPropValue(propName);
+
+    if (propName === "display") {
+      return (
+        <DisplayDropdown
+          key={propIdx}
+          value={currentVal}
+          onChange={(val) => setPropValue(propName, val)}
+        />
+      );
+    }
+
+    if (propName === "flex-direction") {
+      return (
+        <FlexDirectionControl
+          key={propIdx}
+          value={currentVal}
+          onChange={(val) => setPropValue(propName, val)}
+        />
+      );
+    }
+
+    if (propName === "justify-content") {
+      return (
+        <JustifyContentControl
+          key={propIdx}
+          value={currentVal}
+          onChange={(val) => setPropValue(propName, val)}
+        />
+      );
+    }
+
     const isColor =
       propName.includes("color") ||
       propName === "fill" ||

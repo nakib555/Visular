@@ -277,8 +277,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
         <span className="h-4 w-px bg-zinc-805" />
 
         {/* Duplicate Button */}
-        <button
-          type="button"
+        <span
+          role="button"
           onClick={(e) => {
             e.stopPropagation();
             duplicateElement(elem.id);
@@ -288,13 +288,13 @@ export function VisualNode({ elem }: VisualNodeProps) {
         >
           <Copy size={12} className="shrink-0" />
           <span>Duplicate</span>
-        </button>
+        </span>
 
         <span className="h-4 w-px bg-zinc-805" />
 
         {/* Delete Button */}
-        <button
-          type="button"
+        <span
+          role="button"
           onClick={(e) => {
             e.stopPropagation();
             deleteElement(elem.id);
@@ -304,7 +304,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
         >
           <Trash2 size={12} className="shrink-0" />
           <span>Delete</span>
-        </button>
+        </span>
       </motion.span>
     );
   };
@@ -468,7 +468,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
     isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
   } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
-  const MotionTag = motion(TagName as any);
+  const MotionTag = motion.create(TagName as any);
 
   return (
     <MotionTag

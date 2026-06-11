@@ -52,11 +52,13 @@ import {
   Bell,
   Grid,
   ArrowRight,
+  ChevronRight,
   Magnet,
   Hand,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
+import { DevicePresetDropdown } from "./components/DevicePresetDropdown";
 import { DeviceFrame } from "./components/DeviceFrame";
 import { VisualNode } from "./components/VisualNode";
 import { StructureNode } from "./components/StructureNode";
@@ -350,7 +352,18 @@ function DesignerApp() {
   useEffect(() => {
     if (doubleClickId && inlineEditRef.current) {
       inlineEditRef.current.focus();
-      inlineEditRef.current.select();
+      if (
+        inlineEditRef.current.nodeName !== "TEXTAREA" &&
+        inlineEditRef.current.nodeName !== "INPUT"
+      ) {
+        const range = document.createRange();
+        range.selectNodeContents(inlineEditRef.current);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      } else if (typeof inlineEditRef.current.select === "function") {
+        inlineEditRef.current.select();
+      }
     }
   }, [doubleClickId, inlineEditRef]);
 
@@ -1476,10 +1489,10 @@ function DesignerApp() {
 
                   {/* Real Preset Selector Dropdown */}
                   <div className="flex items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0">
-                    <select
-                      value={selectedDevicePreset}
-                      onChange={(e) => {
-                        const targetId = e.target.value;
+                    <DevicePresetDropdown
+                      devices={REAL_DEVICES}
+                      selectedId={selectedDevicePreset}
+                      onSelect={(targetId) => {
                         if (targetId === "custom") {
                           setSelectedDevicePreset("custom");
                           setShowCustomDeviceModal(true);
@@ -1505,36 +1518,7 @@ function DesignerApp() {
                           }
                         }
                       }}
-                      className="bg-transparent border-0 text-stone-850 text-[10px] md:text-[11px] font-bold py-1 px-2.5 outline-none cursor-pointer focus:ring-0"
-                    >
-                      <optgroup label="Mobile Devices">
-                        {REAL_DEVICES.filter(
-                          (d) => d.viewport === "mobile" && d.id !== "custom",
-                        ).map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name} ({d.width} x {d.height}px)
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Tablet Devices">
-                        {REAL_DEVICES.filter(
-                          (d) => d.viewport === "tablet" && d.id !== "custom",
-                        ).map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name} ({d.width} x {d.height}px)
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Desktop Screens">
-                        {REAL_DEVICES.filter(
-                          (d) => d.viewport === "desktop" && d.id !== "custom",
-                        ).map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name} ({d.width} x {d.height}px)
-                          </option>
-                        ))}
-                      </optgroup>
-                    </select>
+                    />
 
                     <button
                       type="button"
@@ -1909,16 +1893,14 @@ function DesignerApp() {
                     return (
                       <React.Fragment key={elem.id}>
                         {idx > 0 && (
-                          <span className="text-stone-300 font-bold mx-0.5 select-none shrink-0 text-[10px]">
-                            /
-                          </span>
+                          <ChevronRight size={10} className="text-stone-300 mx-0.5 shrink-0" />
                         )}
                         <button
                           onClick={() => setSelectedId(elem.id)}
-                          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all shrink-0 cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all shrink-0 cursor-pointer border border-transparent ${
                             isLast
-                              ? "bg-rose-50 text-rose-700 font-semibold border border-rose-100"
-                              : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
+                              ? "bg-rose-50 text-rose-700 font-semibold border-rose-200/60 shadow-xs ring-1 ring-rose-500/10 ring-inset"
+                              : "text-stone-500 hover:text-stone-900 hover:bg-stone-100 hover:border-stone-200/60 hover:shadow-sm"
                           }`}
                         >
                           {elem.type === "container" && (
@@ -1955,9 +1937,11 @@ function DesignerApp() {
               <motion.div
                 id="scaler_outer_container"
                 className="flex-shrink-0 relative select-none my-auto mx-auto"
+                style={{
+                  minWidth: scaledWidthWithBezel * dynamicScale,
+                }}
                 animate={{
                   width: scaledWidthWithBezel * dynamicScale,
-                  minWidth: scaledWidthWithBezel * dynamicScale,
                   height: scaledHeightWithBezel * dynamicScale,
                 }}
                 transition={{
@@ -1970,10 +1954,13 @@ function DesignerApp() {
                 <motion.div
                   id="scaler_bounds"
                   className="absolute left-0 top-0 select-none origin-top-left"
-                  style={{ originX: 0, originY: 0 }}
+                  style={{
+                    originX: 0,
+                    originY: 0,
+                    minWidth: scaledWidthWithBezel,
+                  }}
                   animate={{
                     width: scaledWidthWithBezel,
-                    minWidth: scaledWidthWithBezel,
                     height: scaledHeightWithBezel,
                     scale: dynamicScale,
                   }}

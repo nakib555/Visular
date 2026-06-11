@@ -283,56 +283,85 @@ export function DeviceFrame({
         <div className={`flex-1 flex flex-col relative min-h-max w-full ${canvasViewport === "mobile" ? "pb-8 px-4 pt-2" : canvasViewport === "tablet" ? "px-6 pb-12" : ""}`}>
           
           {/* Safe Guides Overlay */}
-          {showGridGuides && canvasViewport === "mobile" && (
-            <div className="absolute inset-x-0 top-[2px] bottom-0 z-30 pointer-events-none">
-              <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 select-none">
-                <div className="border-r border-b border-dashed border-rose-500/20" />
-                <div className="border-r border-b border-dashed border-rose-500/20" />
-                <div className="border-b border-dashed border-rose-500/20" />
-                
-                <div className="border-r border-b border-dashed border-rose-500/20" />
-                <div className="border-r border-b border-dashed border-rose-500/20" />
-                <div className="border-b border-dashed border-rose-500/20" />
-                
-                <div className="border-r border-dashed border-rose-500/20" />
-                <div className="border-r border-dashed border-rose-500/20" />
-                <div className="border-stone-100/0" />
-              </div>
-              <div className="absolute inset-y-0 left-4 right-4 border-x border-sky-400/20">
-                <div className="absolute top-4 bottom-4 left-0 right-0 border-y border-sky-400/20" />
-                <span className="absolute left-1 top-1 text-[8px] font-bold text-sky-500/40 font-mono">16px Safe</span>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {showGridGuides && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 z-30 pointer-events-none select-none"
+              >
+                {/* Rulers available in all viewports when guides are on */}
+                <div className="absolute top-0 left-0 right-0 h-4 border-b border-rose-500/30 bg-rose-500/5 flex items-end px-2 whitespace-nowrap overflow-hidden">
+                  {Array.from({ length: 100 }).map((_, i) => (
+                    <div key={`h-`+i} className="flex-shrink-0 w-10 border-l border-rose-500/30 h-1.5 relative">
+                      <span className="absolute -top-3 left-0.5 text-[6px] font-mono text-rose-500/60 leading-none">{i * 40}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute top-0 left-0 bottom-0 w-4 border-r border-rose-500/30 bg-rose-500/5 flex flex-col py-2 whitespace-nowrap overflow-hidden">
+                    <div className="h-4 flex-shrink-0" />
+                  {Array.from({ length: 100 }).map((_, i) => (
+                    <div key={`v-`+i} className="flex-shrink-0 h-10 border-t border-rose-500/30 w-1.5 relative">
+                      <span className="absolute -top-1 left-0.5 text-[6px] font-mono text-rose-500/60 leading-none" style={{ writingMode: 'vertical-rl' }}>{(i + 1) * 40}</span>
+                    </div>
+                  ))}
+                </div>
 
-          {showGridGuides && canvasViewport === "tablet" && (
-            <div className="absolute inset-x-0 top-0 bottom-0 z-30 pointer-events-none">
-              <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 select-none">
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div key={i} className="border-r border-b border-dashed border-rose-500/10" />
-                ))}
-              </div>
-              <div className="absolute inset-y-0 left-6 right-6 border-x border-sky-400/20">
-                <div className="absolute top-6 bottom-6 left-0 right-0 border-y border-sky-400/20" />
-                <span className="absolute left-2 top-2 text-[8px] font-bold text-sky-500/40 font-mono">24px Safe Area</span>
-              </div>
-            </div>
-          )}
-
-          {showGridGuides && canvasViewport === "desktop" && (
-            <div className="absolute inset-x-0 top-0 bottom-0 z-30 pointer-events-none select-none">
-              <div className="absolute inset-0 grid grid-cols-12 pointer-events-none">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="border-r border-dashed border-rose-500/5 h-full relative">
-                    <span className="absolute bottom-1 right-1 text-[7px] text-rose-500/30 font-mono">col {i+1}</span>
+                {canvasViewport === "mobile" && (
+                  <div className="absolute inset-x-0 top-[2px] bottom-0">
+                    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+                      <div className="border-r border-b border-dashed border-rose-500/20" />
+                      <div className="border-r border-b border-dashed border-rose-500/20" />
+                      <div className="border-b border-dashed border-rose-500/20" />
+                      
+                      <div className="border-r border-b border-dashed border-rose-500/20" />
+                      <div className="border-r border-b border-dashed border-rose-500/20" />
+                      <div className="border-b border-dashed border-rose-500/20" />
+                      
+                      <div className="border-r border-dashed border-rose-500/20" />
+                      <div className="border-r border-dashed border-rose-500/20" />
+                      <div className="border-stone-100/0" />
+                    </div>
+                    <div className="absolute inset-y-0 left-4 right-4 border-x border-sky-400/20">
+                      <div className="absolute top-4 bottom-4 left-0 right-0 border-y border-sky-400/20" />
+                      <span className="absolute left-1 top-1 text-[8px] font-bold text-sky-500/40 font-mono">16px Safe</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div className="absolute inset-x-12 top-0 bottom-0 border-x border-sky-400/10 pointer-events-none">
-                <span className="absolute left-2 top-2 text-[8px] font-bold text-sky-500/35 font-mono">Desktop safe grid container</span>
-              </div>
-            </div>
-          )}
+                )}
+
+                {canvasViewport === "tablet" && (
+                  <div className="absolute inset-x-0 top-0 bottom-0">
+                    <div className="absolute inset-0 grid grid-cols-4 grid-rows-4">
+                      {Array.from({ length: 16 }).map((_, i) => (
+                        <div key={i} className="border-r border-b border-dashed border-rose-500/10" />
+                      ))}
+                    </div>
+                    <div className="absolute inset-y-0 left-6 right-6 border-x border-sky-400/20">
+                      <div className="absolute top-6 bottom-6 left-0 right-0 border-y border-sky-400/20" />
+                      <span className="absolute left-2 top-2 text-[8px] font-bold text-sky-500/40 font-mono">24px Safe Area</span>
+                    </div>
+                  </div>
+                )}
+
+                {canvasViewport === "desktop" && (
+                  <div className="absolute inset-x-0 top-0 bottom-0">
+                    <div className="absolute inset-0 grid grid-cols-12">
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} className="border-r border-dashed border-rose-500/5 h-full relative">
+                          <span className="absolute bottom-1 right-1 text-[7px] text-rose-500/30 font-mono">col {i+1}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="absolute inset-x-12 top-0 bottom-0 border-x border-sky-400/10">
+                      <span className="absolute left-2 top-2 text-[8px] font-bold text-sky-500/35 font-mono">Desktop safe grid container</span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Gloss Reflection glare overlay */}
           {glossyOverlay && canvasViewport === "mobile" && (
