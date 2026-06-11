@@ -2,7 +2,6 @@ import React from "react";
 import { ArrowRight, ArrowLeft, ArrowDown, ArrowUp } from "lucide-react";
 
 interface FlexDirectionControlProps {
-  key?: React.Key | number | string;
   value: string;
   onChange: (val: string) => void;
 }

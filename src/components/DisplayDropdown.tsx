@@ -226,7 +226,6 @@ const displayOptions: DisplayOption[] = [
 ];
 
 interface DisplayDropdownProps {
-  key?: React.Key | number | string;
   value: string;
   onChange: (value: string) => void;
 }

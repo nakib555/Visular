@@ -1937,11 +1937,9 @@ function DesignerApp() {
               <motion.div
                 id="scaler_outer_container"
                 className="flex-shrink-0 relative select-none my-auto mx-auto"
-                style={{
-                  minWidth: scaledWidthWithBezel * dynamicScale,
-                }}
                 animate={{
                   width: scaledWidthWithBezel * dynamicScale,
+                  minWidth: scaledWidthWithBezel * dynamicScale,
                   height: scaledHeightWithBezel * dynamicScale,
                 }}
                 transition={{
@@ -1954,13 +1952,10 @@ function DesignerApp() {
                 <motion.div
                   id="scaler_bounds"
                   className="absolute left-0 top-0 select-none origin-top-left"
-                  style={{
-                    originX: 0,
-                    originY: 0,
-                    minWidth: scaledWidthWithBezel,
-                  }}
+                  style={{ originX: 0, originY: 0 }}
                   animate={{
                     width: scaledWidthWithBezel,
+                    minWidth: scaledWidthWithBezel,
                     height: scaledHeightWithBezel,
                     scale: dynamicScale,
                   }}

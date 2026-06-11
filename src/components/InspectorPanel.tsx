@@ -226,23 +226,6 @@ export function InspectorPanel({
       if (groupClass === "hidden") return "none";
       if (groupClass) return groupClass;
     }
-    if (propName === "justify-content") {
-      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "justify");
-      if (groupClass) return groupClass;
-      
-      const arbitrary = parseArbitraryProperty(
-        selectedElement?.classes || "",
-        propName,
-      );
-      if (arbitrary === "flex-start") return "justify-start";
-      if (arbitrary === "flex-end") return "justify-end";
-      if (arbitrary === "center") return "justify-center";
-      if (arbitrary === "space-between") return "justify-between";
-      if (arbitrary === "space-around") return "justify-around";
-      if (arbitrary === "space-evenly") return "justify-evenly";
-      if (arbitrary === "stretch") return "justify-stretch";
-      return arbitrary;
-    }
     return parseArbitraryProperty(
       selectedElement?.classes || "",
       propName,
@@ -262,18 +245,6 @@ export function InspectorPanel({
 
       updateTree((n) => ({
         classes: setGroupClass(withoutOldArbitrary, "display", mappedVal),
-      }));
-      return;
-    }
-
-    if (propName === "justify-content") {
-      const withoutOldArbitrary = (selectedElement.classes || "")
-        .split(" ")
-        .filter((c) => !c.startsWith(`[justify-content:`))
-        .join(" ");
-
-      updateTree((n) => ({
-        classes: setGroupClass(withoutOldArbitrary, "justify", val),
       }));
       return;
     }
