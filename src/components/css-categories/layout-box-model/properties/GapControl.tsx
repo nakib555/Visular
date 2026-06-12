@@ -424,7 +424,7 @@ export function GapControl({
                           {opt.badgeContent}
                           {isSelected && (
                             <div className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full p-[2px] shadow-xs">
-                              <Check size={8} strokeWidth={3} />
+                              <Check size={8} />
                             </div>
                           )}
                         </div>

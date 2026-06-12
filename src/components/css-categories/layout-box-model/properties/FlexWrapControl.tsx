@@ -63,7 +63,7 @@ export function FlexWrapControl({ value, onChange }: FlexWrapControlProps) {
                 <div className={`flex shrink-0 items-center justify-center w-9 h-9 rounded-md mr-3 border ${
                   isSelected ? "bg-white border-emerald-200 text-emerald-600 shadow-sm" : "bg-stone-50 border-stone-200/70 text-stone-400 group-hover:text-emerald-500"
                 }`}>
-                  <Icon size={16} strokeWidth={isSelected ? 2.5 : 2} />
+                  <Icon size={16} />
                 </div>
 
                 {/* Text Content */}

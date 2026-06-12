@@ -337,7 +337,7 @@ export function InspectorPanel({
       return { min: -4, max: 24, step: 0.5, unit: "px" };
     if (pName === "column-count")
       return { min: 1, max: 12, step: 1, unit: "" };
-    if (pName === "gap" || pName === "row-gap" || pName === "column-gap")
+    if (pName === "column-gap")
       return { min: 0, max: 64, step: 2, unit: "px" };
     if (pName === "perspective")
       return { min: 150, max: 1500, step: 50, unit: "px" };
@@ -351,6 +351,29 @@ export function InspectorPanel({
     propIdx: number,
   ): any => {
     const propName = prop.name;
+
+    // Split composite inline style properties (e.g., "width / height") into recursively rendered individual style controls
+    if (propName.includes("/")) {
+      const parts = propName.split("/").map((p: string) => p.trim());
+      return (
+        <div key={propIdx} className="space-y-3.5 border-l-2 border-rose-200 pl-3 pt-1.5 pb-1 my-1.5 bg-stone-50/40 p-2.5 rounded-xl text-left">
+          <div className="text-[9px] font-extrabold text-rose-600/85 uppercase tracking-widest font-mono flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-rose-400" />
+            <span>Property Group: {parts.join("  +  ")}</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {parts.map((part: string, partIdx: number) => {
+              const subProp = {
+                ...prop,
+                name: part,
+              };
+              return renderPropertyElement(subProp, propIdx * 1000 + partIdx);
+            })}
+          </div>
+        </div>
+      );
+    }
+
     const currentVal = getPropValue(propName);
 
     if (propName === "display") {
@@ -381,6 +404,21 @@ export function InspectorPanel({
           <FlexWrapControl
              value={currentVal}
              onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "gap") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <GapControl
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+            rowGapValue={getPropValue("row-gap")}
+            columnGapValue={getPropValue("column-gap")}
+            onRowGapChange={(val) => setPropValue("row-gap", val)}
+            onColumnGapChange={(val) => setPropValue("column-gap", val)}
           />
         </div>
       );
@@ -775,6 +813,13 @@ export function InspectorPanel({
                         const pName = item.prop.name;
                         const currentVal = getPropValue(pName);
 
+                        // If it's a self-contained card-mode property, we don't wrap it in a secondary card!
+                        const isSelfContainedCard = 
+                          pName === "align-items" || 
+                          pName === "flex-direction" || 
+                          pName === "flex-wrap" || 
+                          pName === "gap";
+
                         // Build matching interactive simulator widgets
                         let specialWidget = null;
                         if (item.specialWidgetName === "svg") {
@@ -896,7 +941,14 @@ export function InspectorPanel({
                           );
                         }
 
-
+                        if (isSelfContainedCard) {
+                          return (
+                            <div key={idx} className="w-full flex flex-col gap-2">
+                              {renderPropertyElement(item.prop, idx)}
+                              {specialWidget}
+                            </div>
+                          );
+                        }
 
                         // Style each property as an elegant, clean, standalone independent card
                         return (

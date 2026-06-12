@@ -341,31 +341,31 @@ export function DisplayDropdown({ value, onChange }: DisplayDropdownProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full bg-white border ${
           isOpen ? "border-rose-400 ring-4 ring-rose-500/10" : "border-stone-200/85 hover:border-stone-300"
-        } rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all cursor-pointer text-left focus:outline-none`}
+        } rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all cursor-pointer text-left focus:outline-none overflow-hidden`}
         id="display-dropdown-trigger"
       >
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
-            <activeOption.icon className="w-4 h-4 text-stone-600" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
+            <activeOption.icon className="w-4 h-4 text-stone-600 shrink-0" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-stone-800 leading-tight">
+          <div className="flex flex-col min-w-0 pr-2">
+            <span className="text-xs font-bold text-stone-800 leading-tight truncate">
               {activeOption.label}
             </span>
-            <span className="text-[10px] text-stone-400 leading-none mt-0.5">
+            <span className="text-[10px] text-stone-400 leading-none mt-0.5 truncate">
               {activeOption.value === "none" ? "display: none" : `display: ${activeOption.value}`}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Badge Display on the right of trigger */}
-          <div className={`${activeOption.badgeBg} w-9 h-7 flex items-center justify-center select-none`}>
+          <div className={`${activeOption.badgeBg} w-9 h-7 shrink-0 flex items-center justify-center select-none`}>
             {activeOption.badgeContent}
           </div>
           <ChevronDown
             size={14}
-            className={`text-stone-400 transition-transform duration-250 ${
+            className={`text-stone-400 transition-transform duration-250 shrink-0 ${
               isOpen ? "rotate-180 text-rose-500" : ""
             }`}
           />
@@ -429,7 +429,7 @@ export function DisplayDropdown({ value, onChange }: DisplayDropdownProps) {
                       {opt.badgeContent}
                       {isSelected && (
                         <div className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-[2px] shadow-xs">
-                          <Check size={8} strokeWidth={3} />
+                          <Check size={8} />
                         </div>
                       )}
                     </div>
