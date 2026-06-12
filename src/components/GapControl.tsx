@@ -12,12 +12,16 @@ import {
 interface GapControlProps {
   value: string;
   onChange: (val: string) => void;
+  rowGapValue?: string;
+  columnGapValue?: string;
+  onRowGapChange?: (val: string) => void;
+  onColumnGapChange?: (val: string) => void;
 }
 
 interface GapPreset {
   label: string;
   value: string;
-  pixelEquivalent: number; // For rendering simulator/diagram accurately
+  pixelEquivalent: number; // For reference
   badgeColor: string;
 }
 
@@ -32,19 +36,51 @@ const GAP_PRESETS: GapPreset[] = [
   { label: "3xl", value: "48px", pixelEquivalent: 48, badgeColor: "bg-violet-50 text-violet-600 border-violet-100" },
 ];
 
-export function GapControl({ value, onChange }: GapControlProps) {
+export function GapControl({ 
+  value, 
+  onChange,
+  rowGapValue = "",
+  columnGapValue = "",
+  onRowGapChange,
+  onColumnGapChange
+}: GapControlProps) {
+  // Current active property being configured
+  const [activeProperty, setActiveProperty] = useState<"gap" | "row-gap" | "column-gap">("gap");
   // Active custom unit selection
   const [unit, setUnit] = useState<"px" | "rem" | "%" | "em">("px");
   // Text input status for the custom dropdown unit menu
   const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
+  // Property dropdown status
+  const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click-away
+  // Resolve current property value & update function
+  const currentPropertyValue = useMemo(() => {
+    if (activeProperty === "row-gap") return rowGapValue;
+    if (activeProperty === "column-gap") return columnGapValue;
+    return value;
+  }, [activeProperty, value, rowGapValue, columnGapValue]);
+
+  const handleCurrentPropertyChange = (val: string) => {
+    if (activeProperty === "row-gap") {
+      onRowGapChange?.(val);
+    } else if (activeProperty === "column-gap") {
+      onColumnGapChange?.(val);
+    } else {
+      onChange(val);
+    }
+  };
+
+  // Close dropdowns on click-away
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUnitDropdownOpen(false);
+      }
+      if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(event.target as Node)) {
+        setPropertyDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -55,39 +91,39 @@ export function GapControl({ value, onChange }: GapControlProps) {
 
   // Parse the current numeric value and current unit from the CSS string
   const { numericValue, parsedUnit } = useMemo(() => {
-    if (!value) return { numericValue: 0, parsedUnit: "px" as const };
+    if (!currentPropertyValue) return { numericValue: 0, parsedUnit: "px" as const };
     
-    const num = parseFloat(value);
+    const num = parseFloat(currentPropertyValue);
     if (isNaN(num)) return { numericValue: 0, parsedUnit: "px" as const };
     
-    if (value.endsWith("rem")) return { numericValue: num, parsedUnit: "rem" as const };
-    if (value.endsWith("%")) return { numericValue: num, parsedUnit: "%" as const };
-    if (value.endsWith("em")) return { numericValue: num, parsedUnit: "em" as const };
+    if (currentPropertyValue.endsWith("rem")) return { numericValue: num, parsedUnit: "rem" as const };
+    if (currentPropertyValue.endsWith("%")) return { numericValue: num, parsedUnit: "%" as const };
+    if (currentPropertyValue.endsWith("em")) return { numericValue: num, parsedUnit: "em" as const };
     return { numericValue: num, parsedUnit: "px" as const };
-  }, [value]);
+  }, [currentPropertyValue]);
 
-  // Synchronize unit state when prop value changes
+  // Synchronize unit state when current property value changes
   useEffect(() => {
-    if (value) {
+    if (currentPropertyValue) {
       setUnit(parsedUnit);
     }
-  }, [value, parsedUnit]);
+  }, [currentPropertyValue, parsedUnit]);
 
   // Helper to update value with selected unit
   const handleNumericChange = (num: number, targetUnit = unit) => {
     const formatted = num === 0 ? "0px" : `${num}${targetUnit}`;
-    onChange(formatted);
+    handleCurrentPropertyChange(formatted);
   };
 
   // Handle preset click
   const handlePresetSelect = (val: string) => {
-    onChange(val);
+    handleCurrentPropertyChange(val);
   };
 
   // Preset check
   const activePreset = useMemo(() => {
-    return GAP_PRESETS.find(p => p.value === value) || null;
-  }, [value]);
+    return GAP_PRESETS.find(p => p.value === currentPropertyValue) || null;
+  }, [currentPropertyValue]);
 
   // Customizable state bounds for range sliders depending on selected unit
   const [customLimits, setCustomLimits] = useState<Record<"px" | "rem" | "%" | "em", { min: number; max: number }>>({
@@ -116,14 +152,18 @@ export function GapControl({ value, onChange }: GapControlProps) {
     "%": "Percent (%)"
   };
 
+  const isAnyDropdownOpen = propertyDropdownOpen || unitDropdownOpen;
+
   return (
-    <div className="flex flex-col gap-3 w-full text-left bg-[#f5f5f5] p-4 rounded-[22px] border-0 relative overflow-visible group">
+    <div className={`flex flex-col gap-3 w-full text-left bg-[#f5f5f5] p-4 rounded-[22px] border-0 relative overflow-visible group transition-all duration-200 ${
+      isAnyDropdownOpen ? "z-[250] shadow-md ring-1 ring-emerald-500/10" : "z-10"
+    }`}>
       
       {/* Decorative top-right overlay glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-350/5 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header and current value badge */}
-      <div className="flex items-center justify-between relative z-10">
+      <div className={`flex items-center justify-between relative gap-2 transition-all duration-150 ${propertyDropdownOpen ? "z-30" : "z-10"}`}>
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="w-5 h-5 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0">
             <LayoutGrid size={11} className="text-emerald-600" />
@@ -133,7 +173,63 @@ export function GapControl({ value, onChange }: GapControlProps) {
           </label>
         </div>
         
-        {value ? (
+        {/* Visual beautiful property switcher dropdown placed precisely between the label and span */}
+        <div className="relative" ref={propertyDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setPropertyDropdownOpen(!propertyDropdownOpen)}
+            className="flex items-center gap-1.5 bg-white border border-stone-200/80 hover:border-emerald-500 hover:bg-emerald-50/10 px-2.5 py-1 rounded-xl text-stone-700 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-stone-800">{activeProperty}</span>
+            <ChevronDown size={10} className={`text-stone-400 font-extrabold transition-transform duration-200 ${propertyDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {propertyDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                transition={{ duration: 0.12 }}
+                className="absolute left-1/2 -translate-x-1/2 mt-1.5 w-44 bg-white border border-stone-250/90 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
+              >
+                {[
+                  { id: "gap", label: "gap", desc: "Unified / Both Axes" },
+                  { id: "row-gap", label: "row-gap", desc: "Row Space (Vertical)" },
+                  { id: "column-gap", label: "column-gap", desc: "Column Space (Horizontal)" }
+                ].map((item) => {
+                  const isSelected = item.id === activeProperty;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveProperty(item.id as any);
+                        setPropertyDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-[9px] font-bold flex flex-col transition-all duration-150 cursor-pointer ${
+                        isSelected
+                          ? "bg-emerald-500/10 text-emerald-800"
+                          : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full font-mono">
+                        <span className="font-extrabold">{item.label}</span>
+                        {isSelected && <Check size={11} className="text-emerald-600 stroke-[3px]" />}
+                      </div>
+                      <span className="text-[7.5px] font-sans font-medium text-stone-400 mt-0.5 leading-none">
+                        {item.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {currentPropertyValue ? (
           <div className="flex items-center gap-1.5 animate-fade-in shrink-0">
             {activePreset && (
               <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${activePreset.badgeColor} hidden sm:inline`}>
@@ -141,7 +237,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
               </span>
             )}
             <span className="text-[10px] font-mono font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg shadow-xs">
-              {value}
+              {currentPropertyValue}
             </span>
           </div>
         ) : (
@@ -151,8 +247,6 @@ export function GapControl({ value, onChange }: GapControlProps) {
         )}
       </div>
 
-
-
       {/* Preset Selectors */}
       <div className="flex flex-col gap-1.5 relative z-10">
         <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest pl-1 font-mono select-none">
@@ -160,7 +254,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
         </span>
         <div className="grid grid-cols-4 gap-1.5">
           {GAP_PRESETS.map((preset) => {
-            const isSelected = value === preset.value;
+            const isSelected = currentPropertyValue === preset.value;
             return (
               <button
                 key={preset.value}
@@ -381,8 +475,8 @@ export function GapControl({ value, onChange }: GapControlProps) {
             <div className="relative flex items-center">
               <input
                 type="text"
-                value={value || ""}
-                onChange={(e) => onChange(e.target.value)}
+                value={currentPropertyValue || ""}
+                onChange={(e) => handleCurrentPropertyChange(e.target.value)}
                 placeholder="0px"
                 className="w-[71px] bg-stone-50 border border-emerald-500/10 focus:border-emerald-500 rounded-xl px-1.5 py-1 text-center text-[10px] focus:outline-none font-mono text-emerald-700 font-extrabold focus:bg-white shadow-2xs transition-all"
               />
@@ -402,10 +496,10 @@ export function GapControl({ value, onChange }: GapControlProps) {
           </div>
 
           {/* Value actions like Clear */}
-          {value && (
+          {currentPropertyValue && (
             <button
               type="button"
-              onClick={() => onChange("")}
+              onClick={() => handleCurrentPropertyChange("")}
               title="Reset spacing"
               className="w-7 h-7 bg-stone-50 hover:bg-red-50 hover:text-red-650 text-stone-400 border border-stone-200/60 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer shadow-3xs hover:border-red-200"
             >
@@ -420,7 +514,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
       <div className="flex items-start gap-1.5 p-2 bg-emerald-50/30 border border-emerald-100/45 rounded-xl z-10 relative">
         <Info size={11} className="text-emerald-600 shrink-0 mt-0.5" />
         <p className="text-[9px] leading-normal text-stone-550 font-medium select-none">
-          The <b>gap</b> property sets spacing (gutters) between columns and rows inside flexbox, CSS grid, and multi-column elements automatically.
+          The <b>{activeProperty}</b> property sets the {activeProperty === "row-gap" ? "vertical space (gutters) between rows" : activeProperty === "column-gap" ? "horizontal space (gutters) between columns" : "spacing (gutters) between columns and rows"} inside flexbox, CSS grid, and multi-column elements automatically.
         </p>
       </div>
 

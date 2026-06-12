@@ -341,6 +341,10 @@ export function InspectorPanel({
           <GapControl
             value={currentVal}
             onChange={(val) => setPropValue(propName, val)}
+            rowGapValue={getPropValue("row-gap")}
+            columnGapValue={getPropValue("column-gap")}
+            onRowGapChange={(val) => setPropValue("row-gap", val)}
+            onColumnGapChange={(val) => setPropValue("column-gap", val)}
           />
         </div>
       );
@@ -737,7 +741,9 @@ export function InspectorPanel({
                 <div
                   key={catId}
                   id={`category-sec-${catId}`}
-                  className="bg-stone-50/40 border border-stone-200/50 rounded-3xl overflow-hidden transition-all duration-350 shadow-xs"
+                  className={`bg-stone-50/40 border border-stone-200/50 rounded-3xl transition-all duration-350 shadow-xs ${
+                    isExpanded ? "overflow-visible" : "overflow-hidden"
+                  }`}
                 >
                   {/* Category Header (collapsible toggle) */}
                   <button
