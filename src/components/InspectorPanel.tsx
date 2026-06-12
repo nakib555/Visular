@@ -180,6 +180,26 @@ export const SEGMENTED_FIELDS: Record<
   },
 };
 
+function getIndependentPropertyIcon(propName: string) {
+  const name = propName.toLowerCase();
+  if (name === "display") return Grid;
+  if (name.includes("flex-direction")) return Move;
+  if (name.includes("flex-wrap")) return Wand2;
+  if (name.includes("gap")) return Sliders;
+  if (name === "width" || name === "height" || name.includes("max-") || name.includes("min-") || name === "aspect-ratio") return Maximize;
+  if (name.includes("color") || name.includes("bg-") || name === "background-color" || name === "border" || name === "fill" || name === "stroke") return Palette;
+  if (name.includes("font") || name.includes("text") || name === "line-height" || name === "letter-spacing" || name === "word-spacing" || name === "white-space") return Type;
+  if (name.includes("margin") || name.includes("padding") || name === "top" || name === "right" || name === "bottom" || name === "left" || name.includes("inset") || name === "position") return Move;
+  if (name.includes("transform") || name.includes("perspective") || name.includes("scale") || name.includes("rotate") || name.includes("translate")) return Box;
+  if (name.includes("transition") || name.includes("animation") || name.includes("keyframes")) return Play;
+  if (name.includes("anchor") || name.includes("align-self") || name.includes("justify-self") || name.includes("order")) return Anchor;
+  if (name.includes("scroll") || name.includes("overflow")) return Sliders;
+  if (name.includes("outline") || name.includes("shadow") || name.includes("filter") || name.includes("clip") || name.includes("mask")) return Scissors;
+  if (name.includes("columns") || name.includes("rows") || name.includes("areas") || name.includes("track")) return Columns;
+  if (name.includes("pointer-events") || name.includes("cursor") || name.includes("user-select")) return MousePointer;
+  return Settings;
+}
+
 interface InspectorPanelProps {
   selectedElement: VisualElement | null;
   inspectorSection: InspectorSection;
@@ -317,7 +337,7 @@ export function InspectorPanel({
       return { min: -4, max: 24, step: 0.5, unit: "px" };
     if (pName === "column-count")
       return { min: 1, max: 12, step: 1, unit: "" };
-    if (pName === "column-gap")
+    if (pName === "gap" || pName === "row-gap" || pName === "column-gap")
       return { min: 0, max: 64, step: 2, unit: "px" };
     if (pName === "perspective")
       return { min: 150, max: 1500, step: 50, unit: "px" };
@@ -331,29 +351,6 @@ export function InspectorPanel({
     propIdx: number,
   ): any => {
     const propName = prop.name;
-
-    // Split composite inline style properties (e.g., "width / height") into recursively rendered individual style controls
-    if (propName.includes("/")) {
-      const parts = propName.split("/").map((p: string) => p.trim());
-      return (
-        <div key={propIdx} className="space-y-3.5 border-l-2 border-rose-200 pl-3 pt-1.5 pb-1 my-1.5 bg-stone-50/40 p-2.5 rounded-xl text-left">
-          <div className="text-[9px] font-extrabold text-rose-600/85 uppercase tracking-widest font-mono flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-rose-400" />
-            <span>Property Group: {parts.join("  +  ")}</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            {parts.map((part: string, partIdx: number) => {
-              const subProp = {
-                ...prop,
-                name: part,
-              };
-              return renderPropertyElement(subProp, propIdx * 1000 + partIdx);
-            })}
-          </div>
-        </div>
-      );
-    }
-
     const currentVal = getPropValue(propName);
 
     if (propName === "display") {
@@ -389,21 +386,6 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "gap") {
-      return (
-        <div key={propIdx} className="w-full animate-fade-in">
-          <GapControl
-            value={currentVal}
-            onChange={(val) => setPropValue(propName, val)}
-            rowGapValue={getPropValue("row-gap")}
-            columnGapValue={getPropValue("column-gap")}
-            onRowGapChange={(val) => setPropValue("row-gap", val)}
-            onColumnGapChange={(val) => setPropValue("column-gap", val)}
-          />
-        </div>
-      );
-    }
-
     const isColor =
       propName.includes("color") ||
       propName === "fill" ||
@@ -416,12 +398,6 @@ export function InspectorPanel({
           key={propIdx}
           className="flex flex-col gap-1.5 w-full text-left"
         >
-          <label className="text-[10.5px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
-            <span>{propName}</span>
-            <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
-              {currentVal || "default"}
-            </span>
-          </label>
           <HslColorPicker
             propName={propName}
             value={currentVal}
@@ -437,13 +413,6 @@ export function InspectorPanel({
         parseFloat(currentVal) || (sliderConf.min + sliderConf.max) / 2;
       return (
         <div key={propIdx} className="flex flex-col gap-1.5 w-full text-left">
-          <div className="flex justify-between items-center px-1 font-mono text-[10px] font-bold uppercase tracking-wider text-stone-550">
-            <span>{propName}</span>
-            <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-sm">
-              {currentVal || "default"}
-            </span>
-          </div>
-
           <div className="flex items-center gap-3 p-3 bg-white border border-stone-200/90 rounded-2xl shadow-xs">
             <input
               type="range"
@@ -484,9 +453,6 @@ export function InspectorPanel({
     if (isShortOptions && uniqueOptions.length > 1) {
       return (
         <div key={propIdx} className="flex flex-col gap-1.5 w-full text-left">
-          <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
-            <span>{propName}</span>
-          </label>
           <div className="bg-stone-50/70 p-1 border border-stone-200/80 rounded-2xl flex gap-1 w-full overflow-hidden shrink-0">
             {uniqueOptions.map((opt: any) => {
               const isSelected = currentVal === opt;
@@ -498,7 +464,7 @@ export function InspectorPanel({
                   className={`flex-1 text-center py-1.5 rounded-xl text-[9px] font-sans font-bold transition-all duration-150 cursor-pointer ${
                     isSelected
                       ? "bg-white text-stone-900 border border-stone-200/50 shadow-sm"
-                      : "text-stone-450 hover:text-stone-700"
+                      : "text-stone-450 hover:text-stone-700 font-medium"
                   }`}
                 >
                   {opt}
@@ -525,7 +491,6 @@ export function InspectorPanel({
     return (
       <PropertyControl
         key={propIdx}
-        label={propName}
         options={[
           { value: "", label: "Auto / Default" },
           ...uniqueOptions.map((opt: string) => ({ value: opt, label: opt })),
@@ -606,32 +571,71 @@ export function InspectorPanel({
     { id: "environmentMediaArchitecture", label: "Environment, Media & Architecture", icon: Compass, name: "Environment, Media & Architecture" },
   ];
 
-  // We search properties and subcategories globally based on searchQuery
-  const globalFilteredCategories = categoryConfigs.map((cfg) => {
+  const activeCategoryData = React.useMemo(() => {
+    const cfg = categoryConfigs.find(c => c.id === inspectorSection);
+    if (!cfg) return [];
+
     const activeCategory = CSS_HIERARCHY_DATA.find((c) => c.name === cfg.name);
-    if (!activeCategory) return { ...cfg, subCategories: [] };
+    if (!activeCategory) return [];
 
-    const filteredSubCategories = searchQuery
-      ? activeCategory.subCategories
-          .map((sub) => {
-            const properties = sub.properties.filter((prop) => {
-              const query = searchQuery.toLowerCase();
-              return (
-                prop.name.toLowerCase().includes(query) ||
-                prop.values.toLowerCase().includes(query) ||
-                (prop.note && prop.note.toLowerCase().includes(query))
-              );
+    const list: {
+      prop: CSSProperty;
+      originalSubCategoryName: string;
+      specialWidgetName: "svg" | "scrollbar" | "3d" | "focus" | null;
+    }[] = [];
+
+    activeCategory.subCategories.forEach((sub) => {
+      const subNameLower = sub.name.toLowerCase();
+      let specialWidgetType: "svg" | "scrollbar" | "3d" | "focus" | null = null;
+      if (subNameLower.includes("svg") || subNameLower.includes("vector")) specialWidgetType = "svg";
+      else if (subNameLower.includes("scrollbar")) specialWidgetType = "scrollbar";
+      else if (subNameLower.includes("3d") || subNameLower.includes("perspective")) specialWidgetType = "3d";
+      else if (subNameLower.includes("focus") || subNameLower.includes("outline")) specialWidgetType = "focus";
+
+      sub.properties.forEach((prop) => {
+        // Splitting composite properties with slash to make them fully independent CSS properties
+        if (prop.name.includes("/")) {
+          const parts = prop.name.split("/").map((p) => p.trim());
+          parts.forEach((part) => {
+            list.push({
+              prop: {
+                ...prop,
+                name: part,
+              },
+              originalSubCategoryName: sub.name,
+              // Only associate special widget with a specific lead property to avoid duplication
+              specialWidgetName: (part === "fill" && specialWidgetType === "svg") ? "svg" :
+                                 (part === "scrollbar-color" && specialWidgetType === "scrollbar") ? "scrollbar" :
+                                 (part === "perspective" && specialWidgetType === "3d") ? "3d" :
+                                 (part === "outline-width" && specialWidgetType === "focus") ? "focus" : null,
             });
-            return { ...sub, properties };
-          })
-          .filter((sub) => sub.properties.length > 0)
-      : activeCategory.subCategories;
+          });
+        } else {
+          list.push({
+            prop,
+            originalSubCategoryName: sub.name,
+            specialWidgetName: (prop.name === "perspective" && specialWidgetType === "3d") ? "3d" :
+                               (prop.name === "outline-style" && specialWidgetType === "focus") ? "focus" : null,
+          });
+        }
+      });
+    });
 
-    return {
-      ...cfg,
-      subCategories: filteredSubCategories,
-    };
-  }).filter((cfg) => cfg.subCategories.length > 0 && cfg.id === inspectorSection);
+    // Handle search queries
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim();
+      return list.filter((item) => {
+        return (
+          item.prop.name.toLowerCase().includes(query) ||
+          item.prop.values.toLowerCase().includes(query) ||
+          (item.prop.note && item.prop.note.toLowerCase().includes(query)) ||
+          item.originalSubCategoryName.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    return list;
+  }, [inspectorSection, searchQuery]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden w-full bg-white select-none">
@@ -697,7 +701,7 @@ export function InspectorPanel({
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-6 custom-scrollbar"
       >
-        {globalFilteredCategories.length === 0 ? (
+        {activeCategoryData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-stone-400 text-center bg-stone-50/20 rounded-2xl border border-dashed border-stone-200">
             <Search size={24} className="text-stone-300 mb-2" />
             <p className="text-xs font-bold text-stone-600">No CSS Property Matches Found</p>
@@ -705,10 +709,13 @@ export function InspectorPanel({
           </div>
         ) : (
           <div className="flex flex-col gap-6 animate-in fade-in duration-350">
-            {globalFilteredCategories.map((catConfig) => {
+            {(() => {
+              const catConfig = categoryConfigs.find((c) => c.id === inspectorSection);
+              if (!catConfig) return null;
+
               const catId = catConfig.id;
               const isExpanded = expandedCategories[catId] ?? true;
-              
+
               return (
                 <div
                   key={catId}
@@ -747,7 +754,7 @@ export function InspectorPanel({
                       />
                       <span>{catConfig.label}</span>
                       <span className="text-[9.5px] font-mono font-medium text-stone-400 normal-case bg-stone-100/60 border border-stone-200/40 px-1.5 py-0.5 rounded-full ml-1 bg-white">
-                        {catConfig.subCategories.length}
+                        {activeCategoryData.length}
                       </span>
                     </div>
                     <div className="flex items-center justify-center w-5 h-5 rounded-lg border border-stone-200/40 bg-white shadow-xs text-stone-500 hover:text-rose-600 hover:border-rose-100">
@@ -760,39 +767,19 @@ export function InspectorPanel({
                     </div>
                   </button>
 
-                  {/* Category Sections (Subcategories & Properties) */}
+                  {/* Independent properties rendered directly as flat, first-class elements inside the category */}
                   {isExpanded && (
-                    <div className="p-4 flex flex-col gap-5 bg-white border-t border-stone-100/60 transition-all">
-                      {catConfig.subCategories.map((sub, idx) => {
-                        let IconComponent = Settings;
-                        const sName = sub.name.toLowerCase();
+                    <div className="p-4 flex flex-col gap-4 bg-white border-t border-stone-100/60 transition-all">
+                      {activeCategoryData.map((item, idx) => {
+                        const PropertyIcon = getIndependentPropertyIcon(item.prop.name);
+                        const pName = item.prop.name;
+                        const currentVal = getPropValue(pName);
 
-                        if (sName.includes("display") || sName.includes("flow-root") || sName.includes("context")) IconComponent = Maximize;
-                        else if (sName.includes("flexbox")) IconComponent = Grid;
-                        else if (sName.includes("grid")) IconComponent = Grid;
-                        else if (sName.includes("margin") || sName.includes("padding") || sName.includes("spacing")) IconComponent = Move;
-                        else if (sName.includes("sizing") || sName.includes("dimension") || sName.includes("width") || sName.includes("height") || sName.includes("ratio")) IconComponent = Sliders;
-                        else if (sName.includes("position") || sName.includes("coordinate") || sName.includes("inset") || sName.includes("stack")) IconComponent = Compass;
-                        else if (sName.includes("anchor")) IconComponent = Anchor;
-                        else if (sName.includes("typography") || sName.includes("font") || sName.includes("text")) IconComponent = Type;
-                        else if (sName.includes("svg") || sName.includes("vector") || sName.includes("stroke") || sName.includes("fill")) IconComponent = PenTool;
-                        else if (sName.includes("background") || sName.includes("border") || sName.includes("shadow") || sName.includes("visual") || sName.includes("aesthetic") || sName.includes("appearance")) IconComponent = Palette;
-                        else if (sName.includes("filter") || sName.includes("opacity") || sName.includes("transform")) IconComponent = Play;
-                        else if (sName.includes("transition") || sName.includes("discrete")) IconComponent = Wand2;
-                        else if (sName.includes("animation")) IconComponent = Route;
-                        else if (sName.includes("interactivity") || sName.includes("event") || sName.includes("pointer") || sName.includes("select")) IconComponent = MousePointer;
-                        else if (sName.includes("media") || sName.includes("responsive") || sName.includes("adaptability") || sName.includes("environment")) IconComponent = Compass;
-                        else if (sName.includes("column") || sName.includes("break")) IconComponent = Columns;
-                        else if (sName.includes("scroll") || sName.includes("scrollbar") || sName.includes("overflow")) IconComponent = Sliders;
-                        else if (sName.includes("mask") || sName.includes("clipping")) IconComponent = Scissors;
-                        else if (sName.includes("list") || sName.includes("table")) IconComponent = List;
-                        else if (sName.includes("3d") || sName.includes("perspective")) IconComponent = Box;
-                        else if (sName.includes("accessibility") || sName.includes("reading")) IconComponent = Eye;
-
+                        // Build matching interactive simulator widgets
                         let specialWidget = null;
-                        if (sName.includes("svg & vector") || sName.includes("vector graphics") || sName.includes("svg")) {
+                        if (item.specialWidgetName === "svg") {
                           specialWidget = (
-                            <div className="bg-gradient-to-br from-teal-50/50 to-emerald-50/15 border border-teal-200/40 rounded-xl p-3.5 space-y-2.5 my-2">
+                            <div className="bg-gradient-to-br from-teal-50/50 to-emerald-50/15 border border-teal-200/40 rounded-xl p-3.5 space-y-2.5 my-1.5">
                               <div className="flex items-center gap-1.5 text-[9.5px] uppercase font-bold tracking-wider text-teal-700 font-mono">
                                 <PenTool size={11} className="text-teal-500" />
                                 <span>Vector SVG Laboratory</span>
@@ -814,9 +801,9 @@ export function InspectorPanel({
                               </div>
                             </div>
                           );
-                        } else if (sName.includes("scrollbar") || sName.includes("scrollbars")) {
+                        } else if (item.specialWidgetName === "scrollbar") {
                           specialWidget = (
-                            <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/15 border border-indigo-200/40 rounded-xl p-3.5 space-y-2 my-2">
+                            <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/15 border border-indigo-200/40 rounded-xl p-3.5 space-y-2 my-1.5">
                               <div className="flex items-center gap-1.5 text-[9.5px] uppercase font-bold tracking-wider text-indigo-700 font-mono">
                                 <Sliders size={11} className="text-indigo-500" />
                                 <span>Interactive Scroll Track</span>
@@ -833,9 +820,9 @@ export function InspectorPanel({
                               </div>
                             </div>
                           );
-                        } else if (sName.includes("3d") || sName.includes("perspective")) {
+                        } else if (item.specialWidgetName === "3d") {
                           specialWidget = (
-                            <div className="bg-gradient-to-br from-pink-50/50 to-rose-50/15 border border-pink-200/40 rounded-xl p-3.5 space-y-2.5 my-2">
+                            <div className="bg-gradient-to-br from-pink-50/50 to-rose-50/15 border border-pink-200/40 rounded-xl p-3.5 space-y-2.5 my-1.5">
                               <div className="flex justify-between items-center text-[9.5px] uppercase font-bold tracking-wider text-pink-700 font-mono">
                                 <div className="flex items-center gap-1.5">
                                   <Box size={11} className="text-pink-500" />
@@ -881,9 +868,9 @@ export function InspectorPanel({
                               </div>
                             </div>
                           );
-                        } else if (sName.includes("focus") || sName.includes("outline")) {
+                        } else if (item.specialWidgetName === "focus") {
                           specialWidget = (
-                            <div className="bg-gradient-to-br from-blue-55/65 to-sky-50/15 border border-blue-200/50 rounded-xl p-3.5 space-y-2 my-2">
+                            <div className="bg-gradient-to-br from-blue-55/65 to-sky-50/15 border border-blue-200/50 rounded-xl p-3.5 space-y-2 my-1.5">
                               <div className="flex items-center gap-1.5 text-[9.5px] uppercase font-bold tracking-wider text-blue-700 font-mono">
                                 <MousePointer size={11} className="text-blue-500" />
                                 <span>Reactive Outline Simulation</span>
@@ -909,18 +896,54 @@ export function InspectorPanel({
                           );
                         }
 
+
+
+                        // Style each property as an elegant, clean, standalone independent card
                         return (
-                          <div key={idx} className="bg-stone-50/10 border border-stone-200/80 shadow-xs rounded-2xl p-4 space-y-4">
-                            <div className="flex items-center gap-2 border-b border-stone-100 pb-2 mb-4 text-left">
-                              <IconComponent size={14} className="text-rose-600" />
-                              <span className="text-[10px] font-bold text-stone-800 uppercase tracking-widest flex-1">
-                                {sub.name}
+                          <div key={idx} className="bg-stone-50/30 border border-stone-200/85 hover:border-stone-300 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-xs rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200">
+                            {/* Card Header displaying property icon, label, notes, and its original subcategory */}
+                            <div className="flex items-center justify-between border-b border-stone-100/70 pb-2 mb-1">
+                              <div className="flex items-center gap-2">
+                                <div className="w-[24px] h-[24px] flex items-center justify-center rounded-lg bg-rose-50/40 border border-rose-100/10 text-rose-500">
+                                  <PropertyIcon size={12} className="stroke-[2.25]" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                  <span className="text-[11.5px] font-bold text-stone-800 font-mono tracking-tight lowercase">
+                                    {pName}
+                                  </span>
+                                  {item.prop.note && (
+                                    <span className="text-[8.5px] text-stone-400 font-sans leading-none mt-0.5">
+                                      {item.prop.note}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[7.5px] font-mono leading-none tracking-widest uppercase bg-stone-50 border border-stone-150/40 px-1.5 py-0.5 rounded text-stone-400">
+                                {item.originalSubCategoryName}
                               </span>
                             </div>
-                            {specialWidget}
-                            <div className="flex flex-col gap-4">
-                              {sub.properties.map((prop: CSSProperty, propIdx: number) => renderPropertyElement(prop, propIdx))}
+
+                            {/* Property control itself */}
+                            <div className="w-full">
+                              {renderPropertyElement(item.prop, idx)}
                             </div>
+
+                            {/* Interactive play widgets */}
+                            {specialWidget}
+
+                            {/* Reset trigger for this standalone property */}
+                            {currentVal && (
+                              <div className="flex justify-end pt-1 border-t border-stone-100/40">
+                                <button
+                                  type="button"
+                                  onClick={() => setPropValue(pName, "")}
+                                  className="text-[8.5px] font-mono font-bold text-stone-400 hover:text-rose-600 flex items-center gap-1 cursor-pointer py-0.5 px-2 rounded-lg hover:bg-rose-50/60 transition-all border border-stone-100/60 bg-white"
+                                >
+                                  <RotateCcw size={9} className="stroke-[2]" />
+                                  <span>Reset {pName}</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -928,7 +951,7 @@ export function InspectorPanel({
                   )}
                 </div>
               );
-            })}
+            })()}
           </div>
         )}
       </div>

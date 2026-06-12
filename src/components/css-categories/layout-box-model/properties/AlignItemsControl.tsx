@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   RotateCcw, 
@@ -50,17 +51,77 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
   const [showHelp, setShowHelp] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Close dropdown when clicking outside
+  const [coords, setCoords] = useState<{
+    top: number | "auto";
+    bottom: number | "auto";
+    left: number;
+    width: number;
+    placement: "top" | "bottom";
+    maxHeight: string;
+  } | null>(null);
+
+  // Close dropdown when clicking outside (considering both relative trigger container and absolute body portal box)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickInsideTrigger = dropdownRef.current?.contains(target);
+      const clickInsidePortal = (target as Element).closest("#align-items-dropdown-menu");
+      if (!clickInsideTrigger && !clickInsidePortal) {
         setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Monitor element geometry and dynamically reposition dropdown when open
+  useEffect(() => {
+    if (!isOpen) {
+      setCoords(null);
+      return;
+    }
+
+    const updateCoords = () => {
+      if (!triggerRef.current) return;
+      const rect = triggerRef.current.getBoundingClientRect();
+      
+      const dropdownMaxHeight = 310; // customized max-height inside portal to avoid screen spillover
+      const gap = 4;
+      const spaceBelow = window.innerHeight - rect.bottom - gap;
+      const spaceAbove = rect.top - gap;
+      
+      let placement: "top" | "bottom" = "bottom";
+      if (spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow) {
+        placement = "top";
+      }
+
+      const calculatedMaxHeight = placement === "bottom"
+        ? Math.max(220, Math.min(dropdownMaxHeight, spaceBelow - 16))
+        : Math.max(220, Math.min(dropdownMaxHeight, spaceAbove - 16));
+
+      setCoords({
+        top: placement === "bottom" ? rect.bottom + gap : "auto",
+        bottom: placement === "top" ? window.innerHeight - rect.top + gap : "auto",
+        left: rect.left,
+        width: rect.width,
+        placement,
+        maxHeight: `${calculatedMaxHeight}px`
+      });
+    };
+
+    updateCoords();
+
+    window.addEventListener("resize", updateCoords);
+    window.addEventListener("scroll", updateCoords, { capture: true });
+
+    return () => {
+      window.removeEventListener("resize", updateCoords);
+      window.removeEventListener("scroll", updateCoords, { capture: true });
+    };
+  }, [isOpen]);
 
   const activeAlignmentValue = hoveredValue !== null ? hoveredValue : (value || "stretch");
 
@@ -237,7 +298,7 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
             className={`p-1 rounded-lg hover:bg-stone-100 transition cursor-pointer text-stone-400 hover:text-stone-700 ${showHelp ? "bg-stone-50 text-indigo-500" : ""}`}
             title="Toggle interactive alignment tutorial card"
           >
-            <HelpCircle size={13} className="stroke-[2.25]" />
+            <HelpCircle size={13} />
           </button>
         </div>
       </div>
@@ -343,6 +404,7 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
 
         {/* Dropdown Header Trigger */}
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           className={`flex items-center justify-between w-full p-3 rounded-2xl border bg-white shadow-xs text-left cursor-pointer transition-all duration-200 outline-hidden hover:border-indigo-350 focus:ring-2 focus:ring-indigo-150 ${
@@ -351,7 +413,7 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
         >
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center`}>
-              <ActiveIcon size={15} className="stroke-[2.25]" />
+              <ActiveIcon size={15} />
             </div>
             <div className="flex flex-col">
               <span className="text-[12px] font-bold text-stone-850">
@@ -372,153 +434,166 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
               transition={{ duration: 0.15 }}
               className="text-stone-400"
             >
-              <ChevronDown size={14} className="stroke-[2.5]" />
+              <ChevronDown size={14} />
             </motion.div>
           </div>
         </button>
 
-        {/* Expandable Dropdown Container List Panel */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 7, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 4, scale: 0.99 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-xl shadow-stone-850/15 overflow-hidden flex flex-col z-50 max-h-[380px] w-full"
-            >
-              
-              {/* Dynamic Filter / Search Bar */}
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-stone-50 border-b border-stone-150 shrink-0">
-                <Search size={13} className="text-stone-450 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Query alignment... (e.g. baseline, safe start, normal, Center)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-none text-[11px] placeholder-stone-400 focus:outline-hidden text-stone-800 font-sans"
-                  autoFocus
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="text-[9px] hover:text-stone-700 bg-stone-205 px-1.5 py-0.5 rounded text-stone-450 font-sans cursor-pointer font-bold shrink-0"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Horizontal Category Tab list */}
-              <div className="flex items-center gap-1 px-2.5 py-1.5 bg-stone-50/55 border-b border-stone-150 overflow-x-auto shrink-0 scrollbar-none scroll-smooth">
-                {(Object.keys(categoryMeta) as Array<keyof typeof categoryMeta>).map((catKey) => {
-                  const meta = categoryMeta[catKey];
-                  const isSelectedTab = activeCategoryTab === catKey;
-                  const CatIcon = meta.icon;
-
-                  return (
+        {/* Expandable Dropdown Container List Panel rendered with top-level DOM body Portal to prevent container overflow hidden clipping */}
+        {typeof document !== "undefined" && createPortal(
+          <AnimatePresence>
+            {isOpen && coords && (
+              <motion.div
+                ref={portalRef}
+                id="align-items-dropdown-menu"
+                initial={{ opacity: 0, y: coords.placement === "bottom" ? 6 : -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: coords.placement === "bottom" ? 4 : -4, scale: 0.99 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                style={{
+                  position: "fixed",
+                  top: coords.top === "auto" ? "auto" : coords.top,
+                  bottom: coords.bottom === "auto" ? "auto" : coords.bottom,
+                  left: coords.left,
+                  width: coords.width,
+                  maxHeight: coords.maxHeight,
+                }}
+                className="bg-white border border-stone-250/90 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col z-[9999]"
+              >
+                
+                {/* Dynamic Filter / Search Bar */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-stone-50 border-b border-stone-150 shrink-0">
+                  <Search size={12} className="text-stone-450 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Query alignment... (e.g. baseline, safe start, normal, Center)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent border-none text-[10.5px] placeholder-stone-400 focus:outline-hidden text-stone-800 font-sans"
+                    autoFocus
+                  />
+                  {searchQuery && (
                     <button
-                      key={catKey}
                       type="button"
-                      onClick={() => setActiveCategoryTab(catKey)}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8.5px] font-bold font-mono uppercase whitespace-nowrap transition-all cursor-pointer ${
-                        isSelectedTab
-                          ? "bg-stone-900 border-stone-900 text-amber-400 shadow-sm font-extrabold"
-                          : "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
-                      }`}
+                      onClick={() => setSearchQuery("")}
+                      className="text-[8.5px] hover:text-stone-700 bg-stone-205 px-1.5 py-0.5 rounded text-stone-450 font-sans cursor-pointer font-bold shrink-0"
                     >
-                      <CatIcon size={10} className="stroke-[2.5]" />
-                      <span>{meta.label}</span>
+                      Clear
                     </button>
-                  );
-                })}
-              </div>
+                  )}
+                </div>
 
-              {/* Filtered option rows list wrapper */}
-              <div className="overflow-y-auto p-1.5 max-h-[220px] bg-stone-50/30 flex flex-col gap-1 scrollbar-thin">
-                {filteredOptions.length > 0 ? (
-                  filteredOptions.map((opt) => {
-                    const isSelected = value === opt.val;
-                    const isHovered = hoveredValue === opt.val;
-                    const OptIcon = opt.icon;
+                {/* Horizontal Category Tab list */}
+                <div className="flex items-center gap-1 px-2.5 py-1.5 bg-stone-55 border-b border-stone-150 overflow-x-auto shrink-0 scrollbar-none scroll-smooth">
+                  {(Object.keys(categoryMeta) as Array<keyof typeof categoryMeta>).map((catKey) => {
+                    const meta = categoryMeta[catKey];
+                    const isSelectedTab = activeCategoryTab === catKey;
+                    const CatIcon = meta.icon;
 
                     return (
                       <button
-                        key={opt.val}
+                        key={catKey}
                         type="button"
-                        onMouseEnter={() => setHoveredValue(opt.val)}
-                        onMouseLeave={() => setHoveredValue(null)}
-                        onClick={() => {
-                          onChange(isSelected ? "" : opt.val);
-                          setIsOpen(false);
-                          setSearchQuery("");
-                        }}
-                        className={`group w-full flex items-center justify-between p-2 rounded-xl text-left border transition-all duration-150 cursor-pointer ${
-                          isSelected
-                            ? "bg-stone-900 border-stone-900 text-white shadow-sm"
-                            : "bg-white border-stone-150/60 text-stone-750 hover:bg-indigo-50/15 hover:border-stone-300"
+                        onClick={() => setActiveCategoryTab(catKey)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-bold font-mono uppercase whitespace-nowrap transition-all cursor-pointer ${
+                          isSelectedTab
+                            ? "bg-stone-900 border-stone-900 text-amber-405 shadow-sm font-extrabold"
+                            : "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 overflow-hidden w-4/5">
-                          {/* Option specific Icon or fallback styling indicator */}
-                          <div 
-                            className={`p-1.5 rounded-lg shrink-0 transition-all ${
-                              isSelected
-                                ? "bg-indigo-650 text-white"
-                                : opt.accentBg
-                                ? `${opt.accentBg} ${opt.accentText} border ${opt.accentBorder}`
-                                : "bg-stone-100 text-stone-500 border border-stone-200"
-                            } group-hover:scale-105`}
-                          >
-                            <OptIcon size={12} className="stroke-[2.25]" />
-                          </div>
-
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-[11px] font-bold truncate">
-                              {opt.label}
-                            </span>
-                            <span className={`text-[8.5px] truncate font-normal leading-tight ${
-                              isSelected ? "text-stone-300" : "text-stone-450"
-                            }`}>
-                              {opt.desc}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0 pl-1">
-                          <span className={`text-[7px] font-mono leading-none tracking-tight px-1 py-0.5 rounded uppercase ${
-                            isSelected ? "bg-stone-850 text-stone-300 border border-stone-800" : "bg-stone-50 text-stone-450 border border-stone-150"
-                          }`}>
-                            {opt.val}
-                          </span>
-                          {isSelected && (
-                            <Check size={11} className="text-emerald-500 stroke-[2.75] animate-fade-in shrink-0" />
-                          )}
-                        </div>
+                        <CatIcon size={9} />
+                        <span>{meta.label}</span>
                       </button>
                     );
-                  })
-                ) : (
-                  <div className="py-8 px-4 text-center text-stone-400 flex flex-col items-center justify-center gap-2 bg-white/70 border border-stone-150 rounded-xl">
-                    <ZapOff size={22} className="text-stone-300" />
-                    <div className="text-[11px] font-bold">No alignments found</div>
-                    <div className="text-[8.5px] leading-relaxed max-w-[200px]">
-                      No results for "{searchQuery}". Try searching for categories like "safe", "center", or clear the filter.
+                  })}
+                </div>
+
+                {/* Filtered option rows list wrapper with proper flex scaling & overflow-y */}
+                <div className="flex-1 min-h-0 overflow-y-auto p-1.5 bg-stone-50/35 flex flex-col gap-1 scrollbar-thin">
+                  {filteredOptions.length > 0 ? (
+                    filteredOptions.map((opt) => {
+                      const isSelected = value === opt.val;
+                      const isHovered = hoveredValue === opt.val;
+                      const OptIcon = opt.icon;
+
+                      return (
+                        <button
+                          key={opt.val}
+                          type="button"
+                          onMouseEnter={() => setHoveredValue(opt.val)}
+                          onMouseLeave={() => setHoveredValue(null)}
+                          onClick={() => {
+                            onChange(isSelected ? "" : opt.val);
+                            setIsOpen(false);
+                            setSearchQuery("");
+                          }}
+                          className={`group w-full flex items-center justify-between p-2 rounded-xl text-left border transition-all duration-150 cursor-pointer ${
+                            isSelected
+                              ? "bg-stone-950 border-stone-950 text-white shadow-sm"
+                              : "bg-white border-stone-150/60 text-stone-750 hover:bg-indigo-50/15 hover:border-stone-300"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 overflow-hidden w-4/5">
+                            {/* Option specific Icon or fallback styling indicator */}
+                            <div 
+                              className={`p-1.5 rounded-lg shrink-0 transition-all ${
+                                isSelected
+                                  ? "bg-indigo-600 text-white"
+                                  : opt.accentBg
+                                  ? `${opt.accentBg} ${opt.accentText} border ${opt.accentBorder}`
+                                  : "bg-stone-100 text-stone-500 border border-stone-200"
+                              } group-hover:scale-105`}
+                            >
+                              <OptIcon size={11} />
+                            </div>
+
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-[10px] font-bold truncate">
+                                {opt.label}
+                              </span>
+                              <span className={`text-[8px] truncate font-normal leading-tight ${
+                                isSelected ? "text-stone-300" : "text-stone-450"
+                              }`}>
+                                {opt.desc}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0 pl-1">
+                            <span className={`text-[6.5px] font-mono leading-none tracking-tight px-1 py-0.5 rounded uppercase ${
+                              isSelected ? "bg-stone-850 text-stone-300 border border-stone-800" : "bg-stone-50 text-stone-450 border border-stone-150"
+                            }`}>
+                              {opt.val}
+                            </span>
+                            {isSelected && (
+                              <Check size={10} className="text-emerald-500 animate-fade-in shrink-0" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="py-6 px-4 text-center text-stone-400 flex flex-col items-center justify-center gap-1.5 bg-white/70 border border-stone-150 rounded-xl my-1">
+                      <ZapOff size={18} className="text-stone-300" />
+                      <div className="text-[10px] font-bold">No alignments found</div>
+                      <div className="text-[8px] leading-relaxed max-w-[170px]">
+                        No results for "{searchQuery}". Try selecting alternative categories.
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* Dropdown Panel Info Footer summary */}
-              <div className="px-3 py-1.5 bg-stone-100 text-[8px] font-mono text-stone-500 border-t border-stone-200 flex items-center justify-between shrink-0 uppercase tracking-wider">
-                <span>Showing {filteredOptions.length} of {allOptions.length} values</span>
-                <span>Category: {activeCategoryTab}</span>
-              </div>
+                {/* Dropdown Panel Info Footer summary */}
+                <div className="px-3 py-1.5 bg-stone-100 text-[7.5px] font-mono text-stone-550 border-t border-stone-200 flex items-center justify-between shrink-0 uppercase tracking-wider">
+                  <span>Showing {filteredOptions.length} of {allOptions.length}</span>
+                  <span>Tab: {activeCategoryTab}</span>
+                </div>
 
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
       </div>
 
       {/* DETAILED QUICK ACTION PRE-DUE RESET CONTROLLER TRIGGER */}
@@ -532,7 +607,7 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
           className="w-full py-2.5 rounded-2xl text-[9.5px] font-bold text-stone-500 hover:text-rose-600 bg-stone-50 hover:bg-rose-50/30 border border-stone-200/80 hover:border-rose-150 transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] z-10 shrink-0"
           title="Restore standard alignment to CSS inheritance rules"
         >
-          <RotateCcw size={11} className="stroke-[2.25] text-stone-400 group-hover:text-rose-500" />
+          <RotateCcw size={11} className="text-stone-400 group-hover:text-rose-500" />
           <span>Reset inherited align-items behavior</span>
         </button>
       )}
