@@ -335,14 +335,12 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "gap" || propName === "row-gap" || propName === "column-gap") {
+    if (propName === "gap") {
       return (
         <div key={propIdx} className="w-full animate-fade-in">
           <GapControl
             value={currentVal}
             onChange={(val) => setPropValue(propName, val)}
-            label={propName === "gap" ? "Gap" : propName === "row-gap" ? "Row Gap" : "Column Gap"}
-            propertyName={propName}
           />
         </div>
       );

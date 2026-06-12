@@ -37,16 +37,6 @@ export const layoutBoxModelCategory: CSSCategory = {
         "name": "gap",
         "values": "normal | <length> | <percentage> | calc(...) | clamp(...)",
         "note": "e.g., 16px, 1rem, 5%"
-      },
-      {
-        "name": "row-gap",
-        "values": "normal | <length> | <percentage> | calc(...) | clamp(...)",
-        "note": "e.g., 16px, 1rem, 5%"
-      },
-      {
-        "name": "column-gap",
-        "values": "normal | <length> | <percentage> | calc(...) | clamp(...)",
-        "note": "e.g., 16px, 1rem, 5%"
       }
     ]
   },
