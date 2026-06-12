@@ -139,14 +139,16 @@ export function GapControl({ value, onChange }: GapControlProps) {
       <div className="bg-white border border-stone-200/90 p-3 rounded-2xl shadow-xs overflow-hidden flex flex-col gap-2.5 relative z-10 transition-all duration-300 hover:border-emerald-250 hover:shadow-sm">
         
         {/* Sandbox Title & Flow Axis Toggle */}
-        <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-          <div className="flex items-center gap-1">
-            <Sparkles size={11} className="text-amber-500 animate-pulse" />
-            <span className="text-[10px] font-extrabold text-stone-700 font-sans tracking-tight">Interactive Spacing Sandbox</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Sparkles size={11} className="text-amber-500 animate-pulse flex-shrink-0" />
+            <span className="text-[10px] font-extrabold text-stone-700 font-sans tracking-tight truncate">
+              Interactive Spacing Sandbox
+            </span>
           </div>
           
           {/* Layout Direction Selector */}
-          <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-200/50">
+          <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-200/50 shrink-0 self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setDirection("row")}
@@ -182,9 +184,8 @@ export function GapControl({ value, onChange }: GapControlProps) {
           <motion.div 
             layout
             className={`w-full h-full flex items-center justify-center ${
-              direction === "row" ? "flex-row h-10" : "flex-col w-32"
+              direction === "row" ? "flex-row" : "flex-col"
             }`}
-            style={{ gap: `${simulatedPixelGap}px` }}
             transition={{ type: "spring", stiffness: 220, damping: 26 }}
           >
             {/* Box 1 */}
@@ -199,13 +200,13 @@ export function GapControl({ value, onChange }: GapControlProps) {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className={`bg-orange-50 border border-dashed border-orange-300 rounded-md flex items-center justify-center text-[8px] font-extrabold font-mono text-orange-600/80 pointer-events-none transition-all ${
-                    direction === "row" ? "h-6 px-1 shrink-0" : "w-16 py-0.5 shrink-0"
+                  className={`bg-orange-50 border border-dashed border-orange-300 rounded-md flex items-center justify-center text-[8px] font-extrabold font-mono text-orange-600/80 pointer-events-none transition-all overflow-hidden ${
+                    direction === "row" ? "h-6 shrink-0" : "w-16 shrink-0"
                   }`}
                   style={direction === "row" ? { width: `${simulatedPixelGap}px` } : { height: `${simulatedPixelGap}px` }}
                 >
-                  <span className="truncate max-w-full text-center">
-                    {simulatedPixelGap >= 12 ? `${simulatedPixelGap}px` : "•"}
+                  <span className="truncate max-w-full text-center px-0.5">
+                    {simulatedPixelGap >= 24 ? `${simulatedPixelGap}px` : simulatedPixelGap >= 12 ? "•" : ""}
                   </span>
                 </motion.div>
               )}
@@ -223,13 +224,13 @@ export function GapControl({ value, onChange }: GapControlProps) {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className={`bg-orange-50 border border-dashed border-orange-300 rounded-md flex items-center justify-center text-[8px] font-extrabold font-mono text-orange-600/80 pointer-events-none transition-all ${
-                    direction === "row" ? "h-6 px-1 shrink-0" : "w-16 py-0.5 shrink-0"
+                  className={`bg-orange-50 border border-dashed border-orange-300 rounded-md flex items-center justify-center text-[8px] font-extrabold font-mono text-orange-600/80 pointer-events-none transition-all overflow-hidden ${
+                    direction === "row" ? "h-6 shrink-0" : "w-16 shrink-0"
                   }`}
                   style={direction === "row" ? { width: `${simulatedPixelGap}px` } : { height: `${simulatedPixelGap}px` }}
                 >
-                  <span className="truncate max-w-full text-center">
-                    {simulatedPixelGap >= 12 ? `${simulatedPixelGap}px` : "•"}
+                  <span className="truncate max-w-full text-center px-0.5">
+                    {simulatedPixelGap >= 24 ? `${simulatedPixelGap}px` : simulatedPixelGap >= 12 ? "•" : ""}
                   </span>
                 </motion.div>
               )}
@@ -273,18 +274,18 @@ export function GapControl({ value, onChange }: GapControlProps) {
       </div>
 
       {/* Custom Fine-Tuner Section */}
-      <div className="bg-white/80 border border-stone-200/70 p-3 rounded-2xl flex flex-col gap-2.5 shadow-2xs relative z-10">
+      <div className="bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl flex flex-col gap-3 shadow-2xs relative z-10">
         
         {/* Unit & Label Selection */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Settings2 size={11} className="text-stone-400" />
-            <span className="text-[9.5px] font-bold text-stone-600 font-mono uppercase tracking-wide">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2">
+          <div className="flex items-center gap-1.5">
+            <Settings2 size={12} className="text-stone-400" />
+            <span className="text-[10px] font-extrabold text-stone-600 font-mono uppercase tracking-wider">
               Custom Fine-Tuner
             </span>
           </div>
           
-          <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-205/60 shrink-0">
+          <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-200/50 shrink-0 self-start sm:self-auto">
             {(["px", "rem", "%", "em"] as const).map((u) => {
               const activeUnit = u === unit;
               return (
@@ -293,12 +294,11 @@ export function GapControl({ value, onChange }: GapControlProps) {
                   type="button"
                   onClick={() => {
                     setUnit(u);
-                    // Retain value on change or map appropriately
                     if (numericValue !== undefined) {
                       handleNumericChange(numericValue, u);
                     }
                   }}
-                  className={`px-1.5 py-0.5 rounded-md text-[8.5px] font-bold leading-none cursor-pointer transition-all ${
+                  className={`px-3 py-1 rounded-md text-[9px] font-bold leading-none cursor-pointer transition-all ${
                     activeUnit
                       ? "bg-white text-emerald-700 shadow-2xs font-extrabold border border-stone-200/20"
                       : "text-stone-400 hover:text-stone-600"
@@ -311,8 +311,16 @@ export function GapControl({ value, onChange }: GapControlProps) {
           </div>
         </div>
 
-        {/* Ranger Slider & Text Input Grid Row */}
-        <div className="flex items-center gap-3">
+        {/* Range Slider Row */}
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between items-center mb-0.5">
+            <span className="text-[9px] font-bold text-stone-450 uppercase tracking-widest font-mono">
+              Adjust Value
+            </span>
+            <span className="text-[9.5px] font-mono font-bold text-stone-400">
+              Range: {currentLimit.min} to {currentLimit.max} {unit}
+            </span>
+          </div>
           <input
             type="range"
             min={currentLimit.min}
@@ -322,32 +330,61 @@ export function GapControl({ value, onChange }: GapControlProps) {
             onChange={(e) => {
               handleNumericChange(parseFloat(e.target.value));
             }}
-            className="flex-1 h-1 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-600 transition-colors"
+            className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-600 transition-colors border border-stone-200/50"
           />
-          
-          <div className="flex items-center gap-1">
-            <input
-              type="text"
-              value={value || ""}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder="e.g. 15px"
-              className="w-20 bg-stone-50 border border-stone-200/95 rounded-xl px-2 py-1 text-center text-[10px] focus:outline-none focus:border-emerald-500 font-mono text-stone-800 font-bold focus:bg-white"
-            />
-          </div>
         </div>
 
-        {/* Clear Button */}
-        {value && (
-          <div className="flex justify-end pt-1 border-t border-stone-100">
+        {/* Numeric Input & Adjustments Row */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div className="flex items-center gap-1.5">
+            {/* Decrement Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const newVal = Math.max(currentLimit.min, (numericValue || 0) - currentLimit.step);
+                handleNumericChange(parseFloat(newVal.toFixed(3)));
+              }}
+              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-200 transition-colors shadow-2xs cursor-pointer"
+            >
+              -
+            </button>
+
+            {/* Main Input Display */}
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={value || ""}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="0px"
+                className="w-24 bg-stone-50 border border-emerald-500/10 focus:border-emerald-500 rounded-xl px-2 py-1.5 text-center text-[11px] focus:outline-none font-mono text-emerald-700 font-extrabold focus:bg-white shadow-2xs transition-all"
+              />
+            </div>
+
+            {/* Increment Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const newVal = Math.min(currentLimit.max, (numericValue || 0) + currentLimit.step);
+                handleNumericChange(parseFloat(newVal.toFixed(3)));
+              }}
+              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-200 transition-colors shadow-2xs cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Value actions like Clear */}
+          {value && (
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[9px] font-bold text-stone-400 hover:text-rose-500 transition-colors duration-150 flex items-center gap-1 cursor-pointer"
+              className="text-[9.5px] font-bold text-stone-400 hover:text-red-500 transition-colors duration-150 flex items-center gap-1 cursor-pointer pl-2"
             >
-              Clear Gap Settings
+              Reset
             </button>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
 
       {/* Helpful Description Footer */}
