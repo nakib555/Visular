@@ -468,7 +468,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
     isSelected ? "selected-element-outline !overflow-visible" : "hover-element-outline"
   } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
-  const MotionTag = motion(TagName as any);
+  const MotionTag = motion.create(TagName as any);
 
   return (
     <MotionTag

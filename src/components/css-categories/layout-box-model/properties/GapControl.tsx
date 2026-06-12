@@ -31,13 +31,21 @@ interface GapPreset {
 
 const GAP_PRESETS: GapPreset[] = [
   { label: "0", value: "0px", pixelEquivalent: 0, badgeColor: "bg-stone-100 text-stone-500 border-stone-200" },
-  { label: "xs", value: "4px", pixelEquivalent: 4, badgeColor: "bg-teal-50 text-teal-600 border-teal-100" },
-  { label: "sm", value: "8px", pixelEquivalent: 8, badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
-  { label: "md", value: "12px", pixelEquivalent: 12, badgeColor: "bg-green-50 text-green-600 border-green-100" },
-  { label: "lg", value: "16px", pixelEquivalent: 16, badgeColor: "bg-cyan-50 text-cyan-600 border-cyan-100" },
-  { label: "xl", value: "24px", pixelEquivalent: 24, badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
-  { label: "2xl", value: "32px", pixelEquivalent: 32, badgeColor: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-  { label: "3xl", value: "48px", pixelEquivalent: 48, badgeColor: "bg-violet-50 text-violet-600 border-violet-100" },
+  { label: "0.5", value: "2px", pixelEquivalent: 2, badgeColor: "bg-stone-50 text-stone-500 border-stone-100" },
+  { label: "1", value: "4px", pixelEquivalent: 4, badgeColor: "bg-teal-50 text-teal-600 border-teal-100" },
+  { label: "1.5", value: "6px", pixelEquivalent: 6, badgeColor: "bg-teal-50 text-teal-600 border-teal-100" },
+  { label: "2", value: "8px", pixelEquivalent: 8, badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  { label: "2.5", value: "10px", pixelEquivalent: 10, badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  { label: "3", value: "12px", pixelEquivalent: 12, badgeColor: "bg-green-50 text-green-600 border-green-100" },
+  { label: "4", value: "16px", pixelEquivalent: 16, badgeColor: "bg-cyan-50 text-cyan-600 border-cyan-100" },
+  { label: "5", value: "20px", pixelEquivalent: 20, badgeColor: "bg-sky-50 text-sky-600 border-sky-100" },
+  { label: "6", value: "24px", pixelEquivalent: 24, badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
+  { label: "8", value: "32px", pixelEquivalent: 32, badgeColor: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  { label: "10", value: "40px", pixelEquivalent: 40, badgeColor: "bg-violet-50 text-violet-600 border-violet-100" },
+  { label: "12", value: "48px", pixelEquivalent: 48, badgeColor: "bg-purple-50 text-purple-600 border-purple-100" },
+  { label: "16", value: "64px", pixelEquivalent: 64, badgeColor: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100" },
+  { label: "20", value: "80px", pixelEquivalent: 80, badgeColor: "bg-pink-50 text-pink-600 border-pink-100" },
+  { label: "24", value: "96px", pixelEquivalent: 96, badgeColor: "bg-rose-50 text-rose-600 border-rose-100" },
 ];
 
 interface GapPropertyOption {
@@ -112,6 +120,7 @@ export function GapControl({
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const propertyDropdownTriggerRef = useRef<HTMLButtonElement>(null);
+  const presetsScrollRef = useRef<HTMLDivElement>(null);
 
   const [dropdownPos, setDropdownPos] = useState<{ 
     top: number; 
@@ -228,6 +237,29 @@ export function GapControl({
       setUnit(parsedUnit);
     }
   }, [currentPropertyValue, parsedUnit]);
+
+  useEffect(() => {
+    const scrollContainer = presetsScrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // If holding shift it's already horizontal, or if deltaX is already present
+      if (e.shiftKey || e.deltaX !== 0) return;
+      
+      const isAtLeftEdge = scrollContainer.scrollLeft <= 0;
+      const isAtRightEdge = Math.ceil(scrollContainer.scrollLeft + scrollContainer.clientWidth) >= scrollContainer.scrollWidth;
+      
+      if ((e.deltaY < 0 && isAtLeftEdge) || (e.deltaY > 0 && isAtRightEdge)) {
+        return;
+      }
+
+      e.preventDefault();
+      scrollContainer.scrollLeft += e.deltaY;
+    };
+
+    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
+    return () => scrollContainer.removeEventListener('wheel', handleWheel);
+  }, []);
 
   // Helper to update value with selected unit
   const handleNumericChange = (num: number, targetUnit = unit) => {
@@ -430,7 +462,10 @@ export function GapControl({
             </span>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div 
+          ref={presetsScrollRef}
+          className="flex overflow-x-auto gap-2 pb-2 pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory select-none"
+        >
           {GAP_PRESETS.map((preset) => {
             const isSelected = currentPropertyValue === preset.value;
             return (
@@ -438,10 +473,10 @@ export function GapControl({
                 key={preset.value}
                 type="button"
                 onClick={() => handlePresetSelect(preset.value)}
-                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-250 cursor-pointer ${
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-250 cursor-pointer min-w-[64px] flex-shrink-0 snap-start ${
                   isSelected
-                    ? "bg-emerald-50/80 border-emerald-300 text-emerald-800 shadow-[0_2px_8px_-2px_rgba(16,185,129,0.25)] font-bold"
-                    : "bg-white border-stone-200 hover:border-emerald-200 hover:bg-emerald-50/20 text-stone-600 hover:text-stone-850"
+                    ? "bg-emerald-50/85 border-emerald-350 text-emerald-800 shadow-[0_2px_8px_-2px_rgba(16,185,129,0.25)] font-bold"
+                    : "bg-white border-stone-200 hover:border-emerald-250 hover:bg-emerald-50/20 text-stone-600 hover:text-stone-850"
                 }`}
               >
                 <span className="text-[10px] tracking-tight">{preset.label}</span>
@@ -485,7 +520,8 @@ export function GapControl({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 5, scale: 0.95 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 mt-1.5 w-36 bg-white border border-stone-250/90 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
+                  className="absolute right-0 mt-1.5 w-36 bg-white border-0 border-none rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
+                  style={{ border: "none", borderWidth: "0px" }}
                 >
                   {(["px", "rem", "%", "em"] as const).map((u) => {
                     const isSelected = u === unit;

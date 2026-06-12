@@ -44,9 +44,9 @@ import {
 import { CSS_HIERARCHY_DATA } from "./css-categories";
 import { CSSCategory, CSSSubCategory, CSSProperty } from "../types-css";
 import { PropertyControl } from "./PropertyControl";
-import { DisplayDropdown } from "./DisplayDropdown";
-import { FlexDirectionControl } from "./FlexDirectionControl";
-import { GapControl } from "./GapControl";
+import { DisplayDropdown } from "./css-categories/layout-box-model/properties/DisplayDropdown";
+import { FlexDirectionControl } from "./css-categories/layout-box-model/properties/FlexDirectionControl";
+import { GapControl } from "./css-categories/layout-box-model/properties/GapControl";
 import { VisualElement } from "../types";
 import {
   setGroupClass,

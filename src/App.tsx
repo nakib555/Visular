@@ -2009,9 +2009,9 @@ function DesignerApp() {
                 className="flex-shrink-0 relative select-none my-auto mx-auto"
                 animate={{
                   width: scaledWidthWithBezel * dynamicScale,
-                  minWidth: scaledWidthWithBezel * dynamicScale,
                   height: scaledHeightWithBezel * dynamicScale,
                 }}
+                style={{ minWidth: scaledWidthWithBezel * dynamicScale }}
                 transition={{
                   type: "spring",
                   stiffness: 200,
@@ -2022,13 +2022,12 @@ function DesignerApp() {
                 <motion.div
                   id="scaler_bounds"
                   className="absolute left-0 top-0 select-none origin-top-left"
-                  style={{ originX: 0, originY: 0 }}
                   animate={{
                     width: scaledWidthWithBezel,
-                    minWidth: scaledWidthWithBezel,
                     height: scaledHeightWithBezel,
                     scale: dynamicScale,
                   }}
+                  style={{ originX: 0, originY: 0, minWidth: scaledWidthWithBezel }}
                   transition={{
                     type: "spring",
                     stiffness: 200,
