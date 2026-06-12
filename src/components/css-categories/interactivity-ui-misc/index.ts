@@ -1,4 +1,4 @@
-import { CSSCategory } from "../../types-css";
+import { CSSCategory } from "../../../types-css";
 import { MousePointer } from "lucide-react";
 
 export const interactivityUiMiscCategory: CSSCategory = {

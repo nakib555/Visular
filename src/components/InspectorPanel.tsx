@@ -335,12 +335,14 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "gap") {
+    if (propName === "gap" || propName === "row-gap" || propName === "column-gap") {
       return (
         <div key={propIdx} className="w-full animate-fade-in">
           <GapControl
             value={currentVal}
             onChange={(val) => setPropValue(propName, val)}
+            label={propName === "gap" ? "Gap" : propName === "row-gap" ? "Row Gap" : "Column Gap"}
+            propertyName={propName}
           />
         </div>
       );
@@ -560,21 +562,40 @@ export function InspectorPanel({
     );
   };
 
-  // Expanded status for Accordion categories
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    layoutBoxModel: true,
-    typographyText: true,
-    appearanceAestheticsSvg: true,
-    motionTransforms: true,
-    interactivityUiMisc: true,
-    environmentMediaArchitecture: true,
-  });
+  // Expanded status for Accordion categories - only the active panel open by default
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => ({
+    layoutBoxModel: inspectorSection === "layoutBoxModel",
+    typographyText: inspectorSection === "typographyText",
+    appearanceAestheticsSvg: inspectorSection === "appearanceAestheticsSvg",
+    motionTransforms: inspectorSection === "motionTransforms",
+    interactivityUiMisc: inspectorSection === "interactivityUiMisc",
+    environmentMediaArchitecture: inspectorSection === "environmentMediaArchitecture",
+  }));
+
+  // Synchronize expandedCategories state when parent's active inspectorSection prop changes
+  useEffect(() => {
+    setExpandedCategories({
+      layoutBoxModel: inspectorSection === "layoutBoxModel",
+      typographyText: inspectorSection === "typographyText",
+      appearanceAestheticsSvg: inspectorSection === "appearanceAestheticsSvg",
+      motionTransforms: inspectorSection === "motionTransforms",
+      interactivityUiMisc: inspectorSection === "interactivityUiMisc",
+      environmentMediaArchitecture: inspectorSection === "environmentMediaArchitecture",
+    });
+  }, [inspectorSection]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToCategory = (catId: string) => {
-    // Automatically expand the section if minimized
-    setExpandedCategories((prev) => ({ ...prev, [catId]: true }));
+    // Automatically expand the selected section and collapse all other sections
+    setExpandedCategories({
+      layoutBoxModel: catId === "layoutBoxModel",
+      typographyText: catId === "typographyText",
+      appearanceAestheticsSvg: catId === "appearanceAestheticsSvg",
+      motionTransforms: catId === "motionTransforms",
+      interactivityUiMisc: catId === "interactivityUiMisc",
+      environmentMediaArchitecture: catId === "environmentMediaArchitecture",
+    });
     setInspectorSection(catId as InspectorSection);
 
     // Reset scroll back to the top of the container
@@ -724,10 +745,18 @@ export function InspectorPanel({
                   <button
                     type="button"
                     onClick={() => {
-                      setExpandedCategories((prev) => ({
-                        ...prev,
-                        [catId]: !isExpanded,
-                      }));
+                      const nextExpandedState = !isExpanded;
+                      setExpandedCategories({
+                        layoutBoxModel: catId === "layoutBoxModel" ? nextExpandedState : false,
+                        typographyText: catId === "typographyText" ? nextExpandedState : false,
+                        appearanceAestheticsSvg: catId === "appearanceAestheticsSvg" ? nextExpandedState : false,
+                        motionTransforms: catId === "motionTransforms" ? nextExpandedState : false,
+                        interactivityUiMisc: catId === "interactivityUiMisc" ? nextExpandedState : false,
+                        environmentMediaArchitecture: catId === "environmentMediaArchitecture" ? nextExpandedState : false,
+                      });
+                      if (nextExpandedState) {
+                        setInspectorSection(catId as InspectorSection);
+                      }
                     }}
                     className={`w-full px-5 py-3.5 flex items-center justify-between font-sans text-xs font-bold tracking-wider uppercase border-b transition-all ${
                       isExpanded

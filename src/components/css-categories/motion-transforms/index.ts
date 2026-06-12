@@ -1,4 +1,4 @@
-import { CSSCategory } from "../../types-css";
+import { CSSCategory } from "../../../types-css";
 import { Play } from "lucide-react";
 
 export const motionTransformsCategory: CSSCategory = {

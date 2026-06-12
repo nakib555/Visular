@@ -1,4 +1,4 @@
-import { CSSCategory } from "../../types-css";
+import { CSSCategory } from "../../../types-css";
 import { Type } from "lucide-react";
 
 export const typographyTextCategory: CSSCategory = {

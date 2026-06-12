@@ -1,4 +1,4 @@
-import { CSSCategory } from "../../types-css";
+import { CSSCategory } from "../../../types-css";
 import { Compass } from "lucide-react";
 
 export const environmentMediaArchitectureCategory: CSSCategory = {

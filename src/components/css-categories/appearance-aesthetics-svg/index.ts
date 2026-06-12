@@ -1,4 +1,4 @@
-import { CSSCategory } from "../../types-css";
+import { CSSCategory } from "../../../types-css";
 import { Palette } from "lucide-react";
 
 export const appearanceAestheticsSvgCategory: CSSCategory = {
