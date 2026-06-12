@@ -16,6 +16,7 @@ import {
   ChevronUp,
   ChevronDown,
   Download,
+  FolderArchive,
   Maximize,
   Eye,
   RefreshCw,
@@ -61,11 +62,15 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { InView, useInView } from "react-intersection-observer";
+import { List, AutoSizer } from "react-virtualized";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
 import { DevicePresetDropdown } from "./components/DevicePresetDropdown";
 import { DeviceFrame } from "./components/DeviceFrame";
 import { VisualNode } from "./components/VisualNode";
 import { StructureNode } from "./components/StructureNode";
+import { LazyPresetItem } from "./components/LazyPresetItem";
+import { LazyElementItem } from "./components/LazyElementItem";
 import { DesignerProvider, useDesigner } from "./contexts/DesignerContext";
 
 const InspectorPanel = React.lazy(() =>
@@ -154,6 +159,9 @@ function DesignerApp() {
     setShowExportModal,
     copied,
     setCopied,
+    loadedElements,
+    loadAll,
+    offloadAll,
 
     changeComponentTree,
     undo,
@@ -170,6 +178,7 @@ function DesignerApp() {
     handleAIEnhanceCopy,
     handleCopyCode,
     handleDownloadFile,
+    handleDownloadZip,
   } = designer;
 
   const [customDeviceWidth, setCustomDeviceWidth] = useState<number>(1024);
@@ -440,6 +449,63 @@ function DesignerApp() {
     };
   }, []);
 
+  // Spacebar panning state & elements
+  const backyardRef = useRef<HTMLDivElement | null>(null);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const scrollStartRef = useRef({ scrollLeft: 0, scrollTop: 0 });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        // Prevent default spacebar action (scrolling page or pressing active button)
+        // only if user is not in input/textarea/select field
+        const active = document.activeElement;
+        const isInput =
+          active &&
+          (active.tagName === "INPUT" ||
+            active.tagName === "TEXTAREA" ||
+            active.tagName === "SELECT" ||
+            active.hasAttribute("contenteditable") ||
+            active.closest("[contenteditable='true']"));
+
+        if (!isInput) {
+          e.preventDefault();
+          setIsSpacePressed(true);
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        setIsSpacePressed(false);
+        setIsPanning(false);
+      }
+    };
+
+    const handleBlur = () => {
+      setIsSpacePressed(false);
+      setIsPanning(false);
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsPanning(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, []);
+
   // Refs to tracking touch details for pinch gesture zooming
   const touchStartDistRef = useRef<number | null>(null);
   const touchStartScaleRef = useRef<number | null>(null);
@@ -639,6 +705,15 @@ function DesignerApp() {
             </div>
           </div>
         </>
+      )}
+
+      {isSpacePressed && (
+        <style>{`
+          #visual_canvas_backyard, #visual_canvas_backyard * {
+            cursor: ${isPanning ? "grabbing" : "grab"} !important;
+            user-select: none !important;
+          }
+        `}</style>
       )}
 
       {/* UPPER HIGH-CONTRAST HEADER */}
@@ -1018,8 +1093,8 @@ function DesignerApp() {
           >
             {/* TAB CONTENT: PRESET BLOCKS */}
             {activeTab === "presets" && (
-              <div className="space-y-4">
-                <div className="relative">
+              <div className="space-y-4 h-full flex flex-col text-left">
+                <div className="relative shrink-0">
                   <input
                     type="text"
                     value={activeSearch}
@@ -1030,7 +1105,7 @@ function DesignerApp() {
                 </div>
 
                 {/* Category Slider for Presets */}
-                <div className="flex flex-row flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 shrink-0">
                   {(
                     [
                       "all",
@@ -1055,399 +1130,300 @@ function DesignerApp() {
                   ))}
                 </div>
 
-                <div
-                  className={
-                    activePresetCategory === "cards"
-                      ? "grid grid-cols-2 gap-3"
-                      : activePresetCategory === "heroes"
-                        ? "space-y-4"
-                        : activePresetCategory === "lists"
-                          ? "space-y-1.5 bg-stone-50 rounded-xl p-2 border border-stone-100"
-                          : activePresetCategory === "calls-to-action"
-                            ? "space-y-3"
-                            : "space-y-4"
-                  }
-                >
-                  {filteredPresets.map((preset) => {
-                    const handleSelect = () => {
-                      changeComponentTree(cloneTreeWithNewIds(preset.root));
-                      if (window.innerWidth < 768)
-                        setMobileActiveView("canvas");
-                    };
-
-                    // ---- ALL / DEFAULT LAYOUT (Aesthetic Stacked Details) ----
-                    if (activePresetCategory === "all") {
-                      return (
-                        <div
-                          key={preset.name}
-                          onClick={handleSelect}
-                          className="p-4 bg-white hover:bg-gradient-to-br hover:from-white hover:to-stone-50/80 border border-stone-200/80 hover:border-stone-300 rounded-[18px] cursor-pointer group transition-all duration-300 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
-                        >
-                          <div className="flex items-center justify-between mb-1.5">
-                            <h4 className="text-xs font-bold text-stone-800 group-hover:text-stone-950 transition">
-                              {preset.name}
-                            </h4>
-                            <span className="text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-stone-100 text-stone-600">
-                              {preset.category}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-stone-500 leading-relaxed font-light font-sans line-clamp-2">
-                            {preset.description}
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    // ---- CARDS LAYOUT (Bento Grid Style) ----
-                    if (activePresetCategory === "cards") {
-                      return (
-                        <div
-                          key={preset.name}
-                          onClick={handleSelect}
-                          className="aspect-square bg-stone-50 hover:bg-white border border-stone-200/80 hover:border-emerald-300 rounded-[24px] cursor-pointer group transition-all duration-500 text-center flex flex-col items-center justify-center p-3 relative overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.95]"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-emerald-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <Layout
-                            size={24}
-                            strokeWidth={1.5}
-                            className="text-stone-300 group-hover:text-emerald-500 mb-3 transition-colors duration-300"
-                          />
-                          <h4 className="text-[11px] font-bold text-stone-700 group-hover:text-emerald-900 leading-tight">
-                            {preset.name}
-                          </h4>
-                        </div>
-                      );
-                    }
-
-                    // ---- HEROES LAYOUT (Cinematic Headers Style) ----
-                    if (activePresetCategory === "heroes") {
-                      return (
-                        <div
-                          key={preset.name}
-                          onClick={handleSelect}
-                          className="h-28 bg-stone-950 hover:bg-black border border-stone-800 hover:border-amber-500/50 rounded-2xl cursor-pointer group transition-all duration-500 flex flex-col justify-end p-4 relative overflow-hidden shadow-md hover:shadow-2xl hover:shadow-amber-500/10 active:scale-[0.98]"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0" />
-                          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.15),transparent_60%)]" />
-                          <div className="relative z-10">
-                            <h4 className="text-xs font-serif font-medium text-stone-100 group-hover:text-amber-100 transition-colors">
-                              {preset.name}
-                            </h4>
-                            <p className="text-[9px] text-stone-400 font-sans mt-0.5 line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                              {preset.description}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // ---- LISTS LAYOUT (Line-Item Index Style) ----
-                    if (activePresetCategory === "lists") {
-                      return (
-                        <div
-                          key={preset.name}
-                          onClick={handleSelect}
-                          className="px-3 py-2.5 bg-white hover:bg-stone-100 border border-stone-200/50 hover:border-stone-300 rounded-lg cursor-pointer group transition-all text-left flex items-center justify-between shadow-sm active:bg-stone-200"
-                        >
-                          <div className="flex items-center gap-2 overflow-hidden pr-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-stone-300 group-hover:bg-indigo-400 transition-colors shrink-0" />
-                            <h4 className="text-[11px] font-medium text-stone-700 truncate group-hover:text-indigo-900">
-                              {preset.name}
-                            </h4>
-                          </div>
-                          <PlusCircle
-                            size={12}
-                            className="text-stone-300 group-hover:text-indigo-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          />
-                        </div>
-                      );
-                    }
-
-                    // ---- CALLS TO ACTION LAYOUT (Vibrant Pill Buttons) ----
-                    if (activePresetCategory === "calls-to-action") {
-                      return (
-                        <div
-                          key={preset.name}
-                          onClick={handleSelect}
-                          className="px-4 py-3.5 bg-rose-500 hover:bg-rose-600 rounded-full cursor-pointer group transition-all duration-300 flex items-center justify-center text-center shadow-md hover:shadow-lg hover:shadow-rose-500/20 active:scale-[0.97]"
-                        >
-                          <h4 className="text-xs font-bold font-sans text-white uppercase tracking-widest flex items-center gap-2">
-                            {preset.name}
-                            <ArrowRight
-                              size={12}
-                              className="group-hover:translate-x-1 transition-transform"
-                            />
-                          </h4>
-                        </div>
-                      );
-                    }
-
-                    return null;
-                  })}
-                </div>
-
-                {filteredPresets.length === 0 && (
-                  <div className="py-10 text-center text-stone-400 text-xs font-medium">
-                    No components match your search.
+                {/* Virtualized Presets scroll stage */}
+                <div className="flex-1 min-h-[360px] relative border border-stone-100 bg-stone-50/50 rounded-2xl p-2.5 overflow-hidden shadow-inner flex flex-col">
+                  <div className="text-[9.5px] uppercase font-mono tracking-widest font-extrabold text-stone-450 mb-3 pl-1 flex items-center justify-between shrink-0">
+                    <span>INDEX ({filteredPresets.length} items)</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 bg-stone-900 text-stone-100 rounded-full border border-stone-800 text-[8px] font-mono tracking-wide scale-95 origin-right">
+                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse inline-block" />
+                      <span>VIRTUAL SCRIPTER</span>
+                    </span>
                   </div>
-                )}
+
+                  {filteredPresets.length > 0 ? (
+                    <div className="flex-1 min-h-0">
+                      <AutoSizer>
+                        {({ width, height }) => (
+                          <List
+                            width={width}
+                            height={height}
+                            rowCount={filteredPresets.length}
+                            rowHeight={112} // card box vertical space + margin
+                            rowRenderer={({ index, key, style }) => {
+                              const preset = filteredPresets[index];
+                              const handleSelect = () => {
+                                changeComponentTree(cloneTreeWithNewIds(preset.root));
+                                if (window.innerWidth < 768) {
+                                  setMobileActiveView("canvas");
+                                }
+                              };
+
+                              return (
+                                <LazyPresetItem
+                                  key={key}
+                                  preset={preset}
+                                  onSelect={handleSelect}
+                                  style={style}
+                                />
+                              );
+                            }}
+                          />
+                        )}
+                      </AutoSizer>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-stone-400 text-xs font-black bg-white rounded-xl border border-stone-150">
+                      No matching presets found.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* TAB CONTENT: RAW LAYOUT BUILDING BASES */}
             {activeTab === "elements" && (
-              <div className="space-y-4 text-left">
-                <div className="p-3.5 bg-gradient-to-r from-stone-50 to-stone-100 border border-stone-200 rounded-2xl mb-4 shadow-sm">
+              <div className="space-y-4 text-left flex flex-col h-full">
+                <div className="p-3.5 bg-gradient-to-r from-stone-50 to-stone-100 border border-stone-200 rounded-2xl mb-2 shadow-sm shrink-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] uppercase font-mono font-extrabold tracking-wider text-stone-500">
+                      Lazy Component Library
+                    </span>
+                    <span className="flex items-center gap-1 text-[8.5px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 font-extrabold uppercase animate-pulse">
+                      Live Hydrator
+                    </span>
+                  </div>
                   <p className="text-[10.5px] text-stone-500 leading-relaxed font-light">
-                    Select any container block, then click items below to append
-                    them inside. If no element is marked, builders append items
-                    at the root.
+                    Select a container, then click items below to append them inside. Hover over icon to simulate lazy offloading to conserve browser memory.
                   </p>
                 </div>
 
-                {/* STRUCTUAL elements */}
-                <div className="space-y-2.5">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
-                    Containers & Blocks
-                  </h5>
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                  {/* STRUCTUAL elements */}
+                  <div className="space-y-2">
+                    <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase pl-1">
+                      Containers & Blocks
+                    </h5>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "container",
-                        "div",
-                        "p-8 bg-white rounded-3xl border border-stone-200 flex flex-col gap-5 shadow-sm",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
-                        <Square size={13} className="fill-orange-100" />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Aesthetic Light Card
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-orange-500"
+                    <LazyElementItem
+                      name="Aesthetic Light Card"
+                      category="structural"
+                      icon={<Square size={13} className="fill-orange-100" />}
+                      colorTheme="orange"
+                      onAdd={() =>
+                        addNewElement(
+                          "container",
+                          "div",
+                          "p-8 bg-white rounded-3xl border border-stone-200 flex flex-col gap-5 shadow-sm",
+                        )
+                      }
                     />
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "container",
-                        "div",
-                        "grid grid-cols-1 md:grid-cols-2 gap-6 w-full py-4",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-orange-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition">
-                        <Layout size={13} />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Dual Column Grid (1/2)
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-orange-500"
+                    <LazyElementItem
+                      name="Dual Column Grid (1/2)"
+                      category="structural"
+                      icon={<Layout size={13} />}
+                      colorTheme="orange"
+                      onAdd={() =>
+                        addNewElement(
+                          "container",
+                          "div",
+                          "grid grid-cols-1 md:grid-cols-2 gap-6 w-full py-4",
+                        )
+                      }
                     />
-                  </button>
-                </div>
+                  </div>
 
-                {/* TYPOGRAPHY elements */}
-                <div className="space-y-2.5 pt-2">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
-                    Text & Editorial
-                  </h5>
+                  {/* TYPOGRAPHY elements */}
+                  <div className="space-y-2 pt-1">
+                    <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase pl-1">
+                      Text & Editorial
+                    </h5>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "text",
-                        "h2",
-                        "text-3xl font-serif text-stone-900 tracking-tight font-medium mb-3 leading-tight",
-                        "Aesthetic Editorial Title",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
-                        <Type size={13} className="font-serif" />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Serif Luxe Title (H2)
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-amber-500"
+                    <LazyElementItem
+                      name="Serif Luxe Title (H2)"
+                      category="typography"
+                      icon={<Type size={13} className="font-serif" />}
+                      colorTheme="amber"
+                      onAdd={() =>
+                        addNewElement(
+                          "text",
+                          "h2",
+                          "text-3xl font-serif text-stone-900 tracking-tight font-medium mb-3 leading-tight",
+                          "Aesthetic Editorial Title",
+                        )
+                      }
                     />
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "text",
-                        "h3",
-                        "text-xl font-sans text-stone-900 tracking-tight font-semibold mb-2",
-                        "Modern Feature Header",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
-                        <Type size={13} />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Sans Display Title (H3)
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-amber-500"
+                    <LazyElementItem
+                      name="Sans Display Title (H3)"
+                      category="typography"
+                      icon={<Type size={13} />}
+                      colorTheme="amber"
+                      onAdd={() =>
+                        addNewElement(
+                          "text",
+                          "h3",
+                          "text-xl font-sans text-stone-900 tracking-tight font-semibold mb-2",
+                          "Modern Feature Header",
+                        )
+                      }
                     />
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "text",
-                        "p",
-                        "text-stone-500 text-sm leading-relaxed mb-6 font-light",
-                        "Write description text here. Choose custom styling & font size values later.",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-amber-400 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-amber-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition">
-                        <AlignLeft size={13} />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Body Paragraph (P)
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-amber-500"
+                    <LazyElementItem
+                      name="Body Paragraph (P)"
+                      category="typography"
+                      icon={<AlignLeft size={13} />}
+                      colorTheme="amber"
+                      onAdd={() =>
+                        addNewElement(
+                          "text",
+                          "p",
+                          "text-stone-500 text-sm leading-relaxed mb-6 font-light",
+                          "Write description text here. Choose custom styling & font size values later.",
+                        )
+                      }
                     />
-                  </button>
-                </div>
+                  </div>
 
-                {/* DYNAMIC ACTIONS elements */}
-                <div className="space-y-2.5 pt-2">
-                  <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase">
-                    Interactive Elements
-                  </h5>
+                  {/* DYNAMIC ACTIONS elements */}
+                  <div className="space-y-2 pt-1">
+                    <h5 className="text-[9.5px] font-bold font-mono tracking-widest text-stone-400 uppercase pl-1">
+                      Interactive Elements
+                    </h5>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "button",
-                        "button",
-                        "px-6 py-3 bg-stone-900 text-white font-medium text-xs hover:bg-stone-800 rounded-xl shadow-md transition-all cursor-pointer font-sans active:scale-95",
-                        "Primary Action",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
-                        <Play size={11} className="fill-rose-200" />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Micro Solid Button
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-rose-500"
+                    <LazyElementItem
+                      name="Micro Solid Button"
+                      category="interactive"
+                      icon={<Play size={11} className="fill-rose-200" />}
+                      colorTheme="rose"
+                      onAdd={() =>
+                        addNewElement(
+                          "button",
+                          "button",
+                          "px-6 py-3 bg-stone-900 text-white font-medium text-xs hover:bg-stone-800 rounded-xl shadow-md transition-all cursor-pointer font-sans active:scale-95",
+                          "Primary Action",
+                        )
+                      }
                     />
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "badge",
-                        "span",
-                        "inline-block px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold",
-                        "FEATURED TAG",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
-                        <CheckCircle2 size={13} />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Aesthetic Tag Capsule
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-rose-500"
+                    <LazyElementItem
+                      name="Aesthetic Tag Capsule"
+                      category="interactive"
+                      icon={<CheckCircle2 size={13} />}
+                      colorTheme="rose"
+                      onAdd={() =>
+                        addNewElement(
+                          "badge",
+                          "span",
+                          "inline-block px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-mono tracking-wider uppercase font-semibold",
+                          "FEATURED TAG",
+                        )
+                      }
                     />
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addNewElement(
-                        "image",
-                        "img",
-                        "w-full h-48 rounded-2xl object-cover shadow-sm mb-4 bg-stone-100",
-                        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
-                      )
-                    }
-                    className="w-full p-3 bg-white border border-stone-200 hover:border-rose-300 rounded-xl text-xs text-stone-700 font-semibold flex items-center justify-between hover:bg-rose-50/5 hover:shadow-sm transition-all duration-200 group relative cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 px-1.5 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition">
-                        <ImageIcon size={13} />
-                      </div>
-                      <span className="group-hover:text-stone-900 transition font-sans">
-                        Image Cover Box
-                      </span>
-                    </div>
-                    <Plus
-                      size={11}
-                      className="text-stone-400 group-hover:text-rose-500"
+                    <LazyElementItem
+                      name="Image Cover Box"
+                      category="interactive"
+                      icon={<ImageIcon size={13} />}
+                      colorTheme="rose"
+                      onAdd={() =>
+                        addNewElement(
+                          "image",
+                          "img",
+                          "w-full h-48 rounded-2xl object-cover shadow-sm mb-4 bg-stone-100",
+                          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+                        )
+                      }
                     />
-                  </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* TAB CONTENT: DEEP OUTLINE TREE */}
-            {activeTab === "structure" && (
-              <div className="space-y-2 text-left">
-                <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl mb-4">
-                  <p className="text-[11px] text-stone-500 leading-relaxed font-light">
-                    Tree nesting representation of visual layers. Click nodes to
-                    focus on canvas, or drag elements inside.
+            {activeTab === "structure" && (() => {
+              // calculate loaded/offloaded counts recursively
+              const getCounts = (node: VisualElement): { total: number; loaded: number } => {
+                let total = 0;
+                let loaded = 0;
+                const traverse = (n: VisualElement) => {
+                  if (n.id && n.id !== "canvas_root" && n.id !== "workspace_canvas") {
+                    total++;
+                    if (loadedElements && loadedElements[n.id] !== false) {
+                      loaded++;
+                    }
+                  }
+                  if (n.children) {
+                    n.children.forEach(traverse);
+                  }
+                };
+                traverse(node);
+                return { total, loaded };
+              };
+
+              const { total, loaded } = getCounts(componentTree);
+              const offloadedCount = Math.max(0, total - loaded);
+
+              return (
+                <div className="space-y-4 text-left">
+                  {/* Performance & Lazy Loading HUD panel */}
+                  <div className="p-3.5 bg-gradient-to-br from-stone-900 to-stone-850 border border-stone-800 rounded-3xl text-stone-100 shadow-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Lazy Engine</span>
+                      </span>
+                      <span className="text-[10.5px] font-mono font-medium text-stone-400">Memory optimized</span>
+                    </div>
+                    <p className="text-[10.5px] text-stone-300 leading-normal mb-3 font-sans font-light">
+                      All elements support standard <span className="text-rose-400 font-medium font-bold">auto lazy loading</span> via IntersectionObservers. Programmatically control rendering below.
+                    </p>
+
+                    {/* Stats columns */}
+                    <div className="grid grid-cols-2 gap-2 border-t border-b border-stone-850/80 py-2.5 my-3 text-center">
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-mono font-bold text-white">{loaded} / {total}</span>
+                        <span className="text-[8.5px] text-stone-400 font-mono font-medium uppercase tracking-wider">Hydrated (Loaded)</span>
+                      </div>
+                      <div className="flex flex-col border-l border-stone-800">
+                        <span className="text-[13px] font-mono font-bold text-amber-400">{offloadedCount}</span>
+                        <span className="text-[8.5px] text-stone-400 font-mono font-medium uppercase tracking-wider">Offloaded</span>
+                      </div>
+                    </div>
+
+                    {/* Programmatic Global Action Controls */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (loadAll) loadAll();
+                        }}
+                        className="flex-1 py-1.5 bg-stone-800 hover:bg-stone-700 hover:text-white border border-stone-750 text-stone-200 text-[10px] font-bold font-mono tracking-wider rounded-xl transition duration-150 active:scale-95 cursor-pointer flex items-center justify-center gap-1 uppercase"
+                      >
+                        <span>Load All</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (offloadAll) offloadAll();
+                        }}
+                        className="flex-1 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-400 text-[10px] font-bold font-mono tracking-wider rounded-xl transition duration-150 active:scale-95 cursor-pointer flex items-center justify-center gap-1 uppercase"
+                      >
+                        <span>Offload All</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] uppercase font-mono font-extrabold tracking-wider text-stone-400 pl-0.5">
+                    Workspace Tree Layers:
                   </p>
+
+                  <div className="border-l border-stone-200 pl-1.5 py-1 space-y-1">
+                    <StructureNode node={componentTree} />
+                  </div>
                 </div>
-                <div className="border-l border-stone-200 pl-1.5 py-1 space-y-1">
-                  <StructureNode node={componentTree} />
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB CONTENT: STYLES PANEL */}
             {activeTab === "styles" && (
@@ -1934,17 +1910,42 @@ function DesignerApp() {
           </div>
 
           <div
+            ref={backyardRef}
             id="visual_canvas_backyard"
-            className={`flex-1 overflow-auto flex flex-col bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] ${simulatePointer ? "cursor-none" : ""} relative px-3 sm:px-5 md:px-6`}
+            className={`flex-1 overflow-auto flex flex-col bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px] ${simulatePointer ? "cursor-none" : isPanning ? "cursor-grabbing" : isSpacePressed ? "cursor-grab" : ""} relative px-3 sm:px-5 md:px-6`}
             onMouseMove={(e) => {
               if (simulatePointer) {
                 setSimulatedCursorPos({ x: e.clientX, y: e.clientY });
                 setIsPointerInCanvas(true);
               }
+              if (isPanning && backyardRef.current) {
+                e.preventDefault();
+                const dx = e.clientX - panStartRef.current.x;
+                const dy = e.clientY - panStartRef.current.y;
+                backyardRef.current.scrollLeft = scrollStartRef.current.scrollLeft - dx;
+                backyardRef.current.scrollTop = scrollStartRef.current.scrollTop - dy;
+              }
             }}
             onMouseLeave={() => setIsPointerInCanvas(false)}
-            onMouseDown={() => setIsCanvasClicking(true)}
-            onMouseUp={() => setIsCanvasClicking(false)}
+            onMouseDown={(e) => {
+              if (isSpacePressed) {
+                e.preventDefault();
+                setIsPanning(true);
+                panStartRef.current = { x: e.clientX, y: e.clientY };
+                if (backyardRef.current) {
+                  scrollStartRef.current = {
+                    scrollLeft: backyardRef.current.scrollLeft,
+                    scrollTop: backyardRef.current.scrollTop,
+                  };
+                }
+              } else {
+                setIsCanvasClicking(true);
+              }
+            }}
+            onMouseUp={() => {
+              setIsPanning(false);
+              setIsCanvasClicking(false);
+            }}
           >
             {/* Breadcrumb parent-child hierarchy navigation displaying at the top of the canvas */}
             {lineage && lineage.length > 0 && (
@@ -2208,13 +2209,11 @@ function DesignerApp() {
                     size={16}
                     className="text-rose-600 mt-0.5 flex-shrink-0"
                   />
-                  <p className="text-xs text-rose-900 leading-relaxed font-light">
-                    This component is fully responsive and self-contained. It
-                    contains pure HTML inline utilities styled specifically via
-                    Tailwind CSS. To see a live preview in a static browser
-                    environment, load the single `.html` document bundle by
-                    clicking "Download Static Layout" below.
-                  </p>
+                  <div className="text-xs text-rose-900 leading-relaxed font-light">
+                    <p>
+                      <strong>Export Options:</strong> Use <strong>Single HTML Page</strong> to download a consolidated, inline review document, or click <strong>Separated HTML/CSS ZIP</strong> to bundle the design as distinct <code>index.html</code>, <code>style.css</code> (with typography) and <code>README.md</code> files.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 text-left">
@@ -2227,22 +2226,33 @@ function DesignerApp() {
                 </div>
               </div>
 
-              <div className="p-5 border-t border-stone-200 flex items-center justify-end gap-3.5 bg-stone-50">
-                <button
-                  onClick={handleDownloadFile}
-                  className="px-5 py-2.5 bg-white border border-stone-200 hover:border-stone-300 text-stone-600 text-xs font-semibold rounded-xl hover:bg-stone-50 transition flex items-center gap-1.5"
-                >
-                  <Download size={13} />
-                  Download HTML Document
-                </button>
+              <div className="p-5 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3.5 bg-stone-50">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={handleDownloadFile}
+                    className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-stone-200 hover:border-stone-300 text-stone-600 text-xs font-semibold rounded-xl hover:bg-stone-50 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Download responsive self-contained blueprint document"
+                  >
+                    <Download size={13} />
+                    <span>Single HTML Page</span>
+                  </button>
+                  <button
+                    onClick={handleDownloadZip}
+                    className="flex-1 sm:flex-none px-4 py-2.5 bg-rose-50 border border-rose-200 hover:border-rose-350 text-rose-700 text-xs font-semibold rounded-xl hover:bg-rose-100/30 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    title="Download Zip archive containing separated index.html and style.css files"
+                  >
+                    <FolderArchive size={13} />
+                    <span>Separated HTML/CSS ZIP</span>
+                  </button>
+                </div>
                 <button
                   onClick={handleCopyCode}
-                  className="px-5 py-2.5 bg-stone-900 text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition flex items-center gap-1.5"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-stone-900 text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {copied ? (
                     <>
                       <Check size={13} className="text-emerald-400" />
-                      Copied!
+                      Copy Code
                     </>
                   ) : (
                     <>

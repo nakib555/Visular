@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { VisualElement, ElementType, SmartGuide } from "../types";
 import { COMPONENT_PRESETS, cloneTreeWithNewIds, generateId } from "../presets";
 import { compileTreeToHtml } from "../styleUtils";
+import JSZip from "jszip";
 
 const API_BASE = ((import.meta as any).env?.VITE_API_URL || "").replace(
   /\/$/,
@@ -61,6 +62,38 @@ export function useDesignerState() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [loadedElements, setLoadedElements] = useState<Record<string, boolean>>({});
+
+  const loadElement = (id: string) => {
+    setLoadedElements((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const offloadElement = (id: string) => {
+    setLoadedElements((prev) => ({ ...prev, [id]: false }));
+  };
+
+  const toggleElementLoad = (id: string) => {
+    setLoadedElements((prev) => ({ ...prev, [id]: !(prev[id] !== false) }));
+  };
+
+  const loadAll = () => {
+    setLoadedElements({});
+  };
+
+  const offloadAll = () => {
+    const offloads: Record<string, boolean> = {};
+    const traverse = (node: VisualElement) => {
+      if (node.id && node.id !== "canvas_root" && node.id !== "workspace_canvas") {
+        offloads[node.id] = false;
+      }
+      if (node.children) {
+        node.children.forEach(traverse);
+      }
+    };
+    traverse(componentTree);
+    setLoadedElements(offloads);
+  };
+
   const [dragDropTargetId, setDragDropTargetId] = useState<string | null>(null);
   const [dragDropPosition, setDragDropPosition] = useState<
     "before" | "after" | "inside" | null
@@ -651,6 +684,74 @@ ${rawHtml}
     setShowExportModal(false);
   };
 
+  const handleDownloadZip = async () => {
+    try {
+      const zip = new JSZip();
+      const rawHtml = compileTreeToHtml(componentTree);
+
+      const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exported Visual Component</title>
+  <!-- Use Tailwind Play CDN to enable the responsive utility classes automatically -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <!-- Link custom separated styles sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-8">
+${rawHtml}
+</body>
+</html>`;
+
+      const cssContent = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Separated Layout Stylesheet */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Custom layout interactive definitions go here */
+`;
+
+      const readmeContent = `# Exported Component ZIP Package
+
+This package contains your custom-crafted responsive component styled using **Tailwind CSS**.
+
+## Structure
+
+- \`index.html\`: The markup element structure containing your component nodes.
+- \`style.css\`: The external stylesheet holding modern custom fonts and base standard rules.
+
+## Getting Started
+
+1. Directly open and preview \`index.html\` inside any modern browser to view the component.
+2. For local production development, compile Tailwind CSS from \`index.html\` or run it inside your custom static builds.
+`;
+
+      zip.file("index.html", htmlContent);
+      zip.file("style.css", cssContent);
+      zip.file("README.md", readmeContent);
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "exported-component-package.zip";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setShowExportModal(false);
+    } catch (err: any) {
+      alert("Failed to create ZIP package: " + err.message);
+    }
+  };
+
   return {
     componentTree,
     setComponentTree,
@@ -718,6 +819,12 @@ ${rawHtml}
     setShowExportModal,
     copied,
     setCopied,
+    loadedElements,
+    loadElement,
+    offloadElement,
+    toggleElementLoad,
+    loadAll,
+    offloadAll,
 
     changeComponentTree,
     undo,
@@ -737,5 +844,6 @@ ${rawHtml}
     handleAIEnhanceCopy,
     handleCopyCode,
     handleDownloadFile,
+    handleDownloadZip,
   };
 }

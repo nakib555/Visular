@@ -21,6 +21,15 @@ export default defineConfig(() => {
     build: {
       chunkSizeWarningLimit: 500,
       rollupOptions: {
+        onwarn(warning, warn) {
+          if (
+            warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
+            (warning.message && warning.message.includes('Module level directives'))
+          ) {
+            return;
+          }
+          warn(warning);
+        },
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {

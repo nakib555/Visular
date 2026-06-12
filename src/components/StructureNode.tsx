@@ -15,7 +15,8 @@ import {
   List,
   FormInput,
   Menu,
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from "lucide-react";
 import { VisualElement } from "../types";
 import { useDesigner } from "../contexts/DesignerContext";
@@ -38,11 +39,15 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
     setDragDropPosition,
     duplicateElement,
     deleteElement,
-    moveElement
+    moveElement,
+    loadedElements,
+    loadElement,
+    offloadElement,
   } = designer;
 
   const isSelected = selectedId === node.id;
   const isCurrentlyDragged = draggedId === node.id;
+  const isLoaded = node.id === "canvas_root" || node.id === "workspace_canvas" || (loadedElements && loadedElements[node.id] !== false);
   
   const getTreeNodeIcon = (type: string, tag: string) => {
     const t = tag.toLowerCase().trim();
@@ -165,6 +170,12 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
       >
         <div className="flex flex-row items-center gap-2 overflow-hidden pr-2">
           {getTreeNodeIcon(node.type, node.tag)}
+          {node.id !== "canvas_root" && node.id !== "workspace_canvas" && (
+            <span 
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${isLoaded ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)]" : "bg-amber-400 animate-pulse border border-amber-500/30"}`} 
+              title={isLoaded ? "Loaded in Viewport" : "Offloaded"} 
+            />
+          )}
           <span className="truncate">
             <span className={`${isSelected ? "text-stone-300" : "text-stone-400"} font-mono text-[9px] uppercase tracking-widest mr-1.5`}>{node.tag}</span>
             {node.content ? (
@@ -178,6 +189,22 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
         {/* Inline structural controls */}
         {isSelected && (
           <div className="flex items-center gap-0.5 shrink-0 animate-in fade-in zoom-in duration-200">
+            {node.id !== "canvas_root" && node.id !== "workspace_canvas" && (
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if (isLoaded) {
+                    if (offloadElement) offloadElement(node.id);
+                  } else {
+                    if (loadElement) loadElement(node.id);
+                  }
+                }}
+                className={`p-1 hover:bg-stone-700 hover:text-white rounded-md transition flex items-center justify-center ${isLoaded ? "text-stone-400 hover:text-amber-400" : "text-emerald-400 hover:text-emerald-200"}`}
+                title={isLoaded ? "Offload Component" : "Load Component"}
+              >
+                <RefreshCw size={11} className={isLoaded ? "" : "animate-spin-slow"} />
+              </button>
+            )}
             <button 
               onClick={(e) => { e.stopPropagation(); duplicateElement(node.id); }}
               className="p-1 hover:bg-stone-700 hover:text-white text-stone-400 rounded-md transition"

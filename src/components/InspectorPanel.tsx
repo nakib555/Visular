@@ -49,7 +49,10 @@ import { DisplayDropdown } from "./css-categories/layout-box-model/properties/Di
 import { FlexDirectionControl } from "./css-categories/layout-box-model/properties/FlexDirectionControl";
 import { GapControl } from "./css-categories/layout-box-model/properties/GapControl";
 import { FlexWrapControl } from "./css-categories/layout-box-model/properties/FlexWrapControl";
+import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
 import { VisualElement } from "../types";
+import { useDesigner } from "../contexts/DesignerContext";
+import { HslColorPicker } from "./HslColorPicker";
 import {
   setGroupClass,
   getActiveGroupClass,
@@ -196,6 +199,7 @@ export function InspectorPanel({
   deleteElement,
   duplicateElement,
 }: InspectorPanelProps) {
+  const { componentTree } = useDesigner();
   const [searchQuery, setSearchQuery] = useState("");
   const [rotationX, setRotationX] = useState(25); // degrees
   const [rotationY, setRotationY] = useState(-35); // degrees
@@ -407,117 +411,23 @@ export function InspectorPanel({
     const sliderConf = getSliderLimits(propName);
 
     if (isColor) {
-      const swatches = [
-        {
-          color: "transparent",
-          bg: "bg-white border-2 border-dashed border-stone-300",
-        },
-        { color: "currentColor", bg: "bg-stone-500 border" },
-        { color: "#000000", bg: "bg-black" },
-        {
-          color: "#ffffff",
-          bg: "bg-white border border-stone-200",
-        },
-        { color: "#f43f5e", bg: "bg-rose-500" },
-        { color: "#f59e0b", bg: "bg-amber-500" },
-        { color: "#10b981", bg: "bg-emerald-500" },
-        { color: "#0ea5e9", bg: "bg-sky-500" },
-        { color: "#6366f1", bg: "bg-indigo-500" },
-        { color: "#8b5cf6", bg: "bg-violet-500" },
-      ];
-
-      const isHex = currentVal && /^#[0-9A-F]{6}$/i.test(currentVal);
-      const hexValue = isHex ? currentVal : "#6366f1";
-
       return (
         <div
           key={propIdx}
           className="flex flex-col gap-1.5 w-full text-left"
         >
-          <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
+          <label className="text-[10.5px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
             <span>{propName}</span>
             <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
               {currentVal || "default"}
             </span>
           </label>
-          <div className="flex flex-col gap-3 p-3 bg-white border border-stone-200/90 rounded-2xl shadow-xs">
-            {/* Quick Palette Swatches */}
-            <div>
-              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono block mb-1.5 pl-0.5">
-                Swatches:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {swatches.map((sw, swIdx) => {
-                  const isSelected = currentVal === sw.color;
-                  return (
-                    <button
-                      key={swIdx}
-                      type="button"
-                      onClick={() => setPropValue(propName, sw.color)}
-                      className={`w-6 h-6 rounded-lg transition-transform active:scale-95 duration-150 cursor-pointer ${sw.bg} ${
-                        isSelected
-                          ? "ring-2 ring-rose-500 ring-offset-1 scale-110 shadow-sm"
-                          : "hover:scale-105"
-                      }`}
-                      title={sw.color}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Visual Color Picker Option */}
-            <div className="border-t border-stone-100/80 pt-2.5">
-              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono block mb-1.5 pl-0.5">
-                Visual Picker:
-              </span>
-              <div className="relative flex items-center justify-between gap-3 p-2 bg-stone-50 border border-stone-200/60 rounded-xl hover:border-stone-300 transition-all">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-stone-200 shadow-sm flex-shrink-0 cursor-pointer"
-                       style={{ backgroundColor: currentVal && currentVal !== "transparent" && currentVal !== "currentColor" ? currentVal : "#e2e8f0" }}>
-                    <input
-                      type="color"
-                      value={hexValue}
-                      onChange={(e) => setPropValue(propName, e.target.value)}
-                      className="absolute inset-[-6px] w-[200%] h-[200%] cursor-pointer border-0 p-0 opacity-0"
-                    />
-                    {(!currentVal || currentVal === "transparent" || currentVal === "currentColor") && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
-                        <span className="text-stone-400 text-[10px] font-bold">🎨</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10.5px] font-bold text-stone-700 font-mono">
-                      Select Custom Color
-                    </span>
-                    <span className="text-[8.5px] text-stone-450 font-mono font-medium">
-                      Click box to open visual spectrum
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 pr-1">
-                  <span className={`text-[8px] font-extrabold font-mono tracking-wider px-1.5 py-0.5 rounded-sm ${isHex ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-stone-200/65 text-stone-500'}`}>
-                    {isHex ? "HEX" : "PRESET"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Hex/Value Direct Input */}
-            <div className="flex items-center gap-1.5 border-t border-stone-100 pt-2.5">
-              <span className="text-[9px] font-extrabold text-stone-400 uppercase font-mono">
-                Hex / Val:
-              </span>
-              <input
-                type="text"
-                value={currentVal}
-                onChange={(e) => setPropValue(propName, e.target.value)}
-                placeholder="#3b82f6, transparent..."
-                className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-2.5 py-1 text-[10.5px] focus:outline-none focus:border-rose-500 font-mono text-stone-850"
-              />
-            </div>
-          </div>
+          <HslColorPicker
+            propName={propName}
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+            rootComponentTree={componentTree}
+          />
         </div>
       );
     }
@@ -601,29 +511,14 @@ export function InspectorPanel({
     }
 
     if (propName === "align-items") {
+      const activeDirection = selectedElement?.classes?.includes("flex-col") ? "column" : "row";
       return (
-        <div key={propIdx} className="w-full flex items-end gap-2 animate-fade-in text-left">
-          <div className="flex-1">
-            <PropertyControl
-              label={propName}
-              options={[
-                { value: "", label: "Auto / Default" },
-                ...uniqueOptions.map((opt: string) => ({ value: opt, label: opt })),
-              ]}
-              value={currentVal}
-              onChange={(val) => setPropValue(propName, val)}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={resetAlignment}
-            className="px-2.5 py-1.5 shrink-0 text-[10px] font-bold text-stone-600 hover:text-rose-600 bg-stone-50 hover:bg-rose-50 border border-stone-200/80 hover:border-rose-200 rounded-xl transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer shadow-sm active:scale-[0.98]"
-            title="Reset alignment classes and restore default inherited layout behavior"
-          >
-            <RotateCcw size={12} className="stroke-[2.25]" />
-            <span>Reset to Default</span>
-          </button>
-        </div>
+        <AlignItemsControl
+          key={propIdx}
+          value={currentVal}
+          onChange={(val) => setPropValue(propName, val)}
+          currentDirection={activeDirection}
+        />
       );
     }
 

@@ -1,6 +1,7 @@
 import React from "react";
-import { Copy, Trash2, Layout } from "lucide-react";
+import { Copy, Trash2, Layout, RefreshCw } from "lucide-react";
 import { motion } from "motion/react";
+import { useInView } from "react-intersection-observer";
 import { VisualElement } from "../types";
 import { useDesigner } from "../contexts/DesignerContext";
 
@@ -13,6 +14,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
   const designer = useDesigner();
   const {
     selectedId,
+    viewMode,
     doubleClickId,
     setDoubleClickId,
     inlineTextValue,
@@ -32,8 +34,27 @@ export function VisualNode({ elem }: VisualNodeProps) {
     setDragSnapCoords,
     isSnapToGridEnabled,
     smartGuides,
-    setSmartGuides
+    setSmartGuides,
+    loadedElements,
+    loadElement,
+    offloadElement,
   } = designer;
+
+  const isLoaded = elem.id === "canvas_root" || elem.id === "workspace_canvas" || (loadedElements && loadedElements[elem.id] !== false);
+
+  const { ref: intersectionRef, inView } = useInView({
+    rootMargin: "160px 0px",
+    triggerOnce: false,
+    skip: isLoaded,
+  });
+
+  React.useEffect(() => {
+    if (inView && !isLoaded) {
+      if (loadElement) {
+        loadElement(elem.id);
+      }
+    }
+  }, [inView, isLoaded, elem.id, loadElement]);
 
   const lastGuidesComputeRef = React.useRef<number>(0);
 
@@ -218,39 +239,6 @@ export function VisualNode({ elem }: VisualNodeProps) {
     isSelected ? "selected-element-outline" : "hover-element-outline"
   } ${isCurrentlyDragged ? "opacity-35 grayscale-[50%] scale-[0.98] border border-dashed border-rose-400 pointer-events-none" : ""} relative transition-all duration-200`;
 
-  if (isDoubleClicked && elem.content !== undefined) {
-    return (
-      <TagName
-        {...({} as any)}
-        ref={inlineEditRef as any}
-        style={inlineStyles}
-        contentEditable
-        suppressContentEditableWarning
-        onBlur={(e: React.FocusEvent<HTMLElement>) => {
-          const newText = e.currentTarget.textContent || "";
-          if (newText !== elem.content) {
-            designer.updateTree(() => ({ content: newText }));
-          }
-          setDoubleClickId(null);
-        }}
-        onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            e.currentTarget.blur();
-          }
-          if (e.key === "Escape") {
-            e.preventDefault();
-            e.currentTarget.blur();
-          }
-          // prevent visual node wrapper commands from bleeding
-          e.stopPropagation();
-        }}
-        className={`${elem.classes || ""} outline-none ring-2 ring-rose-500 rounded-sm relative z-50 caret-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.3)] shadow-rose-500`}
-        dangerouslySetInnerHTML={{ __html: elem.content }}
-      />
-    );
-  }
-
   const renderFloatingToolbar = () => {
     return (
       <motion.span
@@ -289,6 +277,27 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
         <span className="h-4 w-px bg-zinc-805" />
 
+        {/* Offload Action */}
+        {elem.id !== "canvas_root" && elem.id !== "workspace_canvas" && (
+          <>
+            <span
+              role="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (offloadElement) {
+                  offloadElement(elem.id);
+                }
+              }}
+              title="Offload node to save memory"
+              className="flex items-center gap-1.5 px-2 py-1 text-zinc-300 hover:text-amber-400 hover:bg-amber-500/10 active:scale-95 rounded-lg transition-all cursor-pointer font-sans font-medium text-[10.5px] border border-transparent hover:border-amber-500/20"
+            >
+              <RefreshCw size={12} className="shrink-0 text-amber-500" />
+              <span>Offload</span>
+            </span>
+            <span className="h-4 w-px bg-zinc-805" />
+          </>
+        )}
+
         {/* Duplicate Button */}
         <span
           role="button"
@@ -321,6 +330,135 @@ export function VisualNode({ elem }: VisualNodeProps) {
       </motion.span>
     );
   };
+
+  if (!isLoaded) {
+    if (viewMode !== "editor") {
+      // Clean, professional layout-preserving production-grade lazy-loading skeleton for real website look
+      return (
+        <motion.div
+          ref={intersectionRef}
+          id={elem.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-full flex flex-col gap-3 py-3 px-2 select-none"
+        >
+          {elem.type === "image" ? (
+            <div className="w-full h-48 bg-stone-100 rounded-2xl animate-pulse flex items-center justify-center border border-stone-200/40">
+              <RefreshCw size={18} className="animate-spin text-stone-300" />
+            </div>
+          ) : elem.type === "text" ? (
+            <div className="w-full space-y-2 animate-pulse">
+              <div className="h-5 bg-stone-200/80 rounded-md w-3/4" />
+              <div className="h-4 bg-stone-200/50 rounded-md w-1/2" />
+            </div>
+          ) : elem.type === "button" ? (
+            <div className="h-10 bg-stone-100 rounded-xl w-32 animate-pulse border border-stone-200/30 animate-pulse" />
+          ) : elem.type === "badge" ? (
+            <div className="h-5 bg-stone-100 rounded-full w-16 animate-pulse" />
+          ) : (
+            // container block
+            <div className="w-full p-6 bg-stone-50/50 border border-stone-200/30 rounded-3xl animate-pulse space-y-4">
+              <div className="h-4 bg-stone-200/60 rounded w-1/3" />
+              <div className="space-y-2">
+                <div className="h-3 bg-stone-200/40 rounded w-full" />
+                <div className="h-3 bg-stone-200/40 rounded w-5/6" />
+              </div>
+            </div>
+          )}
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div 
+        ref={intersectionRef}
+        id={elem.id}
+        onClick={handleClick}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={`relative max-w-full my-2 bg-gradient-to-br from-stone-50 to-stone-100/95 border-2 border-dashed border-stone-300 hover:border-rose-400 hover:from-white hover:to-rose-50/10 p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 select-none transition-all duration-300 min-h-[96px] w-full ${isSelected ? "ring-2 ring-rose-500 shadow-lg scale-[1.01]" : "hover:shadow-sm"}`}
+      >
+        <div className="flex items-center gap-1.5 pointer-events-none">
+          <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-stone-500 bg-stone-200/70 border border-stone-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
+            <RefreshCw size={9} className="animate-spin text-stone-400" />
+            <span>Offloaded {elem.tag}</span>
+          </span>
+          <span className="text-[9px] font-mono font-semibold text-stone-400">ID: {elem.id.slice(0, 5)}...</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <p className="text-[10.5px] font-sans font-medium text-stone-500">Node is offloaded. Scroll close or click to load.</p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (loadElement) loadElement(elem.id);
+            }}
+            className="px-2.5 py-1 bg-stone-850 hover:bg-rose-600 text-[10px] text-white font-mono font-extrabold rounded-lg transition-all duration-200 active:scale-95 shadow-sm hover:shadow flex items-center gap-1 cursor-pointer hover:border-transparent uppercase tracking-wider"
+          >
+            <span>Load Now</span>
+          </button>
+        </div>
+
+        {isSelected && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute -inset-[3px] pointer-events-none z-30 rounded-[inherit] border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.35)] block"
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+          >
+            {/* Corner Anchors */}
+            <span className="absolute -top-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+            <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-white border border-rose-500 rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] z-40" />
+
+            {/* Quick Actions Bar */}
+            {renderFloatingToolbar()}
+          </motion.span>
+        )}
+      </motion.div>
+    );
+  }
+
+  if (isDoubleClicked && elem.content !== undefined) {
+    return (
+      <TagName
+        {...({} as any)}
+        ref={inlineEditRef as any}
+        style={inlineStyles}
+        contentEditable
+        suppressContentEditableWarning
+        onBlur={(e: React.FocusEvent<HTMLElement>) => {
+          const newText = e.currentTarget.textContent || "";
+          if (newText !== elem.content) {
+            designer.updateTree(() => ({ content: newText }));
+          }
+          setDoubleClickId(null);
+        }}
+        onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+          // prevent visual node wrapper commands from bleeding
+          e.stopPropagation();
+        }}
+        className={`${elem.classes || ""} outline-none ring-2 ring-rose-500 rounded-sm relative z-50 caret-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.3)] shadow-rose-500`}
+        dangerouslySetInnerHTML={{ __html: elem.content }}
+      />
+    );
+  }
+
+  // renderFloatingToolbar was relocated above
 
   if (elem.type === "image") {
     const imgSrc = elem.content || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80";
