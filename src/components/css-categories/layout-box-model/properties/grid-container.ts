@@ -19,7 +19,7 @@ export const gridContainerGroup: CSSSubCategory = {
     {
       name: "align-items",
       values:
-        "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | baseline",
+        "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | anchor-center | baseline | first baseline | last baseline | safe center | safe start | safe end | safe flex-start | safe flex-end | safe self-start | safe self-end | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe self-start | unsafe self-end | inherit | initial | revert | revert-layer | unset",
     },
   ],
 };

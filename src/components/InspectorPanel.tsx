@@ -40,6 +40,7 @@ import {
   Layout,
   ZoomIn,
   Eye,
+  RotateCcw,
 } from "lucide-react";
 import { CSS_HIERARCHY_DATA } from "./css-categories";
 import { CSSCategory, CSSSubCategory, CSSProperty } from "../types-css";
@@ -47,6 +48,7 @@ import { PropertyControl } from "./PropertyControl";
 import { DisplayDropdown } from "./css-categories/layout-box-model/properties/DisplayDropdown";
 import { FlexDirectionControl } from "./css-categories/layout-box-model/properties/FlexDirectionControl";
 import { GapControl } from "./css-categories/layout-box-model/properties/GapControl";
+import { FlexWrapControl } from "./css-categories/layout-box-model/properties/FlexWrapControl";
 import { VisualElement } from "../types";
 import {
   setGroupClass,
@@ -54,6 +56,7 @@ import {
   setPrefixedClass,
   getPrefixedClass,
   setColorClass,
+  STYLE_GROUPS,
 } from "../styleUtils";
 
 export type InspectorSection =
@@ -265,6 +268,42 @@ export function InspectorPanel({
     updateTree((n) => ({ classes: withoutOld.join(" ") }));
   };
 
+  const resetAlignment = () => {
+    if (!selectedElement) return;
+
+    const currentClasses = selectedElement.classes || "";
+    const tokens = currentClasses.split(/\s+/).filter(Boolean);
+
+    // Filter out:
+    // 1. Any Tailwind CSS align-items classes (items-start, items-center, items-end, etc.)
+    // 2. Any Tailwind CSS align-self classes (self-auto, self-normal, self-stretch, etc.)
+    // 3. Any Tailwind CSS align-content classes (content-normal, content-center, etc.)
+    // 4. Any arbitrary properties for align-items, align-self, align-content, or align-tracks (like [align-items:...], [align-self:...], etc.)
+    const cleanedTokens = tokens.filter((token) => {
+      // Handle responsive prefixes (e.g. md:items-center or max-sm:items-center)
+      const cleanToken = token.includes(":") ? token.split(":").pop()! : token;
+
+      // Filter standard Tailwind alignment class groups
+      if (STYLE_GROUPS.alignment && STYLE_GROUPS.alignment.includes(cleanToken)) return false;
+      if (STYLE_GROUPS.alignSelf && STYLE_GROUPS.alignSelf.includes(cleanToken)) return false;
+      if (STYLE_GROUPS.alignContent && STYLE_GROUPS.alignContent.includes(cleanToken)) return false;
+
+      // Filter arbitrary bracketed design variables that define alignment properties
+      if (cleanToken.startsWith("[align-items:")) return false;
+      if (cleanToken.startsWith("[align-self:")) return false;
+      if (cleanToken.startsWith("[align-content:")) return false;
+      if (cleanToken.startsWith("[align-tracks:")) return false;
+
+      return true;
+    });
+
+    const newClasses = cleanedTokens.join(" ");
+
+    updateTree((n) => ({
+      classes: newClasses,
+    }));
+  };
+
   const getSliderLimits = (pName: string) => {
     if (pName === "offset-distance")
       return { min: 0, max: 100, step: 1, unit: "%" };
@@ -330,6 +369,17 @@ export function InspectorPanel({
           <FlexDirectionControl
             value={currentVal}
             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "flex-wrap") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <FlexWrapControl
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
           />
         </div>
       );
@@ -546,6 +596,33 @@ export function InspectorPanel({
               );
             })}
           </div>
+        </div>
+      );
+    }
+
+    if (propName === "align-items") {
+      return (
+        <div key={propIdx} className="w-full flex items-end gap-2 animate-fade-in text-left">
+          <div className="flex-1">
+            <PropertyControl
+              label={propName}
+              options={[
+                { value: "", label: "Auto / Default" },
+                ...uniqueOptions.map((opt: string) => ({ value: opt, label: opt })),
+              ]}
+              value={currentVal}
+              onChange={(val) => setPropValue(propName, val)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={resetAlignment}
+            className="px-2.5 py-1.5 shrink-0 text-[10px] font-bold text-stone-600 hover:text-rose-600 bg-stone-50 hover:bg-rose-50 border border-stone-200/80 hover:border-rose-200 rounded-xl transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer shadow-sm active:scale-[0.98]"
+            title="Reset alignment classes and restore default inherited layout behavior"
+          >
+            <RotateCcw size={12} className="stroke-[2.25]" />
+            <span>Reset to Default</span>
+          </button>
         </div>
       );
     }

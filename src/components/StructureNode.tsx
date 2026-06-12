@@ -117,18 +117,26 @@ export function StructureNode({ node, depth = 0 }: StructureNodeProps) {
           if (!draggedId || draggedId === node.id) return;
           e.preventDefault();
           e.stopPropagation();
-          setDragDropTargetId(node.id);
+          
+          if (dragDropTargetId !== node.id) {
+            setDragDropTargetId(node.id);
+          }
           
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
           const y = e.clientY - rect.top;
           
+          let targetPos: "before" | "after" | "inside" = "after";
           if (node.type === "container") {
-            if (y < rect.height * 0.25) setDragDropPosition("before");
-            else if (y > rect.height * 0.75) setDragDropPosition("after");
-            else setDragDropPosition("inside");
+            if (y < rect.height * 0.25) targetPos = "before";
+            else if (y > rect.height * 0.75) targetPos = "after";
+            else targetPos = "inside";
           } else {
-            if (y < rect.height / 2) setDragDropPosition("before");
-            else setDragDropPosition("after");
+            if (y < rect.height / 2) targetPos = "before";
+            else targetPos = "after";
+          }
+          
+          if (dragDropPosition !== targetPos) {
+            setDragDropPosition(targetPos);
           }
         }}
         onDragLeave={() => {

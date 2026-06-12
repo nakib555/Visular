@@ -35,6 +35,8 @@ export function VisualNode({ elem }: VisualNodeProps) {
     setSmartGuides
   } = designer;
 
+  const lastGuidesComputeRef = React.useRef<number>(0);
+
   const calculateAlignmentGuides = (e: React.DragEvent) => {
     if (!draggedId || !setSmartGuides) return;
 
@@ -140,7 +142,18 @@ export function VisualNode({ elem }: VisualNodeProps) {
       }
     });
 
-    setSmartGuides(calculatedGuides.slice(0, 4)); // limit to active guides
+    const normalizedNew = calculatedGuides.slice(0, 4);
+    const normalizedOld = smartGuides || [];
+    
+    const guidesChanged = normalizedNew.length !== normalizedOld.length ||
+      normalizedNew.some((g, idx) => {
+        const og = normalizedOld[idx];
+        return !og || g.id !== og.id || g.pos !== og.pos || g.alignType !== og.alignType;
+      });
+
+    if (guidesChanged && setSmartGuides) {
+      setSmartGuides(normalizedNew);
+    }
   };
 
   const isSelected = selectedId === elem.id;
@@ -323,22 +336,34 @@ export function VisualNode({ elem }: VisualNodeProps) {
           if (!draggedId || draggedId === elem.id) return;
           e.preventDefault();
           e.stopPropagation();
-          setDragDropTargetId(elem.id);
+          
+          if (dragDropTargetId !== elem.id) {
+            setDragDropTargetId(elem.id);
+          }
           
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
           const y = e.clientY - rect.top;
           const x = e.clientX - rect.left;
           
-          if (setDragSnapCoords) {
-            const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
-            const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
-            setDragSnapCoords({ x: snapX, y: snapY });
+          const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
+          const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
+          
+          if (!dragSnapCoords || dragSnapCoords.x !== snapX || dragSnapCoords.y !== snapY) {
+            if (setDragSnapCoords) {
+              setDragSnapCoords({ x: snapX, y: snapY });
+            }
           }
           
-          if (y < rect.height / 2) setDragDropPosition("before");
-          else setDragDropPosition("after");
+          const targetPos = y < rect.height / 2 ? "before" : "after";
+          if (dragDropPosition !== targetPos) {
+            setDragDropPosition(targetPos);
+          }
 
-          calculateAlignmentGuides(e);
+          const now = Date.now();
+          if (now - lastGuidesComputeRef.current > 40) {
+            calculateAlignmentGuides(e);
+            lastGuidesComputeRef.current = now;
+          }
         }}
         onDragLeave={(e: any) => {
           e.stopPropagation();
@@ -483,28 +508,43 @@ export function VisualNode({ elem }: VisualNodeProps) {
         if (!draggedId || draggedId === elem.id) return;
         e.preventDefault();
         e.stopPropagation();
-        setDragDropTargetId(elem.id);
+        
+        if (dragDropTargetId !== elem.id) {
+          setDragDropTargetId(elem.id);
+        }
         
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         const y = e.clientY - rect.top;
         const x = e.clientX - rect.left;
         
-        if (setDragSnapCoords) {
-          const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
-          const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
-          setDragSnapCoords({ x: snapX, y: snapY });
+        const snapX = isSnapToGridEnabled ? Math.round(x / 8) * 8 : Math.round(x);
+        const snapY = isSnapToGridEnabled ? Math.round(y / 8) * 8 : Math.round(y);
+        
+        if (!dragSnapCoords || dragSnapCoords.x !== snapX || dragSnapCoords.y !== snapY) {
+          if (setDragSnapCoords) {
+            setDragSnapCoords({ x: snapX, y: snapY });
+          }
         }
         
+        let targetPos: "before" | "after" | "inside" = "after";
         if (elem.type === "container") {
-          if (y < rect.height * 0.25) setDragDropPosition("before");
-          else if (y > rect.height * 0.75) setDragDropPosition("after");
-          else setDragDropPosition("inside");
+          if (y < rect.height * 0.25) targetPos = "before";
+          else if (y > rect.height * 0.75) targetPos = "after";
+          else targetPos = "inside";
         } else {
-          if (y < rect.height / 2) setDragDropPosition("before");
-          else setDragDropPosition("after");
+          if (y < rect.height / 2) targetPos = "before";
+          else targetPos = "after";
+        }
+        
+        if (dragDropPosition !== targetPos) {
+          setDragDropPosition(targetPos);
         }
 
-        calculateAlignmentGuides(e);
+        const now = Date.now();
+        if (now - lastGuidesComputeRef.current > 40) {
+          calculateAlignmentGuides(e);
+          lastGuidesComputeRef.current = now;
+        }
       }}
       onDragLeave={(e: any) => {
         e.stopPropagation();
