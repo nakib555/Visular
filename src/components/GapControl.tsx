@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   MoveHorizontal, 
@@ -6,8 +6,9 @@ import {
   LayoutGrid, 
   Info, 
   Sparkles, 
-  ChevronRight,
-  Settings2
+  Settings2,
+  ChevronDown,
+  Check
 } from "lucide-react";
 
 interface GapControlProps {
@@ -23,7 +24,7 @@ interface GapPreset {
 }
 
 const GAP_PRESETS: GapPreset[] = [
-  { label: "0", value: "0px", pixelEquivalent: 0, badgeColor: "bg-slate-100/75 text-slate-500" },
+  { label: "0", value: "0px", pixelEquivalent: 0, badgeColor: "bg-stone-100 text-stone-500 border-stone-200" },
   { label: "xs", value: "4px", pixelEquivalent: 4, badgeColor: "bg-teal-50 text-teal-600 border-teal-100" },
   { label: "sm", value: "8px", pixelEquivalent: 8, badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
   { label: "md", value: "12px", pixelEquivalent: 12, badgeColor: "bg-green-50 text-green-600 border-green-100" },
@@ -38,7 +39,24 @@ export function GapControl({ value, onChange }: GapControlProps) {
   const [direction, setDirection] = useState<"row" | "column">("row");
   // Active custom unit selection
   const [unit, setUnit] = useState<"px" | "rem" | "%" | "em">("px");
+  // Text input status for the custom dropdown unit menu
+  const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
   
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click-away
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setUnitDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Parse the current numeric value and current unit from the CSS string
   const { numericValue, parsedUnit } = useMemo(() => {
     if (!value) return { numericValue: 0, parsedUnit: "px" as const };
@@ -100,37 +118,44 @@ export function GapControl({ value, onChange }: GapControlProps) {
 
   const currentLimit = unitConfig[unit];
 
+  const unitLabels = {
+    px: "Pixels (px)",
+    rem: "Relative (rem)",
+    em: "Relative (em)",
+    "%": "Percent (%)"
+  };
+
   return (
-    <div className="flex flex-col gap-3 w-full text-left bg-gradient-to-b from-stone-50 to-stone-100 p-4 rounded-[22px] border border-stone-250/90 shadow-[inset_0_1.5px_0_0_white,0_1px_3px_rgba(0,0,0,0.02)] relative overflow-hidden group">
+    <div className="flex flex-col gap-3 w-full text-left bg-gradient-to-b from-stone-50 to-stone-100 p-4 rounded-[22px] border border-stone-250/90 shadow-[inset_0_1.5px_0_0_white,0_1px_3px_rgba(0,0,0,0.02)] relative overflow-visible group">
       
       {/* Decorative top-right overlay glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-350/5 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header and current value badge */}
       <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <div className="w-5 h-5 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0">
             <LayoutGrid size={11} className="text-emerald-600" />
           </div>
-          <label className="text-[10px] text-stone-600 font-extrabold uppercase tracking-widest font-mono">
+          <label className="text-[10px] text-stone-600 font-extrabold uppercase tracking-widest font-mono truncate select-none">
             Element Gap Studio
           </label>
         </div>
         
         {value ? (
-          <div className="flex items-center gap-1.5 animate-fade-in">
+          <div className="flex items-center gap-1.5 animate-fade-in shrink-0">
             {activePreset && (
-              <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full border ${activePreset.badgeColor}`}>
+              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${activePreset.badgeColor} hidden sm:inline`}>
                 Preset: {activePreset.label.toUpperCase()}
               </span>
             )}
-            <span className="text-[10px] font-mono font-extrabold text-emerald-700 bg-emerald-50 Border border-emerald-200/60 px-2 py-0.5 rounded-lg shadow-xs">
+            <span className="text-[10px] font-mono font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg shadow-xs">
               {value}
             </span>
           </div>
         ) : (
-          <span className="text-[9.5px] font-mono font-semibold text-stone-400 bg-stone-150/50 px-2 py-0.5 rounded-lg border border-stone-200/40">
-            default / not set
+          <span className="text-[9.5px] font-mono font-semibold text-stone-400 bg-stone-150/50 px-2 py-0.5 rounded-lg border border-stone-200/40 shrink-0">
+            default
           </span>
         )}
       </div>
@@ -237,7 +262,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
             </AnimatePresence>
 
             {/* Box 3 */}
-            <div className="h-8 w-11 bg-indigo-400 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold text-white shadow-xs border border-indigo-500/10 shrink-0 font-medium">
+            <div className="h-8 w-11 bg-indigo-400 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold text-white shadow-xs border border-indigo-500/10 shrink-0 font-medium font-sans">
               Box C
             </div>
           </motion.div>
@@ -245,8 +270,8 @@ export function GapControl({ value, onChange }: GapControlProps) {
       </div>
 
       {/* Preset Selectors */}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest pl-1 font-mono">
+      <div className="flex flex-col gap-1.5 relative z-10">
+        <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest pl-1 font-mono select-none">
           Interactive Sizing Presets
         </span>
         <div className="grid grid-cols-4 gap-1.5">
@@ -273,51 +298,76 @@ export function GapControl({ value, onChange }: GapControlProps) {
         </div>
       </div>
 
-      {/* Custom Fine-Tuner Section */}
-      <div className="bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl flex flex-col gap-3 shadow-2xs relative z-10">
+      {/* Custom Fine-Tuner Section with Dropdown List selection */}
+      <div className="bg-white/80 border border-stone-200/70 p-3.5 rounded-2xl flex flex-col gap-3 shadow-2xs relative z-20">
         
-        {/* Unit & Label Selection */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2">
-          <div className="flex items-center gap-1.5">
-            <Settings2 size={12} className="text-stone-400" />
-            <span className="text-[10px] font-extrabold text-stone-600 font-mono uppercase tracking-wider">
+        {/* Unit Selection using a dynamic React custom select list / dropdown */}
+        <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-2 relative">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Settings2 size={12} className="text-stone-400 shrink-0" />
+            <span className="text-[10px] font-bold text-stone-600 font-mono uppercase tracking-wider truncate">
               Custom Fine-Tuner
             </span>
           </div>
-          
-          <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-200/50 shrink-0 self-start sm:self-auto">
-            {(["px", "rem", "%", "em"] as const).map((u) => {
-              const activeUnit = u === unit;
-              return (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => {
-                    setUnit(u);
-                    if (numericValue !== undefined) {
-                      handleNumericChange(numericValue, u);
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-md text-[9px] font-bold leading-none cursor-pointer transition-all ${
-                    activeUnit
-                      ? "bg-white text-emerald-700 shadow-2xs font-extrabold border border-stone-200/20"
-                      : "text-stone-400 hover:text-stone-600"
-                  }`}
+
+          {/* Unit Dropdown Trigger */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setUnitDropdownOpen(!unitDropdownOpen)}
+              className="flex items-center gap-1 bg-stone-100 border border-stone-200/60 hover:border-emerald-300 hover:bg-emerald-50/20 px-2 py-1 rounded-lg text-stone-700 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
+            >
+              <span>{unit.toUpperCase()} Unit</span>
+              <ChevronDown size={11} className={`text-stone-400 font-extrabold transition-transform duration-200 ${unitDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
+            </button>
+
+            {/* Custom Interactive Dropdown Menu */}
+            <AnimatePresence>
+              {unitDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute right-0 mt-1.5 w-36 bg-white border border-stone-250/90 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
                 >
-                  {u}
-                </button>
-              );
-            })}
+                  {(["px", "rem", "%", "em"] as const).map((u) => {
+                    const isSelected = u === unit;
+                    return (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => {
+                          setUnit(u);
+                          setUnitDropdownOpen(false);
+                          if (numericValue !== undefined) {
+                            handleNumericChange(numericValue, u);
+                          }
+                        }}
+                        className={`w-full text-left px-2 py-1.5 rounded-lg text-[9.5px] font-bold flex items-center justify-between transition-all duration-150 cursor-pointer ${
+                          isSelected
+                            ? "bg-emerald-500/10 text-emerald-800"
+                            : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                        }`}
+                      >
+                        <span className="font-mono">{unitLabels[u]}</span>
+                        {isSelected && <Check size={11} className="text-emerald-600 stroke-[3px]" />}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Range Slider Row */}
         <div className="flex flex-col gap-1">
-          <div className="flex justify-between items-center mb-0.5">
-            <span className="text-[9px] font-bold text-stone-450 uppercase tracking-widest font-mono">
+          <div className="flex justify-between items-center mb-0.5 select-none">
+            <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest font-mono">
               Adjust Value
             </span>
-            <span className="text-[9.5px] font-mono font-bold text-stone-400">
+            <span className="text-[9px] font-mono font-extrabold text-stone-500 bg-stone-50 border border-stone-200/55 px-1.5 py-0.5 rounded-md">
               Range: {currentLimit.min} to {currentLimit.max} {unit}
             </span>
           </div>
@@ -344,7 +394,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
                 const newVal = Math.max(currentLimit.min, (numericValue || 0) - currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
               }}
-              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-200 transition-colors shadow-2xs cursor-pointer"
+              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none"
             >
               -
             </button>
@@ -367,7 +417,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
                 const newVal = Math.min(currentLimit.max, (numericValue || 0) + currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
               }}
-              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-200 transition-colors shadow-2xs cursor-pointer"
+              className="w-7 h-7 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none"
             >
               +
             </button>
@@ -378,7 +428,7 @@ export function GapControl({ value, onChange }: GapControlProps) {
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[9.5px] font-bold text-stone-400 hover:text-red-500 transition-colors duration-150 flex items-center gap-1 cursor-pointer pl-2"
+              className="text-[9.5px] font-bold text-stone-400 hover:text-red-500 transition-colors duration-150 flex items-center gap-1 cursor-pointer pl-1"
             >
               Reset
             </button>
@@ -388,9 +438,9 @@ export function GapControl({ value, onChange }: GapControlProps) {
       </div>
 
       {/* Helpful Description Footer */}
-      <div className="flex items-start gap-1.5 p-2 bg-emerald-50/30 border border-emerald-100/45 rounded-xl">
+      <div className="flex items-start gap-1.5 p-2 bg-emerald-50/30 border border-emerald-100/45 rounded-xl z-10 relative">
         <Info size={11} className="text-emerald-600 shrink-0 mt-0.5" />
-        <p className="text-[9px] leading-normal text-stone-550 font-medium">
+        <p className="text-[9px] leading-normal text-stone-550 font-medium select-none">
           The <b>gap</b> property sets spacing (gutters) between columns and rows inside flexbox, CSS grid, and multi-column elements automatically.
         </p>
       </div>

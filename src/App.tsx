@@ -55,6 +55,10 @@ import {
   ChevronRight,
   Magnet,
   Hand,
+  Sidebar,
+  Minimize2,
+  Maximize2,
+  ChevronLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ElementType, VisualElement, ComponentPreset } from "./types";
@@ -316,6 +320,7 @@ function DesignerApp() {
   const [activeTab, setActiveTab] = useState<
     "presets" | "structure" | "elements" | "styles" | "ai_assist"
   >("presets");
+  const [sidebarState, setSidebarState] = useState<"closed" | "open" | "extended">("open");
   const [activePresetCategory, setActivePresetCategory] = useState<
     "all" | "heroes" | "cards" | "lists" | "calls-to-action"
   >("all");
@@ -835,11 +840,87 @@ function DesignerApp() {
 
       {/* CORE WORKSPACE SPLIT (Left sidebar | Interactive Center Canvas | Style Inspector right sidebar) */}
       <div id="main_split_container" className="flex-1 flex overflow-hidden">
+        {/* Floating reopen bar when sidebar is closed */}
+        {sidebarState === "closed" && (
+          <div className="w-12 border-r border-stone-200/60 bg-white h-[calc(100vh-64px)] flex flex-col items-center py-4 gap-4 flex-shrink-0 animate-fade-in transition-all">
+            <button
+              type="button"
+              onClick={() => setSidebarState("open")}
+              title="Open sidebar"
+              className="w-8 h-8 rounded-lg bg-stone-50 hover:bg-emerald-50 active:scale-95 border border-stone-200 hover:border-emerald-200 text-stone-600 hover:text-emerald-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+            >
+              <Sidebar size={14} />
+            </button>
+            <div className="h-[1px] w-6 bg-stone-100" />
+            <button
+              type="button"
+              onClick={() => setSidebarState("extended")}
+              title="Extend sidebar (1.5x width)"
+              className="w-8 h-8 rounded-lg bg-stone-50 hover:bg-indigo-50 active:scale-95 border border-stone-200 hover:border-indigo-200 text-stone-600 hover:text-indigo-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+            >
+              <Maximize2 size={13} />
+            </button>
+            <div className="flex-1" />
+            <div className="text-[8px] uppercase tracking-widest text-stone-400 font-mono font-extrabold select-none whitespace-nowrap rotate-90 my-12">
+              CLOSED
+            </div>
+          </div>
+        )}
+
         {/* LEFT PANEL: Elements library, Presets, Layout outlines & AI assistant */}
         <div
           id="library_panel"
-          className={`w-full md:w-[350px] border-r border-stone-200/60 bg-white shadow-[2px_0_24px_rgba(0,0,0,0.02)] h-[calc(100vh-64px)] overflow-hidden flex-shrink-0 flex-col z-10 ${mobileActiveView === "library" ? "flex" : "hidden md:flex"}`}
+          className={`${
+            sidebarState === "closed"
+              ? "w-0 opacity-0 pointer-events-none md:w-0 border-r-0"
+              : sidebarState === "extended"
+              ? "w-full md:w-[540px]"
+              : "w-full md:w-[350px]"
+          } border-r border-stone-200/60 bg-white shadow-[2px_0_24px_rgba(0,0,0,0.02)] h-[calc(100vh-64px)] overflow-hidden flex-shrink-0 flex-col z-10 transition-all duration-300 ease-in-out ${mobileActiveView === "library" ? "flex" : "hidden md:flex"}`}
         >
+          {/* Sidebar Sizer Controller Header */}
+          <div className="px-4 py-2.5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50 flex-shrink-0">
+            <span className="text-[10px] font-mono tracking-wider font-extrabold text-stone-500 uppercase flex items-center gap-1.5 select-none">
+              <Sidebar size={11} className="text-stone-400" />
+              Sidebar Layout
+            </span>
+            <div className="flex bg-stone-100 p-0.5 rounded-lg border border-stone-200/50">
+              <button
+                type="button"
+                onClick={() => setSidebarState("closed")}
+                title="Hide sidebar (Collapses completely)"
+                className="p-1 rounded-md text-[10px] text-stone-500 hover:text-stone-850 hover:bg-white transition-all cursor-pointer"
+              >
+                <Minimize2 size={11} />
+              </button>
+              <div className="w-[1px] h-3.5 bg-stone-200/80 mx-0.5 self-center" />
+              <button
+                type="button"
+                onClick={() => setSidebarState("open")}
+                className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold transition-all cursor-pointer ${
+                  sidebarState === "open"
+                    ? "bg-white text-stone-900 shadow-2xs"
+                    : "text-stone-400 hover:text-stone-600"
+                }`}
+                title="Standard width (350px)"
+              >
+                1x
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarState("extended")}
+                className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold transition-all cursor-pointer ${
+                  sidebarState === "extended"
+                    ? "bg-white text-indigo-700 shadow-2xs"
+                    : "text-stone-400 hover:text-indigo-600"
+                }`}
+                title="Extended width (540px) - Perfect for Style Tuning"
+              >
+                1.5x
+              </button>
+            </div>
+          </div>
+
           {/* Navigation tabs Segmented Control (Pills) */}
           <div className="p-4 border-b border-stone-100">
             <div className="bg-stone-50/50 p-1 rounded-[20px] flex gap-1 border border-stone-200/50">
