@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   LayoutGrid, 
@@ -6,7 +7,10 @@ import {
   Settings2,
   ChevronDown,
   Check,
-  RotateCcw
+  RotateCcw,
+  Grid,
+  GripHorizontal,
+  SplitSquareHorizontal
 } from "lucide-react";
 
 interface GapControlProps {
@@ -36,6 +40,59 @@ const GAP_PRESETS: GapPreset[] = [
   { label: "3xl", value: "48px", pixelEquivalent: 48, badgeColor: "bg-violet-50 text-violet-600 border-violet-100" },
 ];
 
+interface GapPropertyOption {
+  value: "gap" | "row-gap" | "column-gap";
+  label: string;
+  description: string;
+  icon: React.ComponentType<any>;
+  badgeBg: string;
+  badgeContent: React.ReactNode;
+}
+
+const gapPropertyOptions: GapPropertyOption[] = [
+  {
+    value: "gap",
+    label: "Unified Gap (gap)",
+    description: "Applies equal spacing to rows and columns together",
+    icon: Grid,
+    badgeBg: "bg-emerald-50/90 border border-emerald-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
+    badgeContent: (
+      <div className="grid grid-cols-2 gap-[2px]">
+        <div className="w-[6px] h-[6px] bg-emerald-500 rounded-[1px]" />
+        <div className="w-[6px] h-[6px] bg-emerald-500 rounded-[1px]" />
+        <div className="w-[6px] h-[6px] bg-emerald-500 rounded-[1px]" />
+        <div className="w-[6px] h-[6px] bg-emerald-500 rounded-[1px]" />
+      </div>
+    )
+  },
+  {
+    value: "row-gap",
+    label: "Row Spacing (row-gap)",
+    description: "Sets spacing vertically between blocks or grid rows",
+    icon: GripHorizontal,
+    badgeBg: "bg-rose-50/90 border border-rose-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center gap-[2px]",
+    badgeContent: (
+      <div className="flex flex-col gap-[3px] w-full px-1 justify-center">
+        <div className="w-full h-[3px] bg-rose-500 rounded-[0.5px]" />
+        <div className="w-full h-[3px] bg-rose-500 rounded-[0.5px]" />
+      </div>
+    )
+  },
+  {
+    value: "column-gap",
+    label: "Column Spacing (column-gap)",
+    description: "Sets spacing horizontally between layout columns",
+    icon: SplitSquareHorizontal,
+    badgeBg: "bg-indigo-50/90 border border-indigo-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center gap-[2px]",
+    badgeContent: (
+      <div className="flex gap-[3px] h-3 items-center">
+        <div className="w-1.5 h-full bg-indigo-500 rounded-[0.5px]" />
+        <div className="w-1.5 h-full bg-indigo-500 rounded-[0.5px]" />
+      </div>
+    )
+  }
+];
+
 export function GapControl({ 
   value, 
   onChange,
@@ -54,7 +111,16 @@ export function GapControl({
   const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const propertyDropdownTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const [dropdownPos, setDropdownPos] = useState<{ 
+    top: number; 
+    left: number; 
+    width: number; 
+    bottom?: number; 
+    maxHeight?: number;
+    placement: "top" | "bottom" 
+  } | null>(null);
 
   // Resolve current property value & update function
   const currentPropertyValue = useMemo(() => {
@@ -76,10 +142,15 @@ export function GapControl({
   // Close dropdowns on click-away
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setUnitDropdownOpen(false);
       }
-      if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(event.target as Node)) {
+      if (
+        propertyDropdownTriggerRef.current && 
+        !propertyDropdownTriggerRef.current.contains(target) && 
+        !((target as Element).closest('#property-dropdown-menu'))
+      ) {
         setPropertyDropdownOpen(false);
       }
     }
@@ -88,6 +159,55 @@ export function GapControl({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Update dropdown portal position
+  useEffect(() => {
+    if (propertyDropdownOpen && propertyDropdownTriggerRef.current) {
+      const updatePosition = () => {
+        if (!propertyDropdownTriggerRef.current) return;
+        const rect = propertyDropdownTriggerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const dropdownHeight = 265; // approximate menu height
+        
+        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+          // Render above
+          setDropdownPos({
+            placement: "top",
+            bottom: window.innerHeight - rect.top + 8,
+            left: rect.left,
+            width: rect.width,
+            top: 0,
+            maxHeight: spaceAbove - 16
+          });
+        } else {
+          // Render below
+          setDropdownPos({
+            placement: "bottom",
+            top: rect.bottom + 8,
+            left: rect.left,
+            width: rect.width,
+            maxHeight: spaceBelow - 16
+          });
+        }
+      };
+
+      updatePosition();
+      
+      const handleScroll = (e: Event) => {
+        if (e.target instanceof Element && e.target.closest('#property-dropdown-menu')) return;
+        updatePosition();
+      };
+
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", updatePosition);
+
+      return () => {
+        window.removeEventListener("scroll", handleScroll, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [propertyDropdownOpen]);
 
   // Parse the current numeric value and current unit from the CSS string
   const { numericValue, parsedUnit } = useMemo(() => {
@@ -154,104 +274,162 @@ export function GapControl({
 
   const isAnyDropdownOpen = propertyDropdownOpen || unitDropdownOpen;
 
+  const activeOption = useMemo(() => {
+    return gapPropertyOptions.find(opt => opt.value === activeProperty)!;
+  }, [activeProperty]);
+
   return (
-    <div className={`flex flex-col gap-3 w-full text-left bg-[#f5f5f5] p-4 rounded-[22px] border-0 relative overflow-visible group transition-all duration-200 ${
+    <div className={`flex flex-col gap-3.5 w-full text-left bg-[#f5f5f5] p-4.5 rounded-[22px] border-0 relative overflow-visible group transition-all duration-200 ${
       isAnyDropdownOpen ? "z-[250] shadow-md ring-1 ring-emerald-500/10" : "z-10"
     }`}>
       
       {/* Decorative top-right overlay glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-350/5 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Header and current value badge */}
-      <div className={`flex items-center justify-between relative gap-2 transition-all duration-150 ${propertyDropdownOpen ? "z-30" : "z-10"}`}>
-        <div className="flex items-center gap-1.5 min-w-0">
-          <div className="w-5 h-5 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0">
-            <LayoutGrid size={11} className="text-emerald-600" />
-          </div>
-          <label className="text-[10px] text-stone-600 font-extrabold uppercase tracking-widest font-mono truncate select-none">
-            Element Gap Studio
-          </label>
-        </div>
-        
-        {/* Visual beautiful property switcher dropdown placed precisely between the label and span */}
-        <div className="relative" ref={propertyDropdownRef}>
-          <button
-            type="button"
-            onClick={() => setPropertyDropdownOpen(!propertyDropdownOpen)}
-            className="flex items-center gap-1.5 bg-white border border-stone-200/80 hover:border-emerald-500 hover:bg-emerald-50/10 px-2.5 py-1 rounded-xl text-stone-700 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-stone-800">{activeProperty}</span>
-            <ChevronDown size={10} className={`text-stone-400 font-extrabold transition-transform duration-200 ${propertyDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
-          </button>
+      {/* Styled label and current value span exactly like Display Layout has */}
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Gap Property Type</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            {activeProperty}
+          </span>
+        </label>
 
+        {/* Styled Dropdown Trigger Button exactly matching DisplayDropdown styling */}
+        <button
+          ref={propertyDropdownTriggerRef}
+          type="button"
+          onClick={() => setPropertyDropdownOpen(!propertyDropdownOpen)}
+          className={`w-full bg-white border ${
+            propertyDropdownOpen ? "border-emerald-400 ring-4 ring-emerald-500/10" : "border-stone-200/85 hover:border-stone-300"
+          } rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all cursor-pointer text-left focus:outline-none`}
+          id="gap-property-dropdown-trigger"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
+              <activeOption.icon className="w-4 h-4 text-stone-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-stone-800 leading-tight">
+                {activeOption.label}
+              </span>
+              <span className="text-[10px] text-stone-400 leading-none mt-0.5">
+                {activeOption.description}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Badge Display on the right of trigger */}
+            <div className={`${activeOption.badgeBg} flex items-center justify-center select-none scale-[0.9]`}>
+              {activeOption.badgeContent}
+            </div>
+            <ChevronDown
+              size={14}
+              className={`text-stone-400 transition-transform duration-250 ${
+                propertyDropdownOpen ? "rotate-180 text-emerald-500" : ""
+              }`}
+            />
+          </div>
+        </button>
+
+        {/* Render Portal dropdown menu */}
+        {typeof document !== "undefined" && createPortal(
           <AnimatePresence>
-            {propertyDropdownOpen && (
+            {propertyDropdownOpen && dropdownPos && (
               <motion.div
-                initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                initial={{ opacity: 0, y: dropdownPos.placement === "top" ? 6 : -6, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                transition={{ duration: 0.12 }}
-                className="absolute left-1/2 -translate-x-1/2 mt-1.5 w-44 bg-white border border-stone-250/90 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
+                exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
+                transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                className="fixed bg-white border border-stone-200 rounded-3xl p-3 shadow-2xl z-[999999] flex flex-col"
+                id="property-dropdown-menu"
+                style={{
+                  top: dropdownPos.placement === "bottom" ? dropdownPos.top : "auto",
+                  bottom: dropdownPos.placement === "top" ? dropdownPos.bottom : "auto",
+                  left: dropdownPos.left,
+                  width: dropdownPos.width,
+                  maxHeight: dropdownPos.maxHeight ? dropdownPos.maxHeight : "auto",
+                }}
               >
-                {[
-                  { id: "gap", label: "gap", desc: "Unified / Both Axes" },
-                  { id: "row-gap", label: "row-gap", desc: "Row Space (Vertical)" },
-                  { id: "column-gap", label: "column-gap", desc: "Column Space (Horizontal)" }
-                ].map((item) => {
-                  const isSelected = item.id === activeProperty;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveProperty(item.id as any);
-                        setPropertyDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-2 py-1.5 rounded-lg text-[9px] font-bold flex flex-col transition-all duration-150 cursor-pointer ${
-                        isSelected
-                          ? "bg-emerald-500/10 text-emerald-800"
-                          : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full font-mono">
-                        <span className="font-extrabold">{item.label}</span>
-                        {isSelected && <Check size={11} className="text-emerald-600 stroke-[3px]" />}
-                      </div>
-                      <span className="text-[7.5px] font-sans font-medium text-stone-400 mt-0.5 leading-none">
-                        {item.desc}
-                      </span>
-                    </button>
-                  );
-                })}
+                <div className="text-[9.5px] uppercase font-bold tracking-wider text-emerald-600 font-mono mb-2 flex items-center gap-1.5 pl-1.5 flex-shrink-0 select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Select Gap Property</span>
+                </div>
+
+                <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1 pr-1 pb-1">
+                  {gapPropertyOptions.map((opt) => {
+                    const isSelected = activeProperty === opt.value;
+                    const Icon = opt.icon;
+
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setActiveProperty(opt.value);
+                          setPropertyDropdownOpen(false);
+                        }}
+                        className={`group relative text-left p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-row items-center gap-3 ${
+                          isSelected
+                            ? "bg-emerald-50/40 border-emerald-200 shadow-sm"
+                            : "bg-stone-50/40 hover:bg-stone-50 border-stone-200/60 hover:border-stone-300"
+                        }`}
+                      >
+                        <div className="flex-1 flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-emerald-600" : "text-stone-550 group-hover:text-stone-800"}`} />
+                            <span className={`text-[11px] font-extrabold tracking-tight ${isSelected ? "text-emerald-900" : "text-stone-700 group-hover:text-stone-900"}`}>
+                              {opt.label}
+                            </span>
+                          </div>
+                          <div className="text-[9.5px] text-stone-450 group-hover:text-stone-550 leading-snug">
+                            {opt.description}
+                          </div>
+                        </div>
+
+                        <div className={`${opt.badgeBg} w-9 h-7 flex-shrink-0 flex items-center justify-center relative select-none`}>
+                          {opt.badgeContent}
+                          {isSelected && (
+                            <div className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full p-[2px] shadow-xs">
+                              <Check size={8} strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer summary */}
+                <div className="border-t border-stone-100 mt-2 pt-2 text-center flex-shrink-0 select-none">
+                  <span className="text-[8.5px] text-stone-400 font-mono">
+                    Click option to apply target axis gap model properties
+                  </span>
+                </div>
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
-
-        {currentPropertyValue ? (
-          <div className="flex items-center gap-1.5 animate-fade-in shrink-0">
-            {activePreset && (
-              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${activePreset.badgeColor} hidden sm:inline`}>
-                Preset: {activePreset.label.toUpperCase()}
-              </span>
-            )}
-            <span className="text-[10px] font-mono font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-lg shadow-xs">
-              {currentPropertyValue}
-            </span>
-          </div>
-        ) : (
-          <span className="text-[9.5px] font-mono font-semibold text-stone-400 bg-stone-150/50 px-2 py-0.5 rounded-lg border border-stone-200/40 shrink-0">
-            default
-          </span>
+          </AnimatePresence>,
+          document.body
         )}
       </div>
 
       {/* Preset Selectors */}
       <div className="flex flex-col gap-1.5 relative z-10">
-        <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest pl-1 font-mono select-none">
-          Interactive Sizing Presets
-        </span>
+        <div className="flex items-center justify-between pl-1">
+          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest font-mono select-none">
+            Interactive Presets
+          </span>
+          {currentPropertyValue ? (
+            <span className="text-[9px] font-mono font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-lg shadow-3xs">
+              {currentPropertyValue}
+            </span>
+          ) : (
+            <span className="text-[9px] font-mono font-semibold text-stone-400 select-none">
+              default
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-4 gap-1.5">
           {GAP_PRESETS.map((preset) => {
             const isSelected = currentPropertyValue === preset.value;
