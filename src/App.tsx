@@ -1953,13 +1953,21 @@ function DesignerApp() {
               >
                 <motion.div
                   id="scaler_bounds"
-                  className="absolute left-0 top-0 select-none origin-top-left"
+                  className="absolute left-0 top-0 select-none origin-top-left translate-z-0 backface-hidden"
                   animate={{
                     width: scaledWidthWithBezel,
                     height: scaledHeightWithBezel,
                     scale: dynamicScale,
                   }}
-                  style={{ originX: 0, originY: 0, minWidth: scaledWidthWithBezel }}
+                  style={{ 
+                    originX: 0, 
+                    originY: 0, 
+                    minWidth: scaledWidthWithBezel,
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transformStyle: "preserve-3d",
+                    willChange: "transform, width, height"
+                  }}
                   transition={{
                     type: "spring",
                     stiffness: 200,

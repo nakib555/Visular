@@ -113,22 +113,24 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 h-8 px-2 pl-2.5 rounded-full border transition-all cursor-pointer text-left focus:outline-none overflow-hidden ${
-          isOpen ? "bg-white border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]" : "bg-transparent border-transparent hover:bg-stone-100/80"
+        className={`flex items-center gap-1.5 md:gap-2 h-[26px] md:h-[30px] px-2 md:px-2.5 rounded-full border transition-all cursor-pointer text-left focus:outline-none overflow-hidden ${
+          isOpen 
+            ? "bg-white border-stone-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)] text-stone-900" 
+            : "bg-stone-50/50 border-stone-150/40 hover:bg-stone-100 hover:border-stone-200/50 text-stone-700"
         }`}
       >
         <div className="flex items-center gap-1.5 min-w-0">
-          <DeviceIcon size={14} className="text-stone-500 shrink-0" />
-          <span className="text-[11px] font-semibold text-stone-700 leading-none truncate max-w-[120px] sm:max-w-[160px]">
+          <DeviceIcon size={12} className="text-stone-500 shrink-0" />
+          <span className="text-[10px] md:text-[11px] font-semibold leading-none truncate max-w-[100px] sm:max-w-[160px]">
             {selectedDevice.name}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-stone-200">
-          <div className="text-[9px] font-mono font-medium tracking-tight text-stone-400 hidden xs:block">
+        <div className="flex items-center gap-1 md:gap-1.5 shrink-0 pl-1 md:pl-1.5 border-l border-stone-250/60">
+          <div className="text-[8.5px] md:text-[9.5px] font-mono font-medium tracking-tight text-stone-400 hidden xs:block">
             {selectedDevice.width}<span>×</span>{selectedDevice.height}
           </div>
-          <ChevronDown size={14} className={`text-stone-400 transition-transform duration-300 flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown size={12} className={`text-stone-400 transition-transform duration-300 flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
         </div>
       </button>
 
