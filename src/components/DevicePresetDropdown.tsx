@@ -29,7 +29,7 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
     placement: "top" | "bottom";
   } | null>(null);
 
-  const selectedDevice = devices.find(d => d.id === selectedId) || { name: "Custom", width: "...", height: "..." };
+  const selectedDevice = devices.find(d => d.id === selectedId) || { name: "Custom", width: "...", height: "...", viewport: "mobile" };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -98,6 +98,11 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
     onSelect(id);
   };
 
+  const isMobile = selectedDevice.viewport === "mobile";
+  const isTablet = selectedDevice.viewport === "tablet";
+  const isDesktop = selectedDevice.viewport === "desktop";
+  const DeviceIcon = selectedId === "custom" ? Settings2 : (isMobile ? Smartphone : isTablet ? Tablet : Monitor);
+
   const mobileDevices = devices.filter(d => d.viewport === "mobile" && d.id !== "custom");
   const tabletDevices = devices.filter(d => d.viewport === "tablet" && d.id !== "custom");
   const desktopDevices = devices.filter(d => d.viewport === "desktop" && d.id !== "custom");
@@ -108,13 +113,23 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 h-8 bg-transparent hover:bg-stone-100/80 rounded-full text-[11px] font-semibold text-stone-700 transition duration-200 outline-none w-full max-w-[180px] xs:max-w-none"
+        className={`flex items-center gap-2 h-8 px-2 pl-2.5 rounded-full border transition-all cursor-pointer text-left focus:outline-none overflow-hidden ${
+          isOpen ? "bg-white border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]" : "bg-transparent border-transparent hover:bg-stone-100/80"
+        }`}
       >
-        <span className="truncate flex-1 text-left">{selectedDevice.name}</span>
-        <span className="text-[10px] text-stone-400 font-mono pl-1 hidden md:inline-block">
-          {selectedDevice.width}×{selectedDevice.height}
-        </span>
-        <ChevronDown size={14} className={`text-stone-400 transition-transform duration-300 flex-shrink-0 ml-1 ${isOpen ? "rotate-180" : ""}`} />
+        <div className="flex items-center gap-1.5 min-w-0">
+          <DeviceIcon size={14} className="text-stone-500 shrink-0" />
+          <span className="text-[11px] font-semibold text-stone-700 leading-none truncate max-w-[120px] sm:max-w-[160px]">
+            {selectedDevice.name}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-stone-200">
+          <div className="text-[9px] font-mono font-medium tracking-tight text-stone-400 hidden xs:block">
+            {selectedDevice.width}<span>×</span>{selectedDevice.height}
+          </div>
+          <ChevronDown size={14} className={`text-stone-400 transition-transform duration-300 flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+        </div>
       </button>
 
       {typeof document !== "undefined" && createPortal(
@@ -142,16 +157,30 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
                     <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Desktop</h3>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    {desktopDevices.map(d => (
-                      <button
-                        key={d.id}
-                        onClick={() => handleSelect(d.id)}
-                        className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-left transition-colors duration-150 ${selectedId === d.id ? "bg-sky-50 text-sky-900 font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
-                      >
-                        <span className="text-[11px] truncate flex-1">{d.name}</span>
-                        <span className={`text-[9px] font-mono flex-shrink-0 ${selectedId === d.id ? "text-sky-600/70" : "text-stone-400"}`}>{d.width}×{d.height}</span>
-                      </button>
-                    ))}
+                    {desktopDevices.map(d => {
+                      const isSelected = selectedId === d.id;
+                      return (
+                        <button
+                          key={d.id}
+                          onClick={() => handleSelect(d.id)}
+                          className={`group flex items-center justify-between p-1 rounded-xl text-left transition-colors duration-150 ${isSelected ? "bg-sky-50" : "hover:bg-stone-50"}`}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                            <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 border ${
+                              isSelected ? "bg-white border-sky-200 text-sky-600 shadow-sm" : "bg-transparent border-transparent text-stone-400 group-hover:text-stone-600 group-hover:bg-stone-100"
+                            }`}>
+                              <Monitor size={14} className="shrink-0" />
+                            </div>
+                            <span className={`text-[11px] font-medium leading-tight truncate w-full ${isSelected ? "text-sky-900" : "text-stone-700"}`}>
+                              {d.name}
+                            </span>
+                          </div>
+                          <div className={`relative px-1.5 py-1 rounded border overflow-visible shrink-0 ${isSelected ? "bg-white border-sky-200" : "bg-stone-100 border-stone-200/60"}`}>
+                            <span className={`text-[9px] font-mono leading-none flex items-center justify-center ${isSelected ? "text-sky-700 font-bold" : "text-stone-500"}`}>{d.width}×{d.height}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 
@@ -162,16 +191,30 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
                     <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tablet</h3>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    {tabletDevices.map(d => (
-                      <button
-                        key={d.id}
-                        onClick={() => handleSelect(d.id)}
-                        className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-left transition-colors duration-150 ${selectedId === d.id ? "bg-emerald-50 text-emerald-900 font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
-                      >
-                        <span className="text-[11px] truncate flex-1">{d.name}</span>
-                        <span className={`text-[9px] font-mono flex-shrink-0 ${selectedId === d.id ? "text-emerald-600/70" : "text-stone-400"}`}>{d.width}×{d.height}</span>
-                      </button>
-                    ))}
+                    {tabletDevices.map(d => {
+                      const isSelected = selectedId === d.id;
+                      return (
+                        <button
+                          key={d.id}
+                          onClick={() => handleSelect(d.id)}
+                          className={`group flex items-center justify-between p-1 rounded-xl text-left transition-colors duration-150 ${isSelected ? "bg-emerald-50" : "hover:bg-stone-50"}`}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                            <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 border ${
+                              isSelected ? "bg-white border-emerald-200 text-emerald-600 shadow-sm" : "bg-transparent border-transparent text-stone-400 group-hover:text-stone-600 group-hover:bg-stone-100"
+                            }`}>
+                              <Tablet size={14} className="shrink-0" />
+                            </div>
+                            <span className={`text-[11px] font-medium leading-tight truncate w-full ${isSelected ? "text-emerald-900" : "text-stone-700"}`}>
+                              {d.name}
+                            </span>
+                          </div>
+                          <div className={`relative px-1.5 py-1 rounded border overflow-visible shrink-0 ${isSelected ? "bg-white border-emerald-200" : "bg-stone-100 border-stone-200/60"}`}>
+                            <span className={`text-[9px] font-mono leading-none flex items-center justify-center ${isSelected ? "text-emerald-700 font-bold" : "text-stone-500"}`}>{d.width}×{d.height}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -182,16 +225,30 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
                     <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Mobile</h3>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    {mobileDevices.map(d => (
-                      <button
-                        key={d.id}
-                        onClick={() => handleSelect(d.id)}
-                        className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-left transition-colors duration-150 ${selectedId === d.id ? "bg-rose-50 text-rose-900 font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
-                      >
-                        <span className="text-[11px] truncate flex-1">{d.name}</span>
-                        <span className={`text-[9px] font-mono flex-shrink-0 ${selectedId === d.id ? "text-rose-600/70" : "text-stone-400"}`}>{d.width}×{d.height}</span>
-                      </button>
-                    ))}
+                    {mobileDevices.map(d => {
+                      const isSelected = selectedId === d.id;
+                      return (
+                        <button
+                          key={d.id}
+                          onClick={() => handleSelect(d.id)}
+                          className={`group flex items-center justify-between p-1 rounded-xl text-left transition-colors duration-150 ${isSelected ? "bg-rose-50" : "hover:bg-stone-50"}`}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                            <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 border ${
+                              isSelected ? "bg-white border-rose-200 text-rose-600 shadow-sm" : "bg-transparent border-transparent text-stone-400 group-hover:text-stone-600 group-hover:bg-stone-100"
+                            }`}>
+                              <Smartphone size={14} className="shrink-0" />
+                            </div>
+                            <span className={`text-[11px] font-medium leading-tight truncate w-full ${isSelected ? "text-rose-900" : "text-stone-700"}`}>
+                              {d.name}
+                            </span>
+                          </div>
+                          <div className={`relative px-1.5 py-1 rounded border overflow-visible shrink-0 ${isSelected ? "bg-white border-rose-200" : "bg-stone-100 border-stone-200/60"}`}>
+                            <span className={`text-[9px] font-mono leading-none flex items-center justify-center ${isSelected ? "text-rose-700 font-bold" : "text-stone-500"}`}>{d.width}×{d.height}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

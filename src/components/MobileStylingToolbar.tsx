@@ -39,8 +39,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useDesigner } from "../contexts/DesignerContext";
-import { InspectorSection } from "./InspectorPanel";
-import { CSS_HIERARCHY_DATA } from "./css-categories";
+import { InspectorSection, CSS_HIERARCHY_DATA } from "./InspectorPanel";
 import { PropertyControl } from "./PropertyControl";
 import {
   setGroupClass,

@@ -26,10 +26,10 @@ export function useDesignerState() {
   );
   const [canvasViewport, setCanvasViewport] = useState<
     "desktop" | "tablet" | "mobile"
-  >("desktop");
+  >(() => window.innerWidth < 768 ? "mobile" : "desktop");
   const [canvasOrientation, setCanvasOrientation] = useState<
     "portrait" | "landscape"
-  >("portrait");
+  >(() => window.innerWidth < 768 ? "portrait" : "landscape");
   const [zoomScale, setZoomScale] = useState<number | "auto">(
     "auto",
   );

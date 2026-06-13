@@ -295,7 +295,7 @@ function DesignerApp() {
   ];
 
   const [selectedDevicePreset, setSelectedDevicePreset] =
-    useState<string>("macbook-14");
+    useState<string>(() => window.innerWidth < 768 ? "pixel-8" : "full-hd");
   const [batteryLevel, setBatteryLevel] = useState<number>(100);
   const [networkStatus, setNetworkStatus] = useState<
     "5G" | "4G" | "Wi-Fi" | "Offline"
@@ -314,13 +314,13 @@ function DesignerApp() {
   ) => {
     setCanvasViewport(vp);
     if (vp === "mobile") {
-      setSelectedDevicePreset("iphone-15");
+      setSelectedDevicePreset("pixel-8");
       setCanvasOrientation("portrait");
     } else if (vp === "tablet") {
       setSelectedDevicePreset("ipad-pro");
       setCanvasOrientation("portrait");
     } else {
-      setSelectedDevicePreset("macbook-14");
+      setSelectedDevicePreset("full-hd");
       setCanvasOrientation("landscape");
     }
   };
@@ -404,24 +404,6 @@ function DesignerApp() {
       return matchesSearch && matchesCategory;
     });
   }, [activeSearch, activePresetCategory]);
-
-  const lineage = useMemo(() => {
-    if (!selectedId) return null;
-    const findPath = (
-      current: VisualElement,
-      path: VisualElement[],
-    ): VisualElement[] | null => {
-      if (current.id === selectedId) return [...path, current];
-      if (current.children) {
-        for (const child of current.children) {
-          const res = findPath(child, [...path, current]);
-          if (res) return res;
-        }
-      }
-      return null;
-    };
-    return findPath(componentTree, []);
-  }, [componentTree, selectedId]);
 
   const [parentDimensions, setParentDimensions] = useState({
     width: 0,
@@ -1507,6 +1489,7 @@ function DesignerApp() {
                             ? "bg-white text-stone-900 shadow-sm"
                             : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                         }`}
+                        style={{ marginLeft: "0px", marginRight: "2px" }}
                       >
                         <Smartphone
                           size={11}
@@ -1523,6 +1506,7 @@ function DesignerApp() {
                             ? "bg-white text-stone-900 shadow-sm"
                             : "text-stone-500 hover:text-stone-800 hover:bg-stone-200/40"
                         }`}
+                        style={{ marginLeft: "2px" }}
                       >
                         <Smartphone
                           size={11}
@@ -1534,7 +1518,7 @@ function DesignerApp() {
                   )}
 
                   {/* Real Preset Selector Dropdown */}
-                  <div className="flex items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0">
+                  <div className="flex items-center shrink-0">
                     <DevicePresetDropdown
                       devices={REAL_DEVICES}
                       selectedId={selectedDevicePreset}
@@ -1574,6 +1558,7 @@ function DesignerApp() {
                       }}
                       title="Set custom viewport dimensions"
                       className="px-2 py-1 md:py-1.5 rounded-[30px] bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-bold shrink-0 whitespace-nowrap shadow-sm border border-rose-200/60"
+                      style={{ marginRight: "2.5px" }}
                     >
                       <Maximize size={11} className="text-rose-600 animate-pulse" />
                       <span>Custom Size</span>
@@ -1588,6 +1573,7 @@ function DesignerApp() {
                           ? "bg-rose-600 text-white border-rose-700 hover:bg-rose-700"
                           : "bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border-rose-200/60"
                       }`}
+                      style={{ marginLeft: "2.5px" }}
                     >
                       <Hand size={11} className={isTouchZoomActive ? "text-rose-100 animate-bounce" : "text-rose-600"} />
                       <span>Touch Zoom</span>
@@ -1947,61 +1933,6 @@ function DesignerApp() {
               setIsCanvasClicking(false);
             }}
           >
-            {/* Breadcrumb parent-child hierarchy navigation displaying at the top of the canvas */}
-            {lineage && lineage.length > 0 && (
-              <div
-                id="canvas_breadcrumbs"
-                className="flex justify-center items-center select-none pt-4 pb-1 px-4 shrink-0 max-w-full z-10 animate-in fade-in slide-in-from-top-1.5 duration-200"
-              >
-                <div className="flex flex-row items-center gap-1 bg-white/95 backdrop-blur-md border border-stone-200/80 shadow-xs rounded-full px-3.5 py-1.5 text-[11px] text-stone-600 max-w-full overflow-x-auto scrollbar-hide">
-                  {lineage.map((elem, idx) => {
-                    const isLast = idx === lineage.length - 1;
-                    const displayLabel =
-                      elem.type === "container"
-                        ? `${elem.tag}`
-                        : `${elem.type} (${elem.tag})`;
-
-                    return (
-                      <React.Fragment key={elem.id}>
-                        {idx > 0 && (
-                          <ChevronRight size={10} className="text-stone-300 mx-0.5 shrink-0" />
-                        )}
-                        <button
-                          onClick={() => setSelectedId(elem.id)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all shrink-0 cursor-pointer border border-transparent ${
-                            isLast
-                              ? "bg-rose-50 text-rose-700 font-semibold border-rose-200/60 shadow-xs ring-1 ring-rose-500/10 ring-inset"
-                              : "text-stone-500 hover:text-stone-900 hover:bg-stone-100 hover:border-stone-200/60 hover:shadow-sm"
-                          }`}
-                        >
-                          {elem.type === "container" && (
-                            <Layout size={10} className="text-stone-400" />
-                          )}
-                          {elem.type === "text" && (
-                            <Type size={10} className="text-stone-400" />
-                          )}
-                          {elem.type === "image" && (
-                            <ImageIcon size={10} className="text-stone-400" />
-                          )}
-                          {elem.type === "button" && (
-                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                          )}
-                          {elem.type === "badge" && (
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                          )}
-                          <span className="font-mono lowercase">
-                            {displayLabel}
-                          </span>
-                          <span className="text-[9px] text-stone-400 font-mono">
-                            #{elem.id.substring(0, 4)}
-                          </span>
-                        </button>
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             {/* Inner centering wrapper - using modern 'my-auto mx-auto' alignment for perfect scroll-safe viewport centering */}
             <div className="my-auto mx-auto flex flex-col items-center justify-center p-4 sm:p-8 shrink-0">
               {/* Scaler Wrapper Frame animated smoothly with layout-preserving dynamic motion physics */}

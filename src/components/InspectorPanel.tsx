@@ -42,9 +42,23 @@ import {
   Eye,
   RotateCcw,
 } from "lucide-react";
-import { CSS_HIERARCHY_DATA } from "./css-categories";
 import { CSSCategory, CSSSubCategory, CSSProperty } from "../types-css";
+import { layoutBoxModelCategory } from "./css-categories/layout-box-model";
+import { typographyTextCategory } from "./css-categories/typography-text";
+import { appearanceAestheticsSvgCategory } from "./css-categories/appearance-aesthetics-svg";
+import { motionTransformsCategory } from "./css-categories/motion-transforms";
+import { interactivityUiMiscCategory } from "./css-categories/interactivity-ui-misc";
+import { environmentMediaArchitectureCategory } from "./css-categories/environment-media-architecture";
 import { PropertyControl } from "./PropertyControl";
+
+export const CSS_HIERARCHY_DATA: CSSCategory[] = [
+  layoutBoxModelCategory,
+  typographyTextCategory,
+  appearanceAestheticsSvgCategory,
+  motionTransformsCategory,
+  interactivityUiMiscCategory,
+  environmentMediaArchitectureCategory,
+];
 import { DisplayDropdown } from "./css-categories/layout-box-model/properties/DisplayDropdown";
 import { FlexDirectionControl } from "./css-categories/layout-box-model/properties/FlexDirectionControl";
 import { GapControl } from "./css-categories/layout-box-model/properties/GapControl";

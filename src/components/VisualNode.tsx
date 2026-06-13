@@ -62,43 +62,47 @@ export function VisualNode({ elem }: VisualNodeProps) {
     if (!draggedId || !setSmartGuides) return;
 
     const canvasDom = document.getElementById("workspace_canvas");
-    const draggedDom = document.getElementById(draggedId);
+    const targetDom = document.getElementById(elem.id); // The element being hovered over
 
-    if (!canvasDom || !draggedDom) return;
+    if (!canvasDom || !targetDom) return;
 
     const canvasRect = canvasDom.getBoundingClientRect();
-    const draggedRect = draggedDom.getBoundingClientRect();
+    let siblingDoms: HTMLElement[] = [];
 
-    // Sibling elements of the dragged node
-    const parent = draggedDom.parentElement;
-    if (!parent) return;
+    if (dragDropPosition === "inside") {
+      // It will become a child of targetDom, so align against its current children
+      siblingDoms = Array.from(targetDom.children).filter(
+        (child) => child.id && child.id !== draggedId && child.id !== "empty_view"
+      ) as HTMLElement[];
+    } else {
+      // It will become a sibling of targetDom, so align against targetDom's parent's children
+      const parent = targetDom.parentElement;
+      if (parent) {
+        siblingDoms = Array.from(parent.children).filter(
+          (child) => child.id && child.id !== draggedId && child.id !== "empty_view"
+        ) as HTMLElement[];
+      }
+    }
 
-    // Filter siblings that are not standard layout elements or the dragged element itself
-    const siblingDoms = Array.from(parent.children).filter(
-      (child) => child.id && child.id !== draggedId && child.id !== "empty_view"
-    ) as HTMLElement[];
-
-    // If there are no siblings, we can also align with the parent container boundaries
+    // Add the parent boundaries as well for alignment
     const alignmentTargets = [...siblingDoms];
-    if (parent.id && parent.id !== "workspace_canvas") {
-      alignmentTargets.push(parent as HTMLElement);
+    if (dragDropPosition === "inside") {
+      alignmentTargets.push(targetDom);
+    } else {
+      if (targetDom.parentElement && targetDom.parentElement.id && targetDom.parentElement.id !== "workspace_canvas") {
+        alignmentTargets.push(targetDom.parentElement);
+      }
     }
 
     const calculatedGuides: any[] = [];
-    const threshold = 8; // standard matching speed-snap threshold
+    const threshold = 12; // Snap threshold
 
-    // Get dragged element edges relative to canvas
-    const dragWidth = draggedRect.width;
-    const dragHeight = draggedRect.height;
-
-    // We assume the dragged element center tracks the current mouse pointer in e.clientX, e.clientY
-    const dLeft = e.clientX - dragWidth / 2 - canvasRect.left;
-    const dCenterX = e.clientX - canvasRect.left;
-    const dRight = dLeft + dragWidth;
-
-    const dTop = e.clientY - dragHeight / 2 - canvasRect.top;
-    const dCenterY = e.clientY - canvasRect.top;
-    const dBottom = dTop + dragHeight;
+    // We don't have the actual dragged element geometry matching its future size,
+    // but we can estimate or at least align its cursor position. 
+    // Usually, the mouse holds the element somewhat centrally or top-left.
+    // Let's use the cursor position as the tracking center point.
+    const cx = e.clientX - canvasRect.left;
+    const cy = e.clientY - canvasRect.top;
 
     alignmentTargets.forEach((target) => {
       const tRect = target.getBoundingClientRect();
@@ -112,54 +116,22 @@ export function VisualNode({ elem }: VisualNodeProps) {
 
       const tag = target.tagName.toLowerCase();
 
-      // Check vertical alignments (X coordinates match -> draw vertical guide line)
-      if (Math.abs(dLeft - tLeft) < threshold) {
-        calculatedGuides.push({ id: `v-l-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "left edges" });
-      } else if (Math.abs(dLeft - tCenterX) < threshold) {
-        calculatedGuides.push({ id: `v-l-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "left center" });
-      } else if (Math.abs(dLeft - tRight) < threshold) {
-        calculatedGuides.push({ id: `v-l-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "left right" });
+      // Check vertical alignments
+      if (Math.abs(cx - tLeft) < threshold) {
+        calculatedGuides.push({ id: `v-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "left" });
+      } else if (Math.abs(cx - tCenterX) < threshold) {
+        calculatedGuides.push({ id: `v-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "center" });
+      } else if (Math.abs(cx - tRight) < threshold) {
+        calculatedGuides.push({ id: `v-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "right" });
       }
 
-      if (Math.abs(dCenterX - tLeft) < threshold) {
-        calculatedGuides.push({ id: `v-c-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "center align" });
-      } else if (Math.abs(dCenterX - tCenterX) < threshold) {
-        calculatedGuides.push({ id: `v-c-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "centers aligned" });
-      } else if (Math.abs(dCenterX - tRight) < threshold) {
-        calculatedGuides.push({ id: `v-c-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "center align" });
-      }
-
-      if (Math.abs(dRight - tLeft) < threshold) {
-        calculatedGuides.push({ id: `v-r-l-${target.id}`, type: "v", pos: tLeft, targetTag: tag, alignType: "right left" });
-      } else if (Math.abs(dRight - tCenterX) < threshold) {
-        calculatedGuides.push({ id: `v-r-c-${target.id}`, type: "v", pos: tCenterX, targetTag: tag, alignType: "right center" });
-      } else if (Math.abs(dRight - tRight) < threshold) {
-        calculatedGuides.push({ id: `v-r-r-${target.id}`, type: "v", pos: tRight, targetTag: tag, alignType: "right edges" });
-      }
-
-      // Check horizontal alignments (Y coordinates match -> draw horizontal guide line)
-      if (Math.abs(dTop - tTop) < threshold) {
-        calculatedGuides.push({ id: `h-t-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "top edges" });
-      } else if (Math.abs(dTop - tCenterY) < threshold) {
-        calculatedGuides.push({ id: `h-t-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "top center" });
-      } else if (Math.abs(dTop - tBottom) < threshold) {
-        calculatedGuides.push({ id: `h-t-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "top bottom" });
-      }
-
-      if (Math.abs(dCenterY - tTop) < threshold) {
-        calculatedGuides.push({ id: `h-c-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "middle align" });
-      } else if (Math.abs(dCenterY - tCenterY) < threshold) {
-        calculatedGuides.push({ id: `h-c-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "middles aligned" });
-      } else if (Math.abs(dCenterY - tBottom) < threshold) {
-        calculatedGuides.push({ id: `h-c-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "middle align" });
-      }
-
-      if (Math.abs(dBottom - tTop) < threshold) {
-        calculatedGuides.push({ id: `h-b-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "bottom top" });
-      } else if (Math.abs(dBottom - tCenterY) < threshold) {
-        calculatedGuides.push({ id: `h-b-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "bottom center" });
-      } else if (Math.abs(dBottom - tBottom) < threshold) {
-        calculatedGuides.push({ id: `h-b-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "bottom edges" });
+      // Check horizontal alignments
+      if (Math.abs(cy - tTop) < threshold) {
+        calculatedGuides.push({ id: `h-t-${target.id}`, type: "h", pos: tTop, targetTag: tag, alignType: "top" });
+      } else if (Math.abs(cy - tCenterY) < threshold) {
+        calculatedGuides.push({ id: `h-c-${target.id}`, type: "h", pos: tCenterY, targetTag: tag, alignType: "middle" });
+      } else if (Math.abs(cy - tBottom) < threshold) {
+        calculatedGuides.push({ id: `h-b-${target.id}`, type: "h", pos: tBottom, targetTag: tag, alignType: "bottom" });
       }
     });
 

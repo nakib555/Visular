@@ -344,15 +344,15 @@ export function DisplayDropdown({ value, onChange }: DisplayDropdownProps) {
         } rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all cursor-pointer text-left focus:outline-none overflow-hidden`}
         id="display-dropdown-trigger"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
             <activeOption.icon className="w-4 h-4 text-stone-600 shrink-0" />
           </div>
-          <div className="flex flex-col min-w-0 pr-2">
-            <span className="text-xs font-bold text-stone-800 leading-tight truncate">
+          <div className="flex flex-col min-w-0 pr-2 flex-1">
+            <span className="text-xs font-bold text-stone-800 leading-tight truncate w-full">
               {activeOption.label}
             </span>
-            <span className="text-[10px] text-stone-400 leading-none mt-0.5 truncate">
+            <span className="text-[10px] text-stone-400 leading-none mt-0.5 truncate w-full">
               {activeOption.value === "none" ? "display: none" : `display: ${activeOption.value}`}
             </span>
           </div>
