@@ -243,7 +243,7 @@ export const flexboxContainerGroup: CSSSubCategory = {
     {
       name: "justify-content",
       values:
-        "normal | flex-start | flex-end | center | space-between | space-around | space-evenly | start | end | left | right",
+        "normal | flex-start | flex-end | center | space-between | space-around | space-evenly | start | end | left | right | stretch | safe center | safe start | safe end | safe flex-start | safe flex-end | safe left | safe right | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe left | unsafe right | inherit | initial | revert | revert-layer | unset",
     },
     {
       name: "align-items",

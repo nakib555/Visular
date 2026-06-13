@@ -63,7 +63,11 @@ import { DisplayDropdown } from "./css-categories/layout-box-model/properties/Di
 import { FlexDirectionControl } from "./css-categories/layout-box-model/properties/FlexDirectionControl";
 import { GapControl } from "./css-categories/layout-box-model/properties/GapControl";
 import { FlexWrapControl } from "./css-categories/layout-box-model/properties/FlexWrapControl";
+import { FlexGrowControl } from "./css-categories/layout-box-model/properties/FlexGrowControl";
+import { FlexShrinkControl } from "./css-categories/layout-box-model/properties/FlexShrinkControl";
+import { FlexBasisControl } from "./css-categories/layout-box-model/properties/FlexBasisControl";
 import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
+import { JustifyContentDropdown } from "./css-categories/layout-box-model/properties/JustifyContentDropdown";
 import { VisualElement } from "../types";
 import { useDesigner } from "../contexts/DesignerContext";
 import { HslColorPicker } from "./HslColorPicker";
@@ -423,6 +427,39 @@ export function InspectorPanel({
       );
     }
 
+    if (propName === "flex-grow") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <FlexGrowControl
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "flex-shrink") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <FlexShrinkControl
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "flex-basis") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <FlexBasisControl
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
     if (propName === "gap") {
       return (
         <div key={propIdx} className="w-full animate-fade-in">
@@ -524,6 +561,17 @@ export function InspectorPanel({
               );
             })}
           </div>
+        </div>
+      );
+    }
+
+    if (propName === "justify-content") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <JustifyContentDropdown
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+          />
         </div>
       );
     }
@@ -832,7 +880,10 @@ export function InspectorPanel({
                           pName === "align-items" || 
                           pName === "flex-direction" || 
                           pName === "flex-wrap" || 
-                          pName === "gap";
+                          pName === "gap" ||
+                          pName === "flex-grow" ||
+                          pName === "flex-shrink" ||
+                          pName === "flex-basis";
 
                         // Build matching interactive simulator widgets
                         let specialWidget = null;
