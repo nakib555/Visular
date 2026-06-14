@@ -471,6 +471,8 @@ export function MobileToolControls() {
 
       const activeDir =
         getActiveGroupClass(classes, "flexDirection") || "flex-row";
+      const activeWrap =
+        getActiveGroupClass(classes, "flexWrap") || "flex-nowrap";
       const activeJustify = getActiveGroupClass(classes, "justify") || "";
       const activeAlign = getActiveGroupClass(classes, "alignment") || "";
       const activeGap = getActiveGroupClass(classes, "gap") || "";
@@ -478,9 +480,11 @@ export function MobileToolControls() {
       const dirLabel =
         activeDir === "flex-col"
           ? "Col"
-          : activeDir === "flex-wrap"
-            ? "Wrap"
-            : "Row";
+          : activeDir === "flex-row-reverse"
+            ? "Row-Rev"
+            : activeDir === "flex-col-reverse"
+              ? "Col-Rev"
+              : "Row";
 
       const justifyLabelMap: Record<string, string> = {
         "": "Justify",
@@ -538,43 +542,52 @@ export function MobileToolControls() {
               <ChevronDown size={8} />
             </button>
 
-            {activeFlexSubmenu === "direction" && (
+             {activeFlexSubmenu === "direction" && (
               <>
                 <div
                   className="fixed inset-0 z-50 bg-transparent"
                   onClick={() => setActiveFlexSubmenu(null)}
                 />
-                <div className="absolute bottom-full left-0 mb-2 bg-white border border-stone-200 shadow-xl rounded-2xl p-1 w-[120px] z-[999] flex flex-col gap-0.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                <div className="absolute bottom-full left-0 mb-2 bg-white border border-stone-200 shadow-xl rounded-2xl p-1 w-[135px] z-[999] flex flex-col gap-0.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
                   <div className="px-2 py-0.5 text-[7px] text-stone-400 font-bold uppercase font-mono border-b border-stone-100 pb-1 mb-1">
                     Direction
                   </div>
                   {[
-                    { key: "flex-row", label: "Horizontal (Row)" },
-                    { key: "flex-col", label: "Vertical (Col)" },
-                    { key: "flex-wrap", label: "Wrap On" },
-                  ].map((d) => (
-                    <button
-                      key={d.key}
-                      type="button"
-                      onClick={() => {
-                        updateTree((n) => ({
-                          classes: setGroupClass(
-                            n.classes,
-                            "flexDirection",
-                            d.key,
-                          ),
-                        }));
-                        setActiveFlexSubmenu(null);
-                      }}
-                      className={`px-2 py-1.5 rounded-lg text-left text-[10px] font-mono transition cursor-pointer ${
-                        activeDir === d.key
-                          ? "bg-rose-600 text-white font-bold"
-                          : "text-stone-600 hover:bg-stone-50"
-                      }`}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
+                    { key: "flex-row", label: "Horizontal (Row)", group: "flexDirection" },
+                    { key: "flex-col", label: "Vertical (Col)", group: "flexDirection" },
+                    { key: "flex-row-reverse", label: "Row Reverse", group: "flexDirection" },
+                    { key: "flex-col-reverse", label: "Col Reverse", group: "flexDirection" },
+                    { key: "flex-wrap", label: "Wrap On", group: "flexWrap" },
+                    { key: "flex-nowrap", label: "Wrap Off", group: "flexWrap" },
+                  ].map((d) => {
+                    const isSelected = d.group === "flexDirection"
+                      ? activeDir === d.key
+                      : activeWrap === d.key;
+
+                    return (
+                      <button
+                        key={d.key}
+                        type="button"
+                        onClick={() => {
+                          updateTree((n) => ({
+                            classes: setGroupClass(
+                              n.classes,
+                              d.group as any,
+                              d.key,
+                            ),
+                          }));
+                          setActiveFlexSubmenu(null);
+                        }}
+                        className={`px-2 py-1 rounded-lg text-left text-[9.5px] font-mono transition cursor-pointer ${
+                          isSelected
+                            ? "bg-rose-600 text-white font-bold"
+                            : "text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             )}

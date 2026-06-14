@@ -12,6 +12,10 @@ export const gridContainerGroup: CSSSubCategory = {
       values: "none | subgrid | masonry | <track-list>",
     },
     {
+      name: "grid-template-areas",
+      values: "none | <string>+",
+    },
+    {
       name: "justify-items",
       values:
         "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | left | right | legacy",
@@ -20,6 +24,16 @@ export const gridContainerGroup: CSSSubCategory = {
       name: "align-items",
       values:
         "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | anchor-center | baseline | first baseline | last baseline | safe center | safe start | safe end | safe flex-start | safe flex-end | safe self-start | safe self-end | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe self-start | unsafe self-end | inherit | initial | revert | revert-layer | unset",
+    },
+    {
+      name: "justify-content",
+      values:
+        "normal | space-between | space-around | space-evenly | stretch | center | start | end | flex-start | flex-end | left | right",
+    },
+    {
+      name: "align-content",
+      values:
+        "normal | space-between | space-around | space-evenly | stretch | center | start | end | flex-start | flex-end | baseline | first baseline | last baseline",
     },
   ],
 };

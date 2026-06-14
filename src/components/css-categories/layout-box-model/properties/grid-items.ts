@@ -18,5 +18,15 @@ export const gridItemsGroup: CSSSubCategory = {
       values:
         "auto | <custom-name> | <row-start> / <column-start> / <row-end> / <column-end>",
     },
+    {
+      name: "justify-self",
+      values:
+        "auto | normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | left | right | baseline | first baseline | last baseline",
+    },
+    {
+      name: "align-self",
+      values:
+        "auto | normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | baseline | first baseline | last baseline",
+    },
   ],
 };

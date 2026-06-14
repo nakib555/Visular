@@ -3,8 +3,6 @@ import {
   Expand, 
   Scale, 
   Info, 
-  AlertCircle, 
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   X
@@ -18,12 +16,9 @@ export interface FlexGrowControlProps {
 
 export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
   const [inputValue, setInputValue] = useState("");
-  const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  const [successIndicator, setSuccessIndicator] = useState(false);
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(true);
   const [isGuidanceCollapsed, setIsGuidanceCollapsed] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync internal input value on external change
   useEffect(() => {
@@ -31,16 +26,7 @@ export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
   }, [value]);
 
   const showNotification = (message: string, isSuccess: boolean = false) => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (isSuccess) {
-      setSuccessIndicator(true);
-      setWarningMessage(null);
-      timerRef.current = setTimeout(() => setSuccessIndicator(false), 2000);
-    } else {
-      setWarningMessage(message);
-      setSuccessIndicator(false);
-      timerRef.current = setTimeout(() => setWarningMessage(null), 3500);
-    }
+    // Silent validation tracker - UI notifications removed per user constraint
   };
 
   const sanitizeAndEmit = (rawValue: string) => {
@@ -229,37 +215,6 @@ export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
             </AnimatePresence>
           </div>
         </div>
-
-        {/* Real-time Warning Panel */}
-        <AnimatePresence mode="wait">
-          {warningMessage && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-amber-50 border border-amber-200 rounded-lg p-2 flex gap-1.5 items-start mt-2"
-            >
-              <AlertCircle size={12} className="text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-amber-800 leading-tight font-medium">
-                {warningMessage}
-              </p>
-            </motion.div>
-          )}
-
-          {successIndicator && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-lg p-1.5 flex gap-1.5 items-center mt-2"
-            >
-              <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-              <p className="text-[9px] text-emerald-800 font-bold">
-                Valid factor applied! Correctly configured.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Range Slider Container with ticks */}
@@ -373,7 +328,7 @@ export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
                         Grow Calculation Rule
                       </span>
                       <p className="text-[9.5px] text-slate-500 leading-tight mt-1">
-                        Growth divides **remaining space only**, not total width! Set `flex-basis: 0` or standard width properties to enforce perfectly identical widths on siblings.
+                        Growth divides <strong>remaining space only</strong>, not total width! Set <code className="bg-blue-105/40 text-blue-800 px-1 py-0.5 rounded text-[8.5px] font-mono">flex-basis: 0</code> or standard width properties to enforce perfectly identical widths on siblings.
                       </p>
                     </div>
                   </div>
@@ -384,7 +339,7 @@ export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
                         Keep Ratios Mathematically Simple
                       </span>
                       <p className="text-[9.5px] text-slate-500 leading-tight mt-1">
-                        Always use single-digit whole numbers or simple decimals (e.g., `1`, `2`, `1.5`) instead of large values like `100` and `200`. They calculate identically but keep your code highly readable and clean!
+                        Always use single-digit whole numbers or simple decimals (e.g., <code className="bg-indigo-100/40 text-indigo-800 px-1 py-0.5 rounded text-[8.5px] font-mono">1</code>, <code className="bg-indigo-100/40 text-indigo-800 px-1 py-0.5 rounded text-[8.5px] font-mono">2</code>, <code className="bg-indigo-100/40 text-indigo-800 px-1 py-0.5 rounded text-[8.5px] font-mono">1.5</code>) instead of large values like <code className="bg-indigo-100/40 text-indigo-800 px-1 py-0.5 rounded text-[8.5px] font-mono">100</code> and <code className="bg-indigo-100/40 text-indigo-800 px-1 py-0.5 rounded text-[8.5px] font-mono">200</code>. They calculate identically but keep your code highly readable and clean!
                       </p>
                     </div>
                   </div>

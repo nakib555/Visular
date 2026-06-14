@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 
-export type PropertyControlType = "select" | "number";
+export type PropertyControlType = "select" | "number" | "text";
 
 export interface Option {
   value: string;
@@ -44,7 +44,7 @@ export function PropertyControl({
     if (val === "") {
       onChange("");
     } else {
-      onChange(`[${val}${unit}]`);
+      onChange(`${val}${unit}`);
     }
   };
 
@@ -65,7 +65,7 @@ export function PropertyControl({
           </select>
           <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
         </div>
-      ) : (
+      ) : type === "number" ? (
         <div className="relative flex items-center bg-stone-50 border border-stone-200/85 rounded-xl overflow-hidden shadow-sm hover:bg-stone-100 transition-all focus-within:border-rose-400 focus-within:ring-4 focus-within:ring-rose-500/10">
           <input
             type="number"
@@ -75,6 +75,16 @@ export function PropertyControl({
             className="w-full bg-transparent pl-2.5 pr-8 py-1.5 text-xs text-stone-700 focus:outline-none"
           />
           <div className="absolute right-2.5 text-[9px] font-bold text-stone-400 uppercase tracking-widest pointer-events-none">{unit}</div>
+        </div>
+      ) : (
+        <div className="relative flex items-center bg-stone-50 border border-stone-200/85 rounded-xl overflow-hidden shadow-sm hover:bg-stone-100 transition-all focus-within:border-rose-400 focus-within:ring-4 focus-within:ring-rose-500/10">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder || "e.g. auto, 100%, 10px"}
+            className="w-full bg-transparent px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none font-mono"
+          />
         </div>
       )}
     </div>

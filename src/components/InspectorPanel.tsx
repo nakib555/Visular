@@ -67,7 +67,10 @@ import { FlexGrowControl } from "./css-categories/layout-box-model/properties/Fl
 import { FlexShrinkControl } from "./css-categories/layout-box-model/properties/FlexShrinkControl";
 import { FlexBasisControl } from "./css-categories/layout-box-model/properties/FlexBasisControl";
 import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
+import { AlignSelfControl } from "./css-categories/layout-box-model/properties/AlignSelfControl";
+import { OrderControl } from "./css-categories/layout-box-model/properties/OrderControl";
 import { JustifyContentDropdown } from "./css-categories/layout-box-model/properties/JustifyContentDropdown";
+import { GridTemplateColumnsControl } from "./css-categories/layout-box-model/properties/GridTemplateColumnsControl";
 import { VisualElement } from "../types";
 import { useDesigner } from "../contexts/DesignerContext";
 import { HslColorPicker } from "./HslColorPicker";
@@ -265,11 +268,193 @@ export function InspectorPanel({
     return match ? match[1].replace(/_/g, " ") : "";
   };
 
+  const GAP_PIXELS_TO_SCALE: Record<string, string> = {
+    "0px": "gap-0",
+    "0": "gap-0",
+    "2px": "gap-0.5",
+    "4px": "gap-1",
+    "6px": "gap-1.5",
+    "8px": "gap-2",
+    "10px": "gap-2.5",
+    "12px": "gap-3",
+    "16px": "gap-4",
+    "20px": "gap-5",
+    "24px": "gap-6",
+    "32px": "gap-8",
+    "40px": "gap-10",
+    "48px": "gap-12",
+    "64px": "gap-16",
+    "80px": "gap-20",
+    "96px": "gap-24"
+  };
+
+  const SCALE_TO_GAP_PIXELS: Record<string, string> = {
+    "0": "0px",
+    "0.5": "2px",
+    "1": "4px",
+    "1.5": "6px",
+    "2": "8px",
+    "2.5": "10px",
+    "3": "12px",
+    "4": "16px",
+    "5": "20px",
+    "6": "24px",
+    "8": "32px",
+    "10": "40px",
+    "12": "48px",
+    "16": "64px",
+    "20": "80px",
+    "24": "96px"
+  };
+
   const getPropValue = (propName: string): string => {
     if (propName === "display") {
       const groupClass = getActiveGroupClass(selectedElement?.classes || "", "display");
       if (groupClass === "hidden") return "none";
       if (groupClass) return groupClass;
+    }
+    if (propName === "flex-direction") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "flexDirection");
+      if (groupClass) {
+        return groupClass === "flex-row" ? "row" :
+               groupClass === "flex-row-reverse" ? "row-reverse" :
+               groupClass === "flex-col" ? "column" :
+               groupClass === "flex-col-reverse" ? "column-reverse" : "";
+      }
+    }
+    if (propName === "flex-wrap") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "flexWrap");
+      if (groupClass) {
+        return groupClass === "flex-wrap" ? "wrap" :
+               groupClass === "flex-wrap-reverse" ? "wrap-reverse" :
+               groupClass === "flex-nowrap" ? "nowrap" : "";
+      }
+    }
+    if (propName === "align-items") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "alignment");
+      if (groupClass) {
+        return groupClass === "items-start" ? "flex-start" :
+               groupClass === "items-center" ? "center" :
+               groupClass === "items-end" ? "flex-end" :
+               groupClass === "items-stretch" ? "stretch" :
+               groupClass === "items-baseline" ? "baseline" :
+               groupClass === "items-normal" ? "normal" : "";
+      }
+    }
+    if (propName === "justify-content") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "justify");
+      if (groupClass) {
+        return groupClass === "justify-start" ? "flex-start" :
+               groupClass === "justify-center" ? "center" :
+               groupClass === "justify-end" ? "flex-end" :
+               groupClass === "justify-between" ? "space-between" :
+               groupClass === "justify-around" ? "space-around" :
+               groupClass === "justify-evenly" ? "space-evenly" :
+               groupClass === "justify-stretch" ? "stretch" :
+               groupClass === "justify-normal" ? "normal" : "";
+      }
+    }
+    if (propName === "align-content") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "alignContent");
+      if (groupClass) {
+        return groupClass === "content-center" ? "center" :
+               groupClass === "content-start" ? "flex-start" :
+               groupClass === "content-end" ? "flex-end" :
+               groupClass === "content-between" ? "space-between" :
+               groupClass === "content-around" ? "space-around" :
+               groupClass === "content-evenly" ? "space-evenly" :
+               groupClass === "content-baseline" ? "baseline" :
+               groupClass === "content-stretch" ? "stretch" :
+               groupClass === "content-normal" ? "normal" : "";
+      }
+    }
+    if (propName === "justify-items") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "justifyItems");
+      if (groupClass) {
+        return groupClass === "justify-items-start" ? "start" :
+               groupClass === "justify-items-end" ? "end" :
+               groupClass === "justify-items-center" ? "center" :
+               groupClass === "justify-items-stretch" ? "stretch" :
+               groupClass === "justify-items-normal" ? "normal" : "";
+      }
+    }
+    if (propName === "align-self") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "alignSelf");
+      if (groupClass) {
+        return groupClass === "self-auto" ? "auto" :
+               groupClass === "self-normal" ? "normal" :
+               groupClass === "self-stretch" ? "stretch" :
+               groupClass === "self-start" ? "flex-start" :
+               groupClass === "self-end" ? "flex-end" :
+               groupClass === "self-center" ? "center" :
+               groupClass === "self-baseline" ? "baseline" : "";
+      }
+    }
+    if (propName === "justify-self") {
+      const groupClass = getActiveGroupClass(selectedElement?.classes || "", "justifySelf");
+      if (groupClass) {
+        return groupClass === "justify-self-auto" ? "auto" :
+               groupClass === "justify-self-normal" ? "normal" :
+               groupClass === "justify-self-stretch" ? "stretch" :
+               groupClass === "justify-self-start" ? "flex-start" :
+               groupClass === "justify-self-end" ? "flex-end" :
+               groupClass === "justify-self-center" ? "center" : "";
+      }
+    }
+    if (propName === "flex-grow") {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      const arbitraryMatch = tokens.find(t => t.startsWith("grow-[") && t.endsWith("]"));
+      if (arbitraryMatch) return arbitraryMatch.slice(6, -1);
+      if (tokens.includes("grow")) return "1";
+      if (tokens.includes("grow-0")) return "0";
+    }
+    if (propName === "flex-shrink") {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      const arbitraryMatch = tokens.find(t => t.startsWith("shrink-[") && t.endsWith("]"));
+      if (arbitraryMatch) return arbitraryMatch.slice(8, -1);
+      if (tokens.includes("shrink")) return "1";
+      if (tokens.includes("shrink-0")) return "0";
+    }
+    if (propName === "flex-basis") {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      const arbitraryMatch = tokens.find(t => t.startsWith("basis-[") && t.endsWith("]"));
+      if (arbitraryMatch) return arbitraryMatch.slice(7, -1);
+      const standardMatch = tokens.find(t => t.startsWith("basis-") && !t.startsWith("basis-["));
+      if (standardMatch) {
+         const basisScale = standardMatch.slice(6);
+         if (basisScale === "auto") return "auto";
+         if (basisScale === "full") return "100%";
+         if (basisScale === "0") return "0%";
+         if (basisScale === "1/2") return "50%";
+         if (basisScale === "1/3") return "33.333333%";
+         if (basisScale === "2/3") return "66.666667%";
+         if (basisScale === "1/4") return "25%";
+         if (basisScale === "3/4") return "75%";
+         return basisScale;
+      }
+    }
+    if (propName === "gap" || propName === "row-gap" || propName === "column-gap") {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      const prefix = propName === "row-gap" ? "gap-y-" : propName === "column-gap" ? "gap-x-" : "gap-";
+      const arbitraryMatch = tokens.find(t => t.startsWith(`${prefix}[`) && t.endsWith("]"));
+      if (arbitraryMatch) return arbitraryMatch.slice(prefix.length + 1, -1);
+      const standardMatch = tokens.find(t => {
+         if (propName === "gap") {
+            return t.startsWith("gap-") && !t.startsWith("gap-x-") && !t.startsWith("gap-y-") && !t.startsWith("gap-[");
+         } else {
+            return t.startsWith(prefix) && !t.startsWith(`${prefix}[`);
+         }
+      });
+      if (standardMatch) {
+         const scale = standardMatch.slice(prefix.length);
+         if (SCALE_TO_GAP_PIXELS[scale]) return SCALE_TO_GAP_PIXELS[scale];
+         const num = parseFloat(scale);
+         if (!isNaN(num)) return `${num * 4}px`;
+      }
     }
     return parseArbitraryProperty(
       selectedElement?.classes || "",
@@ -294,13 +479,266 @@ export function InspectorPanel({
       return;
     }
 
+    if (propName === "flex-direction") {
+      const mappedVal = 
+        val === "row" ? "flex-row" :
+        val === "row-reverse" ? "flex-row-reverse" :
+        val === "column" ? "flex-col" :
+        val === "column-reverse" ? "flex-col-reverse" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[flex-direction:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "flexDirection", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "flex-wrap") {
+      const mappedVal = 
+        val === "wrap" ? "flex-wrap" :
+        val === "wrap-reverse" ? "flex-wrap-reverse" :
+        val === "nowrap" ? "flex-nowrap" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[flex-wrap:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "flexWrap", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "align-items") {
+      const mappedVal = 
+        val === "flex-start" || val === "start" ? "items-start" :
+        val === "center" ? "items-center" :
+        val === "flex-end" || val === "end" ? "items-end" :
+        val === "stretch" ? "items-stretch" :
+        val === "baseline" ? "items-baseline" :
+        val === "normal" ? "items-normal" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[align-items:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "alignment", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "justify-content") {
+      const mappedVal = 
+        val === "flex-start" || val === "start" ? "justify-start" :
+        val === "center" ? "justify-center" :
+        val === "flex-end" || val === "end" ? "justify-end" :
+        val === "space-between" ? "justify-between" :
+        val === "space-around" ? "justify-around" :
+        val === "space-evenly" ? "justify-evenly" :
+        val === "stretch" ? "justify-stretch" :
+        val === "normal" ? "justify-normal" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[justify-content:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "justify", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "align-content") {
+      const mappedVal = 
+        val === "center" ? "content-center" :
+        val === "flex-start" || val === "start" ? "content-start" :
+        val === "flex-end" || val === "end" ? "content-end" :
+        val === "space-between" ? "content-between" :
+        val === "space-around" ? "content-around" :
+        val === "space-evenly" ? "content-evenly" :
+        val === "baseline" ? "content-baseline" :
+        val === "stretch" ? "content-stretch" :
+        val === "normal" ? "content-normal" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[align-content:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "alignContent", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "justify-items") {
+      const mappedVal = 
+        val === "start" ? "justify-items-start" :
+        val === "end" ? "justify-items-end" :
+        val === "center" ? "justify-items-center" :
+        val === "stretch" ? "justify-items-stretch" :
+        val === "normal" ? "justify-items-normal" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[justify-items:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "justifyItems", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "align-self") {
+      const mappedVal = 
+        val === "auto" ? "self-auto" :
+        val === "normal" ? "self-normal" :
+        val === "stretch" ? "self-stretch" :
+        val === "flex-start" || val === "start" ? "self-start" :
+        val === "flex-end" || val === "end" ? "self-end" :
+        val === "center" ? "self-center" :
+        val === "baseline" ? "self-baseline" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[align-self:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "alignSelf", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "justify-self") {
+      const mappedVal = 
+        val === "auto" ? "justify-self-auto" :
+        val === "normal" ? "justify-self-normal" :
+        val === "stretch" ? "justify-self-stretch" :
+        val === "flex-start" || val === "start" ? "justify-self-start" :
+        val === "flex-end" || val === "end" ? "justify-self-end" :
+        val === "center" ? "justify-self-center" : "";
+      
+      const withoutOldArbitrary = (selectedElement.classes || "")
+        .split(" ")
+        .filter((c) => !c.startsWith(`[justify-self:`))
+        .join(" ");
+
+      updateTree((n) => ({
+        classes: setGroupClass(withoutOldArbitrary, "justifySelf", mappedVal),
+      }));
+      return;
+    }
+
+    if (propName === "flex-grow") {
+      const clsString = selectedElement.classes || "";
+      const filtered = clsString.split(/\s+/).filter(t => t !== "grow" && t !== "grow-0" && !t.startsWith("grow-[") && !t.startsWith("[flex-grow:"));
+      if (val && val !== "") {
+        if (val === "1" || val === "1.0") {
+          filtered.push("grow");
+        } else if (val === "0" || val === "0.0") {
+          filtered.push("grow-0");
+        } else {
+          filtered.push(`grow-[${val}]`);
+        }
+      }
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
+    if (propName === "flex-shrink") {
+      const clsString = selectedElement.classes || "";
+      const filtered = clsString.split(/\s+/).filter(t => t !== "shrink" && t !== "shrink-0" && !t.startsWith("shrink-[") && !t.startsWith("[flex-shrink:"));
+      if (val && val !== "") {
+        if (val === "1" || val === "1.0") {
+          filtered.push("shrink");
+        } else if (val === "0" || val === "0.0") {
+          filtered.push("shrink-0");
+        } else {
+          filtered.push(`shrink-[${val}]`);
+        }
+      }
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
+    if (propName === "flex-basis") {
+      const clsString = selectedElement.classes || "";
+      const filtered = clsString.split(/\s+/).filter(t => !t.startsWith("basis-") && !t.startsWith("[flex-basis:"));
+      if (val && val !== "") {
+        if (val === "auto") {
+          filtered.push("basis-auto");
+        } else if (val === "100%") {
+          filtered.push("basis-full");
+        } else if (val === "0%") {
+          filtered.push("basis-0");
+        } else if (val === "50%") {
+          filtered.push("basis-1/2");
+        } else if (val === "25%") {
+          filtered.push("basis-1/4");
+        } else if (val === "75%") {
+          filtered.push("basis-3/4");
+        } else {
+          filtered.push(`basis-[${val}]`);
+        }
+      }
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
+    if (propName === "gap" || propName === "row-gap" || propName === "column-gap") {
+      const clsString = selectedElement.classes || "";
+      const prefix = propName === "row-gap" ? "gap-y-" : propName === "column-gap" ? "gap-x-" : "gap-";
+      
+      let filtered = clsString.split(/\s+/).filter(token => {
+        if (propName === "gap") {
+          const isUnifiedGap = token.startsWith("gap-") && !token.startsWith("gap-x-") && !token.startsWith("gap-y-");
+          const isArbitraryGap = token.startsWith("[gap:");
+          return !isUnifiedGap && !isArbitraryGap;
+        } else {
+          const isMatch = token.startsWith(prefix);
+          const isArbitrary = token.startsWith(`[${propName}:`);
+          return !isMatch && !isArbitrary;
+        }
+      });
+      
+      if (val && val !== "") {
+        const cleanVal = val.trim();
+        if (GAP_PIXELS_TO_SCALE[cleanVal]) {
+          filtered.push(GAP_PIXELS_TO_SCALE[cleanVal].replace("gap-", prefix));
+        } else {
+          const parsed = parseFloat(cleanVal);
+          if (!isNaN(parsed) && cleanVal.endsWith("px")) {
+            const tailwindScale = parsed / 4;
+            if (Number.isInteger(tailwindScale) || tailwindScale === 0.5 || tailwindScale === 1.5 || tailwindScale === 2.5) {
+              filtered.push(`${prefix}${tailwindScale}`);
+            } else {
+              filtered.push(`${prefix}[${cleanVal}]`);
+            }
+          } else {
+            filtered.push(`${prefix}[${cleanVal}]`);
+          }
+        }
+      }
+      
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
     const withoutOld = (selectedElement.classes || "")
       .split(" ")
       .filter((c) => !c.startsWith(`[${propName}:`));
     if (
       val &&
-      val !== "none" &&
-      val !== "initial" &&
       val !== ""
     ) {
       withoutOld.push(
@@ -394,6 +832,32 @@ export function InspectorPanel({
 
     const currentVal = getPropValue(propName);
 
+    if (SEGMENTED_FIELDS[propName]) {
+      const fieldData = SEGMENTED_FIELDS[propName];
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <SegmentedControl
+            label="" // card header already displays property name
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val === "auto" || val === currentVal ? "" : val)}
+            options={fieldData.options}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "grid-template-columns" || propName === "grid-template-rows") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <GridTemplateColumnsControl
+            propName={propName}
+            value={currentVal}
+            onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
     if (propName === "display") {
       return (
         <div key={propIdx} className="w-full animate-fade-in">
@@ -453,6 +917,29 @@ export function InspectorPanel({
       return (
         <div key={propIdx} className="w-full animate-fade-in">
           <FlexBasisControl
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "align-self" || propName === "justify-self") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <AlignSelfControl
+             propName={propName}
+             value={currentVal}
+             onChange={(val) => setPropValue(propName, val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "order") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in">
+          <OrderControl
              value={currentVal}
              onChange={(val) => setPropValue(propName, val)}
           />
@@ -535,7 +1022,10 @@ export function InspectorPanel({
       (v: any, i: number, a: any) => a.indexOf(v) === i,
     );
 
+    const isComplex = uniqueOptions.some((opt: string) => opt.includes("<") && opt.includes(">")) || uniqueOptions.some((opt: string) => opt.length > 30);
+
     const isShortOptions =
+      !isComplex &&
       uniqueOptions.length <= 4 &&
       uniqueOptions.every((o: string) => o.length <= 15);
 
@@ -565,10 +1055,11 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "justify-content") {
+    if (propName === "justify-content" || propName === "align-content") {
       return (
         <div key={propIdx} className="w-full animate-fade-in">
           <JustifyContentDropdown
+            propName={propName}
             value={currentVal}
             onChange={(val) => setPropValue(propName, val)}
           />
@@ -576,14 +1067,27 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "align-items") {
+    if (propName === "align-items" || propName === "justify-items") {
       const activeDirection = selectedElement?.classes?.includes("flex-col") ? "column" : "row";
       return (
         <AlignItemsControl
           key={propIdx}
+          propName={propName}
           value={currentVal}
           onChange={(val) => setPropValue(propName, val)}
           currentDirection={activeDirection}
+        />
+      );
+    }
+
+    if (isComplex) {
+      return (
+        <PropertyControl
+          key={propIdx}
+          type="text"
+          placeholder={prop.note ? prop.note : "e.g. auto, 10px, 100%..."}
+          value={currentVal}
+          onChange={(val) => setPropValue(propName, val)}
         />
       );
     }
@@ -878,12 +1382,21 @@ export function InspectorPanel({
                         // If it's a self-contained card-mode property, we don't wrap it in a secondary card!
                         const isSelfContainedCard = 
                           pName === "align-items" || 
+                          pName === "align-self" ||
+                          pName === "justify-content" ||
+                          pName === "align-content" ||
+                          pName === "justify-items" ||
+                          pName === "justify-self" ||
+                          pName === "order" ||
+                          pName === "display" ||
                           pName === "flex-direction" || 
                           pName === "flex-wrap" || 
                           pName === "gap" ||
                           pName === "flex-grow" ||
                           pName === "flex-shrink" ||
-                          pName === "flex-basis";
+                          pName === "flex-basis" ||
+                          pName === "grid-template-columns" ||
+                          pName === "grid-template-rows";
 
                         // Build matching interactive simulator widgets
                         let specialWidget = null;

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 interface AlignItemsControlProps {
+  propName?: string;
   value: string;
   onChange: (val: string) => void;
   currentDirection?: string; // e.g. "row" or "column"
@@ -107,7 +108,7 @@ const getBadgeStyling = (val: string) => {
   };
 };
 
-export function AlignItemsControl({ value, onChange, currentDirection = "row" }: AlignItemsControlProps) {
+export function AlignItemsControl({ propName = "align-items", value, onChange, currentDirection = "row" }: AlignItemsControlProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryTab, setActiveCategoryTab] = useState<"all" | "core" | "placement" | "baseline" | "safe" | "unsafe" | "globals">("all");
@@ -273,7 +274,7 @@ export function AlignItemsControl({ value, onChange, currentDirection = "row" }:
   return (
     <div className="flex flex-col gap-1.5 w-full text-left relative" ref={containerRef} id="align-items-dropdown-container">
       <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
-        <span>Align Items</span>
+        <span>{propName.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</span>
         <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
           {value || "default"}
         </span>

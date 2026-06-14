@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Info, 
-  AlertCircle, 
-  CheckCircle2, 
   HelpCircle, 
   Shrink,
   Scale,
@@ -19,12 +17,9 @@ export interface FlexShrinkControlProps {
 
 export function FlexShrinkControl({ value, onChange }: FlexShrinkControlProps) {
   const [inputValue, setInputValue] = useState("");
-  const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  const [successIndicator, setSuccessIndicator] = useState(false);
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(true);
   const [isGuidanceCollapsed, setIsGuidanceCollapsed] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync internal input value on external change
   useEffect(() => {
@@ -32,16 +27,7 @@ export function FlexShrinkControl({ value, onChange }: FlexShrinkControlProps) {
   }, [value]);
 
   const showNotification = (message: string, isSuccess: boolean = false) => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (isSuccess) {
-      setSuccessIndicator(true);
-      setWarningMessage(null);
-      timerRef.current = setTimeout(() => setSuccessIndicator(false), 2000);
-    } else {
-      setWarningMessage(message);
-      setSuccessIndicator(false);
-      timerRef.current = setTimeout(() => setWarningMessage(null), 3500);
-    }
+    // Silent validation tracker - UI notifications removed per user constraint
   };
 
   const sanitizeAndEmit = (rawValue: string) => {
@@ -230,37 +216,6 @@ export function FlexShrinkControl({ value, onChange }: FlexShrinkControlProps) {
             </AnimatePresence>
           </div>
         </div>
-
-        {/* Dynamic Warning Notification */}
-        <AnimatePresence mode="wait">
-          {warningMessage && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-amber-50 border border-amber-200 rounded-lg p-2 flex gap-1.5 items-start mt-2"
-            >
-              <AlertCircle size={12} className="text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-amber-800 leading-tight font-medium">
-                {warningMessage}
-              </p>
-            </motion.div>
-          )}
-
-          {successIndicator && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-lg p-1.5 flex gap-1.5 items-center mt-2"
-            >
-              <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-              <p className="text-[9px] text-emerald-800 font-bold">
-                Valid factor applied! Correctly configured.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Control Range Slider */}
@@ -374,7 +329,7 @@ export function FlexShrinkControl({ value, onChange }: FlexShrinkControlProps) {
                         The Content Minimum Floor Rule
                       </span>
                       <p className="text-[9.5px] text-slate-500 leading-tight mt-1">
-                         If an item fails to shrink despite high coefficients, it hit its internal baseline content floor. Override this by configuring `min-width: 0` on the active flex child.
+                         If an item fails to shrink despite high coefficients, it hit its internal baseline content floor. Override this by configuring <code className="bg-purple-100/40 text-purple-800 px-1 py-0.5 rounded text-[8.5px] font-mono">min-width: 0</code> on the active flex child.
                       </p>
                     </div>
                   </div>
@@ -385,7 +340,7 @@ export function FlexShrinkControl({ value, onChange }: FlexShrinkControlProps) {
                         Understand Practical Shrink Rates
                       </span>
                       <p className="text-[9.5px] text-slate-500 leading-tight mt-1">
-                         Typically you either want an element to shrink (`1`) or protect it from shrinking (`0`). Only use small simple numbers like `2` or `3` if custom proportionate ratios are strictly needed!
+                         Typically you either want an element to shrink (<code className="bg-pink-100/40 text-pink-800 px-1 py-0.5 rounded text-[8.5px] font-mono">1</code>) or protect it from shrinking (<code className="bg-pink-100/40 text-pink-800 px-1 py-0.5 rounded text-[8.5px] font-mono">0</code>). Only use small simple numbers like <code className="bg-pink-100/40 text-pink-800 px-1 py-0.5 rounded text-[8.5px] font-mono">2</code> or <code className="bg-pink-100/40 text-pink-800 px-1 py-0.5 rounded text-[8.5px] font-mono">3</code> if custom proportionate ratios are strictly needed!
                       </p>
                     </div>
                   </div>

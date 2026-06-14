@@ -246,6 +246,11 @@ export const flexboxContainerGroup: CSSSubCategory = {
         "normal | flex-start | flex-end | center | space-between | space-around | space-evenly | start | end | left | right | stretch | safe center | safe start | safe end | safe flex-start | safe flex-end | safe left | safe right | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe left | unsafe right | inherit | initial | revert | revert-layer | unset",
     },
     {
+      name: "align-content",
+      values:
+        "normal | flex-start | flex-end | center | space-between | space-around | space-evenly | stretch | start | end | baseline | first baseline | last baseline | safe center | safe start | safe end | unsafe center | unsafe start | unsafe end | inherit | initial | revert | revert-layer | unset",
+    },
+    {
       name: "align-items",
       values:
         "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | anchor-center | baseline | first baseline | last baseline | safe center | safe start | safe end | safe flex-start | safe flex-end | safe self-start | safe self-end | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe self-start | unsafe self-end | inherit | initial | revert | revert-layer | unset",
@@ -307,6 +312,16 @@ export const gridContainerGroup: CSSSubCategory = {
       values: "none | subgrid | masonry | <track-list>",
     },
     {
+      name: "justify-content",
+      values:
+        "normal | start | end | center | stretch | space-around | space-between | space-evenly | left | right",
+    },
+    {
+      name: "align-content",
+      values:
+        "normal | start | end | center | stretch | space-around | space-between | space-evenly | baseline",
+    },
+    {
       name: "justify-items",
       values:
         "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | left | right | legacy",
@@ -315,6 +330,11 @@ export const gridContainerGroup: CSSSubCategory = {
       name: "align-items",
       values:
         "normal | stretch | center | start | end | flex-start | flex-end | self-start | self-end | anchor-center | baseline | first baseline | last baseline | safe center | safe start | safe end | safe flex-start | safe flex-end | safe self-start | safe self-end | unsafe center | unsafe start | unsafe end | unsafe flex-start | unsafe flex-end | unsafe self-start | unsafe self-end | inherit | initial | revert | revert-layer | unset",
+    },
+    {
+      name: "gap",
+      values: "normal | <length> | <percentage> | calc(...) | clamp(...)",
+      note: "e.g., 16px, 1rem, 5%",
     },
   ],
 };
@@ -337,6 +357,16 @@ export const gridItemsGroup: CSSSubCategory = {
       name: "grid-area",
       values:
         "auto | <custom-name> | <row-start> / <column-start> / <row-end> / <column-end>",
+    },
+    {
+      name: "align-self",
+      values:
+        "auto | normal | center | start | end | self-start | self-end | baseline | stretch",
+    },
+    {
+      name: "justify-self",
+      values:
+        "auto | normal | stretch | center | start | end | self-start | self-end | left | right",
     },
   ],
 };

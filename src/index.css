@@ -108,4 +108,105 @@
     gap: 8px !important; /* Adjusted gap to save width */
     flex-shrink: 0 !important;
   }
+
+  /* Universal Mobile Text Standards & Standard Sizing Adjustments */
+  body, html, input, button, select, textarea, p, span, div {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Heading adjustments for mobile standard */
+  h1 {
+    font-size: 14px !important;
+    letter-spacing: -0.015em !important;
+  }
+  h2 {
+    font-size: 13px !important;
+    letter-spacing: -0.01em !important;
+  }
+  h3, h4, h5, h6 {
+    font-size: 12px !important;
+  }
+
+  /* Control Header / Navbar scaling */
+  #control_bar {
+    height: 52px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    gap: 6px !important;
+  }
+  #control_bar h1 {
+    font-size: 14px !important;
+  }
+  #control_bar div[class*="w-[38px]"] {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+  }
+  #control_bar button {
+    padding: 6px 10px !important;
+    font-size: 10.5px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Property labels, sub-headings and categories standard mobile size */
+  label, .label, [class*="tracking-wider"][class*="uppercase"] {
+    font-size: 9px !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* Content lists & panel descriptions density */
+  p, .description, span[class*="text-slate-500"] {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Inputs, Textareas & Form structures scaling to prevent layout breakages */
+  input, select, textarea, .input-box {
+    font-size: 12px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Inline codes and guidelines code snippets */
+  code {
+    font-size: 8.5px !important;
+    padding: 1px 3px !important;
+  }
+
+  /* Segmented buttons, control options & quick sliders */
+  button[class*="py-2"][class*="px-3"] {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    font-size: 11px !important;
+  }
+
+  button[class*="py-1.5"][class*="px-1"] {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    font-size: 10px !important;
+  }
+
+  /* Tabs inside Mobile styling toolbar & Category switches */
+  div[id="library_panel"] button,
+  div[id="inspector_panel"] button,
+  .mobile-styling-tabs button {
+    font-size: 11px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* Adjust spacing heights inside flex/box model properties */
+  .space-y-4 > * + * {
+    margin-top: 10px !important;
+  }
+  .space-y-3\.5 > * + * {
+    margin-top: 8px !important;
+  }
 }

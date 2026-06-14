@@ -141,7 +141,7 @@ const advancedOptionsValues = [
 const advancedOptions: JustifyOption[] = advancedOptionsValues.map((opt) => ({
   value: opt,
   label: opt.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-  description: `Raw CSS value: justify-content: ${opt}`,
+  description: `Raw CSS layout alignment: ${opt}`,
   icon: Code,
   badgeBg: "bg-stone-50/90 border border-stone-200/60 p-1 rounded-lg flex items-center justify-center w-10",
   badgeContent: <span className="text-[8px] text-stone-400 font-mono leading-none tracking-tight">RAW</span>
@@ -150,11 +150,12 @@ const advancedOptions: JustifyOption[] = advancedOptionsValues.map((opt) => ({
 const allOptions: JustifyOption[] = [...justifyOptions, ...advancedOptions];
 
 interface JustifyContentDropdownProps {
+  propName?: string;
   value: string;
   onChange: (value: string) => void;
 }
 
-export function JustifyContentDropdown({ value, onChange }: JustifyContentDropdownProps) {
+export function JustifyContentDropdown({ propName = "justify-content", value, onChange }: JustifyContentDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -250,7 +251,7 @@ export function JustifyContentDropdown({ value, onChange }: JustifyContentDropdo
   return (
     <div className="flex flex-col gap-1.5 w-full text-left relative" ref={containerRef} id="justify-dropdown-container">
       <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between">
-        <span>Justify Content</span>
+        <span>{propName.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</span>
         <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
           {value || "default"}
         </span>
@@ -275,7 +276,7 @@ export function JustifyContentDropdown({ value, onChange }: JustifyContentDropdo
               {activeOption.label}
             </span>
             <span className="text-[10px] text-stone-400 leading-none mt-0.5 truncate w-full">
-              justify-content: {activeOption.value}
+              {propName}: {activeOption.value}
             </span>
           </div>
         </div>
@@ -314,7 +315,7 @@ export function JustifyContentDropdown({ value, onChange }: JustifyContentDropdo
             >
               <div className="text-[9.5px] uppercase font-bold tracking-wider text-rose-600 font-mono mb-2 flex items-center gap-1.5 pl-1.5 flex-shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                <span>Select Justify Content</span>
+                <span>Select {propName.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</span>
               </div>
 
             <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1 pr-1 pb-1">

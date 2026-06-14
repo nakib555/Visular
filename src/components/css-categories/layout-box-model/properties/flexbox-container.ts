@@ -22,6 +22,11 @@ export const flexboxContainerGroup: CSSSubCategory = {
       values: "nowrap | wrap | wrap-reverse",
     },
     {
+      name: "align-content",
+      values:
+        "normal | space-between | space-around | space-evenly | stretch | center | start | end | flex-start | flex-end | baseline | first baseline | last baseline",
+    },
+    {
       name: "gap",
       values: "normal | <length> | <percentage> | calc(...) | clamp(...)",
       note: "e.g., 16px, 1rem, 5%",
