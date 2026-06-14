@@ -66,6 +66,8 @@ import { FlexWrapControl } from "./css-categories/layout-box-model/properties/Fl
 import { FlexGrowControl } from "./css-categories/layout-box-model/properties/FlexGrowControl";
 import { FlexShrinkControl } from "./css-categories/layout-box-model/properties/FlexShrinkControl";
 import { FlexBasisControl } from "./css-categories/layout-box-model/properties/FlexBasisControl";
+import { MarginControl } from "./css-categories/layout-box-model/properties/MarginControl";
+import { PaddingControl } from "./css-categories/layout-box-model/properties/PaddingControl";
 import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
 import { AlignSelfControl } from "./css-categories/layout-box-model/properties/AlignSelfControl";
 import { OrderControl } from "./css-categories/layout-box-model/properties/OrderControl";
@@ -456,6 +458,92 @@ export function InspectorPanel({
          if (!isNaN(num)) return `${num * 4}px`;
       }
     }
+
+    if (propName.startsWith("padding")) {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      
+      let prefix = "";
+      if (propName === "padding") prefix = "p-";
+      else if (propName === "padding-top") prefix = "pt-";
+      else if (propName === "padding-right") prefix = "pr-";
+      else if (propName === "padding-bottom") prefix = "pb-";
+      else if (propName === "padding-left") prefix = "pl-";
+      else if (propName === "padding-block") prefix = "py-";
+      else if (propName === "padding-inline") prefix = "px-";
+      else if (propName === "padding-inline-start") prefix = "ps-";
+      else if (propName === "padding-inline-end") prefix = "pe-";
+
+      if (prefix) {
+        const arbitraryMatch = tokens.find(t => t.startsWith(`${prefix}[`) && t.endsWith("]"));
+        if (arbitraryMatch) return arbitraryMatch.slice(prefix.length + 1, -1);
+
+        const standardMatch = tokens.find(t => {
+           if (propName === "padding") {
+              const isP = t.startsWith("p-");
+              const isSpecific = t.startsWith("pt-") || t.startsWith("pr-") || t.startsWith("pb-") || t.startsWith("pl-") || t.startsWith("px-") || t.startsWith("py-") || t.startsWith("ps-") || t.startsWith("pe-");
+              return isP && !isSpecific && !t.includes("[");
+           } else {
+              return t.startsWith(prefix) && !t.includes("[");
+           }
+        });
+
+        if (standardMatch) {
+           const scale = standardMatch.slice(prefix.length);
+           if (SCALE_TO_GAP_PIXELS[scale]) return SCALE_TO_GAP_PIXELS[scale];
+           const num = parseFloat(scale);
+           if (!isNaN(num)) return `${num * 4}px`;
+        }
+      } else {
+        return parseArbitraryProperty(clsString, propName);
+      }
+    }
+
+    if (propName.startsWith("margin") && !propName.includes("trim")) {
+      const clsString = selectedElement?.classes || "";
+      const tokens = clsString.split(/\s+/).filter(Boolean);
+      
+      let prefix = "";
+      if (propName === "margin") prefix = "m-";
+      else if (propName === "margin-top") prefix = "mt-";
+      else if (propName === "margin-right") prefix = "mr-";
+      else if (propName === "margin-bottom") prefix = "mb-";
+      else if (propName === "margin-left") prefix = "ml-";
+      else if (propName === "margin-block") prefix = "my-";
+      else if (propName === "margin-inline") prefix = "mx-";
+      else if (propName === "margin-inline-start") prefix = "ms-";
+      else if (propName === "margin-inline-end") prefix = "me-";
+
+      if (prefix) {
+        const arbitraryMatch = tokens.find(t => t.startsWith(`${prefix}[`) && t.endsWith("]"));
+        if (arbitraryMatch) return arbitraryMatch.slice(prefix.length + 1, -1);
+
+        const negArbitraryMatch = tokens.find(t => t.startsWith(`-${prefix}[`) && t.endsWith("]"));
+        if (negArbitraryMatch) return "-" + negArbitraryMatch.slice(prefix.length + 2, -1);
+
+        const standardMatch = tokens.find(t => {
+           if (propName === "margin") {
+              const isP = t.startsWith("m-") || t.startsWith("-m-");
+              const isSpecific = t.startsWith("mt-") || t.startsWith("mr-") || t.startsWith("mb-") || t.startsWith("ml-") || t.startsWith("mx-") || t.startsWith("my-") || t.startsWith("-mt-") || t.startsWith("-mr-") || t.startsWith("-mb-") || t.startsWith("-ml-") || t.startsWith("-mx-") || t.startsWith("-my-") || t.startsWith("ms-") || t.startsWith("-ms-") || t.startsWith("me-") || t.startsWith("-me-");
+              return isP && !isSpecific && !t.includes("[");
+           } else {
+              return (t.startsWith(prefix) || t.startsWith(`-${prefix}`)) && !t.includes("[");
+           }
+        });
+
+        if (standardMatch) {
+           const isNeg = standardMatch.startsWith("-");
+           const scale = standardMatch.slice(isNeg ? prefix.length + 1 : prefix.length);
+           if (scale === "auto") return "auto";
+           if (SCALE_TO_GAP_PIXELS[scale]) return `${isNeg ? "-" : ""}` + SCALE_TO_GAP_PIXELS[scale];
+           const num = parseFloat(scale);
+           if (!isNaN(num)) return `${isNeg ? "-" : ""}${num * 4}px`;
+        }
+      } else {
+        // Fallback for margin-block-start, margin-block-end
+        return parseArbitraryProperty(clsString, propName);
+      }
+    }
     return parseArbitraryProperty(
       selectedElement?.classes || "",
       propName,
@@ -734,6 +822,134 @@ export function InspectorPanel({
       return;
     }
 
+    if (propName.startsWith("padding")) {
+      const clsString = selectedElement?.classes || "";
+      
+      let prefix = "";
+      if (propName === "padding") prefix = "p-";
+      else if (propName === "padding-top") prefix = "pt-";
+      else if (propName === "padding-right") prefix = "pr-";
+      else if (propName === "padding-bottom") prefix = "pb-";
+      else if (propName === "padding-left") prefix = "pl-";
+      else if (propName === "padding-block") prefix = "py-";
+      else if (propName === "padding-inline") prefix = "px-";
+      else if (propName === "padding-inline-start") prefix = "ps-";
+      else if (propName === "padding-inline-end") prefix = "pe-";
+
+      let filtered = clsString.split(/\s+/);
+      
+      if (prefix) {
+        filtered = filtered.filter(token => {
+          if (propName === "padding") {
+            const isUnifiedP = token.startsWith("p-") && !token.startsWith("pt-") && !token.startsWith("pr-") && !token.startsWith("pb-") && !token.startsWith("pl-") && !token.startsWith("px-") && !token.startsWith("py-") && !token.startsWith("ps-") && !token.startsWith("pe-");
+            const isArbitrary = token.startsWith("[padding:");
+            return !isUnifiedP && !isArbitrary;
+          } else {
+            const isMatch = token.startsWith(prefix);
+            const isArbitrary = token.startsWith(`[${propName}:`);
+            return !isMatch && !isArbitrary;
+          }
+        });
+
+        if (val && val !== "") {
+          const cleanVal = val.trim();
+          let newClass = "";
+          if (GAP_PIXELS_TO_SCALE[cleanVal]) {
+            const scale = GAP_PIXELS_TO_SCALE[cleanVal].replace("gap-", "");
+            newClass = `${prefix}${scale}`;
+          } else {
+            const parsed = parseFloat(cleanVal);
+            if (!isNaN(parsed) && cleanVal.endsWith("px")) {
+              const tailwindScale = parsed / 4;
+              if (Number.isInteger(tailwindScale) || tailwindScale === 0.5 || tailwindScale === 1.5 || tailwindScale === 2.5) {
+                newClass = `${prefix}${tailwindScale}`;
+              } else {
+                newClass = `${prefix}[${cleanVal}]`;
+              }
+            } else {
+              newClass = `${prefix}[${cleanVal}]`;
+            }
+          }
+          filtered.push(newClass);
+        }
+      } else {
+        filtered = filtered.filter((c) => !c.startsWith(`[${propName}:`));
+        if (val) {
+          filtered.push(`[${propName}:${val.replace(/\s+/g, "_")}]`);
+        }
+      }
+      
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
+    if (propName.startsWith("margin") && !propName.includes("trim")) {
+      const clsString = selectedElement?.classes || "";
+      
+      let prefix = "";
+      if (propName === "margin") prefix = "m-";
+      else if (propName === "margin-top") prefix = "mt-";
+      else if (propName === "margin-right") prefix = "mr-";
+      else if (propName === "margin-bottom") prefix = "mb-";
+      else if (propName === "margin-left") prefix = "ml-";
+      else if (propName === "margin-block") prefix = "my-";
+      else if (propName === "margin-inline") prefix = "mx-";
+      else if (propName === "margin-inline-start") prefix = "ms-";
+      else if (propName === "margin-inline-end") prefix = "me-";
+
+      let filtered = clsString.split(/\s+/);
+      
+      if (prefix) {
+        filtered = filtered.filter(token => {
+          if (propName === "margin") {
+            const isUnifiedP = (token.startsWith("m-") || token.startsWith("-m-")) && !token.startsWith("mt-") && !token.startsWith("mr-") && !token.startsWith("mb-") && !token.startsWith("ml-") && !token.startsWith("mx-") && !token.startsWith("my-") && !token.startsWith("-mt-") && !token.startsWith("-mr-") && !token.startsWith("-mb-") && !token.startsWith("-ml-") && !token.startsWith("-mx-") && !token.startsWith("-my-") && !token.startsWith("ms-") && !token.startsWith("-ms-") && !token.startsWith("me-") && !token.startsWith("-me-");
+            const isArbitrary = token.startsWith("[margin:");
+            return !isUnifiedP && !isArbitrary;
+          } else {
+            const isMatch = token.startsWith(prefix) || token.startsWith(`-${prefix}`);
+            const isArbitrary = token.startsWith(`[${propName}:`);
+            return !isMatch && !isArbitrary;
+          }
+        });
+
+        if (val && val !== "") {
+          const cleanVal = val.trim();
+          const isNeg = cleanVal.startsWith("-");
+          const absVal = isNeg ? cleanVal.slice(1) : cleanVal;
+          
+          let newClass = "";
+          if (absVal === "auto") {
+            newClass = `${isNeg ? "-" : ""}${prefix}auto`;
+          } else if (GAP_PIXELS_TO_SCALE[absVal]) {
+            const scale = GAP_PIXELS_TO_SCALE[absVal].replace("gap-", "");
+            newClass = `${isNeg ? "-" : ""}${prefix}${scale}`;
+          } else {
+            const parsed = parseFloat(absVal);
+            if (!isNaN(parsed) && absVal.endsWith("px")) {
+              const tailwindScale = parsed / 4;
+              if (Number.isInteger(tailwindScale) || tailwindScale === 0.5 || tailwindScale === 1.5 || tailwindScale === 2.5) {
+                newClass = `${isNeg ? "-" : ""}${prefix}${tailwindScale}`;
+              } else {
+                newClass = `${isNeg ? "-" : ""}${prefix}[${absVal}]`;
+              }
+            } else {
+              newClass = `${isNeg ? "-" : ""}${prefix}[${absVal}]`;
+            }
+          }
+          filtered.push(newClass);
+        }
+      } else {
+        // Fallback for margin-block-start, margin-block-end (arbitrary only)
+        filtered = filtered.filter((c) => !c.startsWith(`[${propName}:`));
+        if (val) {
+          filtered.push(`[${propName}:${val.replace(/\s+/g, "_")}]`);
+        }
+      }
+      
+      updateTree((n) => ({ classes: filtered.join(" ") }));
+      return;
+    }
+
     const withoutOld = (selectedElement.classes || "")
       .split(" ")
       .filter((c) => !c.startsWith(`[${propName}:`));
@@ -957,6 +1173,68 @@ export function InspectorPanel({
             columnGapValue={getPropValue("column-gap")}
             onRowGapChange={(val) => setPropValue("row-gap", val)}
             onColumnGapChange={(val) => setPropValue("column-gap", val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName.startsWith("padding")) {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
+          <PaddingControl
+            value={getPropValue("padding")}
+            onChange={(val) => setPropValue("padding", val)}
+            paddingTopValue={getPropValue("padding-top")}
+            paddingRightValue={getPropValue("padding-right")}
+            paddingBottomValue={getPropValue("padding-bottom")}
+            paddingLeftValue={getPropValue("padding-left")}
+            paddingBlockValue={getPropValue("padding-block")}
+            paddingInlineValue={getPropValue("padding-inline")}
+            paddingBlockStartValue={getPropValue("padding-block-start")}
+            paddingBlockEndValue={getPropValue("padding-block-end")}
+            paddingInlineStartValue={getPropValue("padding-inline-start")}
+            paddingInlineEndValue={getPropValue("padding-inline-end")}
+            onPaddingTopChange={(val) => setPropValue("padding-top", val)}
+            onPaddingRightChange={(val) => setPropValue("padding-right", val)}
+            onPaddingBottomChange={(val) => setPropValue("padding-bottom", val)}
+            onPaddingLeftChange={(val) => setPropValue("padding-left", val)}
+            onPaddingBlockChange={(val) => setPropValue("padding-block", val)}
+            onPaddingInlineChange={(val) => setPropValue("padding-inline", val)}
+            onPaddingBlockStartChange={(val) => setPropValue("padding-block-start", val)}
+            onPaddingBlockEndChange={(val) => setPropValue("padding-block-end", val)}
+            onPaddingInlineStartChange={(val) => setPropValue("padding-inline-start", val)}
+            onPaddingInlineEndChange={(val) => setPropValue("padding-inline-end", val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName.startsWith("margin") && !propName.includes("trim")) {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
+          <MarginControl
+            value={getPropValue("margin")}
+            onChange={(val) => setPropValue("margin", val)}
+            marginTopValue={getPropValue("margin-top")}
+            marginRightValue={getPropValue("margin-right")}
+            marginBottomValue={getPropValue("margin-bottom")}
+            marginLeftValue={getPropValue("margin-left")}
+            marginBlockValue={getPropValue("margin-block")}
+            marginInlineValue={getPropValue("margin-inline")}
+            marginBlockStartValue={getPropValue("margin-block-start")}
+            marginBlockEndValue={getPropValue("margin-block-end")}
+            marginInlineStartValue={getPropValue("margin-inline-start")}
+            marginInlineEndValue={getPropValue("margin-inline-end")}
+            onMarginTopChange={(val) => setPropValue("margin-top", val)}
+            onMarginRightChange={(val) => setPropValue("margin-right", val)}
+            onMarginBottomChange={(val) => setPropValue("margin-bottom", val)}
+            onMarginLeftChange={(val) => setPropValue("margin-left", val)}
+            onMarginBlockChange={(val) => setPropValue("margin-block", val)}
+            onMarginInlineChange={(val) => setPropValue("margin-inline", val)}
+            onMarginBlockStartChange={(val) => setPropValue("margin-block-start", val)}
+            onMarginBlockEndChange={(val) => setPropValue("margin-block-end", val)}
+            onMarginInlineStartChange={(val) => setPropValue("margin-inline-start", val)}
+            onMarginInlineEndChange={(val) => setPropValue("margin-inline-end", val)}
           />
         </div>
       );
@@ -1381,6 +1659,8 @@ export function InspectorPanel({
 
                         // If it's a self-contained card-mode property, we don't wrap it in a secondary card!
                         const isSelfContainedCard = 
+                          pName.startsWith("padding") ||
+                          (pName.startsWith("margin") && !pName.includes("trim")) ||
                           pName === "align-items" || 
                           pName === "align-self" ||
                           pName === "justify-content" ||
