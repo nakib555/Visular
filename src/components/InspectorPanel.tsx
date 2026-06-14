@@ -1283,19 +1283,26 @@ export function InspectorPanel({
       );
     }
 
-    if (propName === "top") {
+    if (propName === "position") {
+      // Handled inline within the integrated PositionOffsetsControl (rendered by "inset")
+      return null;
+    }
+
+    if (propName === "inset") {
       return (
         <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
           <PositionOffsetsControl
+            value={getPropValue("inset")}
+            onChange={(val) => setPropValue("inset", val)}
             topValue={getPropValue("top")}
             rightValue={getPropValue("right")}
             bottomValue={getPropValue("bottom")}
             leftValue={getPropValue("left")}
-            positionValue={getPropValue("position")}
             onTopChange={(val) => setPropValue("top", val)}
             onRightChange={(val) => setPropValue("right", val)}
             onBottomChange={(val) => setPropValue("bottom", val)}
             onLeftChange={(val) => setPropValue("left", val)}
+            positionValue={getPropValue("position")}
             onPositionChange={(val) => setPropValue("position", val)}
           />
         </div>
@@ -1622,7 +1629,8 @@ export function InspectorPanel({
               "min-inline-size".includes(query) ||
               "max-inline-size".includes(query)
             )) ||
-            (item.prop.name === "top" && (
+            (item.prop.name === "inset" && (
+              "top".includes(query) ||
               "right".includes(query) ||
               "bottom".includes(query) ||
               "left".includes(query) ||
