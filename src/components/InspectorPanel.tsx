@@ -1,4 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 350,
+      damping: 26,
+    },
+  },
+} as const;
+
 import {
   Settings,
   Sparkles,
@@ -9,6 +34,7 @@ import {
   Play,
   Code,
   HelpCircle,
+  Lightbulb,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -50,6 +76,7 @@ import { motionTransformsCategory } from "./css-categories/motion-transforms";
 import { interactivityUiMiscCategory } from "./css-categories/interactivity-ui-misc";
 import { environmentMediaArchitectureCategory } from "./css-categories/environment-media-architecture";
 import { PropertyControl } from "./PropertyControl";
+import { ExpertCSSManualDrawer } from "./ExpertCSSManualDrawer";
 
 export const CSS_HIERARCHY_DATA: CSSCategory[] = [
   layoutBoxModelCategory,
@@ -68,6 +95,9 @@ import { FlexShrinkControl } from "./css-categories/layout-box-model/properties/
 import { FlexBasisControl } from "./css-categories/layout-box-model/properties/FlexBasisControl";
 import { MarginControl } from "./css-categories/layout-box-model/properties/MarginControl";
 import { PaddingControl } from "./css-categories/layout-box-model/properties/PaddingControl";
+import { WidthControl } from "./css-categories/layout-box-model/properties/WidthControl";
+import { AspectRatioControl } from "./css-categories/layout-box-model/properties/AspectRatioControl";
+import { PositionOffsetsControl } from "./css-categories/layout-box-model/properties/PositionOffsetsControl";
 import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
 import { AlignSelfControl } from "./css-categories/layout-box-model/properties/AlignSelfControl";
 import { OrderControl } from "./css-categories/layout-box-model/properties/OrderControl";
@@ -248,6 +278,8 @@ export function InspectorPanel({
   const [rotationY, setRotationY] = useState(-35); // degrees
   const [outlineFocused, setOutlineFocused] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [analyzingProperty, setAnalyzingProperty] = useState<string | null>(null);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -1240,6 +1272,66 @@ export function InspectorPanel({
       );
     }
 
+    if (propName === "aspect-ratio") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
+          <AspectRatioControl
+            value={getPropValue("aspect-ratio")}
+            onChange={(val) => setPropValue("aspect-ratio", val)}
+          />
+        </div>
+      );
+    }
+
+    if (propName === "top") {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
+          <PositionOffsetsControl
+            topValue={getPropValue("top")}
+            rightValue={getPropValue("right")}
+            bottomValue={getPropValue("bottom")}
+            leftValue={getPropValue("left")}
+            positionValue={getPropValue("position")}
+            onTopChange={(val) => setPropValue("top", val)}
+            onRightChange={(val) => setPropValue("right", val)}
+            onBottomChange={(val) => setPropValue("bottom", val)}
+            onLeftChange={(val) => setPropValue("left", val)}
+            onPositionChange={(val) => setPropValue("position", val)}
+          />
+        </div>
+      );
+    }
+
+    const isWidthProperty = 
+      propName === "width" || 
+      propName === "min-width" || 
+      propName === "max-width" || 
+      propName === "inline-size" || 
+      propName === "min-inline-size" || 
+      propName === "max-inline-size";
+
+    if (isWidthProperty) {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
+          <WidthControl
+            propName={propName}
+            value={getPropValue("width")}
+            onChange={(val) => setPropValue("width", val)}
+            minWidthValue={getPropValue("min-width")}
+            maxWidthValue={getPropValue("max-width")}
+            inlineSizeValue={getPropValue("inline-size")}
+            minInlineSizeValue={getPropValue("min-inline-size")}
+            maxInlineSizeValue={getPropValue("max-inline-size")}
+            onMinWidthChange={(val) => setPropValue("min-width", val)}
+            onMaxWidthChange={(val) => setPropValue("max-width", val)}
+            onInlineSizeChange={(val) => setPropValue("inline-size", val)}
+            onMinInlineSizeChange={(val) => setPropValue("min-inline-size", val)}
+            onMaxInlineSizeChange={(val) => setPropValue("max-inline-size", val)}
+          />
+        </div>
+      );
+    }
+
     const isColor =
       propName.includes("color") ||
       propName === "fill" ||
@@ -1464,6 +1556,25 @@ export function InspectorPanel({
         if (prop.name.includes("/")) {
           const parts = prop.name.split("/").map((p) => p.trim());
           parts.forEach((part) => {
+            // Unify all width sub-properties (min-width, max-width, inline-size, min-inline-size, max-inline-size) 
+            // under "width" in the pill list. This makes "width" an all-in-one control.
+            if (
+              part === "min-width" ||
+              part === "max-width" ||
+              part === "inline-size" ||
+              part === "min-inline-size" ||
+              part === "max-inline-size"
+            ) {
+              return;
+            }
+            // Unify all physical coordinates sub-properties (right, bottom, left) under "top"
+            if (
+              part === "right" ||
+              part === "bottom" ||
+              part === "left"
+            ) {
+              return;
+            }
             list.push({
               prop: {
                 ...prop,
@@ -1478,6 +1589,16 @@ export function InspectorPanel({
             });
           });
         } else {
+          // If a standalone property is one of the other width variations, hide it (to consolidate under "width")
+          if (
+            prop.name === "min-width" ||
+            prop.name === "max-width" ||
+            prop.name === "inline-size" ||
+            prop.name === "min-inline-size" ||
+            prop.name === "max-inline-size"
+          ) {
+            return;
+          }
           list.push({
             prop,
             originalSubCategoryName: sub.name,
@@ -1488,21 +1609,51 @@ export function InspectorPanel({
       });
     });
 
-    // Handle search queries
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase().trim();
-      return list.filter((item) => {
-        return (
-          item.prop.name.toLowerCase().includes(query) ||
-          item.prop.values.toLowerCase().includes(query) ||
-          (item.prop.note && item.prop.note.toLowerCase().includes(query)) ||
-          item.originalSubCategoryName.toLowerCase().includes(query)
-        );
-      });
-    }
+    // Handle search queries and deduplicate by property name
+    const filteredList = searchQuery
+      ? list.filter((item) => {
+          const query = searchQuery.toLowerCase().trim();
+          return (
+            item.prop.name.toLowerCase().includes(query) ||
+            (item.prop.name === "width" && (
+              "min-width".includes(query) ||
+              "max-width".includes(query) ||
+              "inline-size".includes(query) ||
+              "min-inline-size".includes(query) ||
+              "max-inline-size".includes(query)
+            )) ||
+            (item.prop.name === "top" && (
+              "right".includes(query) ||
+              "bottom".includes(query) ||
+              "left".includes(query) ||
+              "coordinates".includes(query) ||
+              "offsets".includes(query) ||
+              "position-offsets".includes(query)
+            )) ||
+            item.prop.values.toLowerCase().includes(query) ||
+            (item.prop.note && item.prop.note.toLowerCase().includes(query)) ||
+            item.originalSubCategoryName.toLowerCase().includes(query)
+          );
+        })
+      : list;
 
-    return list;
+    const seen = new Set<string>();
+    return filteredList.filter((item) => {
+      if (seen.has(item.prop.name)) {
+        return false;
+      }
+      seen.add(item.prop.name);
+      return true;
+    });
   }, [inspectorSection, searchQuery]);
+
+  const activePropName = React.useMemo(() => {
+    if (activeCategoryData.length === 0) return null;
+    if (selectedProperty && activeCategoryData.some(item => item.prop.name === selectedProperty)) {
+      return selectedProperty;
+    }
+    return activeCategoryData[0].prop.name;
+  }, [selectedProperty, activeCategoryData]);
 
   if (!selectedElement)
     return (
@@ -1524,7 +1675,7 @@ export function InspectorPanel({
       {/* Horizontally Scrollable Categories Tab List */}
       <div
         role="tablist"
-        className="px-4 py-3 flex items-center gap-1.5 overflow-x-auto scrollbar-hide border-b border-stone-100 flex-shrink-0"
+        className="px-4 py-3 flex items-center gap-1.5 overflow-x-auto scrollbar-hide border-b border-stone-100 flex-shrink-0 snap-x snap-mandatory scroll-smooth"
         onWheel={(e) => {
           if (e.deltaY !== 0 && e.deltaX === 0) {
             e.currentTarget.scrollLeft += e.deltaY;
@@ -1538,14 +1689,14 @@ export function InspectorPanel({
             role="tab"
             aria-selected={inspectorSection === tab.id}
             onClick={() => scrollToCategory(tab.id)}
-            className={`relative px-3.5 py-2 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer shrink-0 text-xs font-semibold ${
+            className={`relative px-4 py-2.5 sm:py-2 rounded-xl flex items-center justify-center gap-2 transition-all duration-250 cursor-pointer shrink-0 text-xs font-semibold snap-start ${
               inspectorSection === tab.id
-                ? "text-rose-700 bg-rose-50/80 shadow-sm border border-rose-100/50"
-                : "text-stone-550 border border-transparent hover:text-stone-800 hover:bg-stone-50"
-            }`}
+                ? "text-rose-700 bg-rose-50/80 shadow-xs border border-rose-100/50 scale-[1.02]"
+                : "text-stone-550 border border-transparent hover:text-stone-850 hover:bg-stone-50 active:scale-[0.98]"
+            } min-h-[38px] sm:min-h-0`}
           >
             <tab.icon
-              size={13.5}
+              size={14}
               className={
                 inspectorSection === tab.id ? "text-rose-600" : "text-stone-400"
               }
@@ -1556,7 +1707,7 @@ export function InspectorPanel({
       </div>
 
       {/* Modern Search Filters panel right below the Category Tab list */}
-      <div className="px-5 py-3 border-b border-stone-100/80 bg-stone-50/30 flex-shrink-0">
+      <div className="px-5 py-3.5 sm:py-3 border-b border-stone-100/80 bg-stone-50/30 flex-shrink-0">
         <div className="relative flex items-center">
           <Search size={14} className="absolute left-3.5 text-stone-400 pointer-events-none" />
           <input
@@ -1564,19 +1715,56 @@ export function InspectorPanel({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search CSS properties, attributes, and styles..."
-            className="w-full bg-white border border-stone-200 hover:border-stone-300 focus:border-rose-500 rounded-xl pl-9 pr-8 py-2 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-rose-500/10 placeholder-stone-400 transition-all font-sans"
+            className="w-full bg-white border border-stone-200 hover:border-stone-300 focus:border-rose-500 rounded-xl pl-9 pr-8 py-2.5 sm:py-2 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-rose-500/10 placeholder-stone-400 transition-all font-sans"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 text-stone-400 hover:text-stone-600 font-bold text-xs p-1"
+              className="absolute right-3.5 text-stone-450 hover:text-stone-750 font-bold text-base p-1"
             >
               ×
             </button>
           )}
         </div>
       </div>
+
+      {/* Horizontal pill list of category properties */}
+      {activeCategoryData.length > 0 && (
+        <div
+          className="px-5 py-3 sm:py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-stone-150/40 flex-shrink-0 bg-stone-50/15 snap-x snap-mandatory scroll-smooth"
+          onWheel={(e) => {
+            if (e.deltaY !== 0 && e.deltaX === 0) {
+              e.currentTarget.scrollLeft += e.deltaY;
+            }
+          }}
+        >
+          {activeCategoryData.map((item) => {
+            const pName = item.prop.name;
+            const isSelected = activePropName === pName;
+            const currentVal = getPropValue(pName);
+            const hasVal = currentVal && currentVal !== "" && currentVal !== "initial" && currentVal !== "unset" && currentVal !== "normal" && currentVal !== "none" && currentVal !== "auto";
+            
+            return (
+              <button
+                key={pName}
+                type="button"
+                onClick={() => setSelectedProperty(pName)}
+                className={`relative px-4 py-2 sm:py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shrink-0 text-[10.5px] font-bold snap-start ${
+                  isSelected
+                    ? "text-rose-700 bg-rose-50/90 border border-rose-250/90 shadow-md scale-[1.01]"
+                    : "text-stone-550 border border-stone-200/75 hover:text-stone-850 hover:bg-stone-50 bg-white hover:shadow-2xs active:scale-[0.97]"
+                } min-h-[34px] sm:min-h-0`}
+              >
+                {hasVal && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse" />
+                )}
+                <span className="font-mono whitespace-nowrap lowercase">{pName}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Main Properties Content Area */}
       <div
@@ -1651,8 +1839,14 @@ export function InspectorPanel({
 
                   {/* Independent properties rendered directly as flat, first-class elements inside the category */}
                   {isExpanded && (
-                    <div className="p-4 flex flex-col gap-4 bg-white border-t border-stone-100/60 transition-all">
-                      {activeCategoryData.map((item, idx) => {
+                    <motion.div
+                      key={`${selectedElement?.id || ""}-${activePropName || ""}`}
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="p-4 flex flex-col gap-4 bg-white border-t border-stone-100/60"
+                    >
+                      {activeCategoryData.filter(item => item.prop.name === activePropName).map((item, idx) => {
                         const PropertyIcon = getIndependentPropertyIcon(item.prop.name);
                         const pName = item.prop.name;
                         const currentVal = getPropValue(pName);
@@ -1661,6 +1855,14 @@ export function InspectorPanel({
                         const isSelfContainedCard = 
                           pName.startsWith("padding") ||
                           (pName.startsWith("margin") && !pName.includes("trim")) ||
+                          pName === "aspect-ratio" ||
+                          pName === "top" ||
+                          pName === "width" ||
+                          pName === "min-width" ||
+                          pName === "max-width" ||
+                          pName === "inline-size" ||
+                          pName === "min-inline-size" ||
+                          pName === "max-inline-size" ||
                           pName === "align-items" || 
                           pName === "align-self" ||
                           pName === "justify-content" ||
@@ -1757,11 +1959,13 @@ export function InspectorPanel({
                                 </div>
                               </div>
                               <div
-                                className="h-20 border border-stone-200 bg-stone-900 rounded-lg flex items-center justify-center relative overflow-hidden"
+                                className="h-20 border border-stone-200/80 bg-stone-100/70 rounded-lg flex items-center justify-center relative overflow-hidden"
                                 style={{ perspective: getPropValue("perspective") || "250px" }}
                               >
+                                {/* Radar grids backdrop */}
+                                <div className="absolute inset-0 opacity-[0.3] pointer-events-none bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:10px_10px]" />
                                 <div
-                                  className="w-12 h-12 rounded-lg border border-pink-400 flex flex-col justify-center items-center text-center text-white bg-gradient-to-tr from-rose-500 to-pink-500 transition-transform duration-300"
+                                  className="w-12 h-12 rounded-lg border border-pink-400/50 flex flex-col justify-center items-center text-center text-white bg-gradient-to-tr from-rose-500 to-pink-500 transition-transform duration-300 shadow-sm z-10"
                                   style={{
                                     transform: `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`,
                                   }}
@@ -1778,12 +1982,12 @@ export function InspectorPanel({
                                 <MousePointer size={11} className="text-blue-500" />
                                 <span>Reactive Outline Simulation</span>
                               </div>
-                              <div className="bg-white border rounded-lg flex items-center justify-center h-12">
+                              <div className="bg-white border border-stone-200 rounded-lg flex items-center justify-center h-12">
                                 <button
                                   type="button"
                                   onClick={() => setOutlineFocused(!outlineFocused)}
                                   className={`px-3 py-1 text-[10px] font-bold font-sans rounded-lg transition-all border ${
-                                    outlineFocused ? "bg-stone-900 border-stone-850 text-white" : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100/80"
+                                    outlineFocused ? "bg-indigo-600 border-indigo-700 text-white shadow-3xs" : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100/80"
                                   }`}
                                   style={{
                                     outline: outlineFocused
@@ -1801,16 +2005,16 @@ export function InspectorPanel({
 
                         if (isSelfContainedCard) {
                           return (
-                            <div key={idx} className="w-full flex flex-col gap-2">
+                            <motion.div key={pName} variants={itemVariants} className="w-full flex flex-col gap-2">
                               {renderPropertyElement(item.prop, idx)}
                               {specialWidget}
-                            </div>
+                            </motion.div>
                           );
                         }
 
                         // Style each property as an elegant, clean, standalone independent card
                         return (
-                          <div key={idx} className="bg-stone-50/30 border border-stone-200/85 hover:border-stone-300 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-xs rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200">
+                          <motion.div key={pName} variants={itemVariants} className="bg-stone-50/30 border border-stone-200/85 hover:border-stone-300 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-xs rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200">
                             {/* Card Header displaying property icon, label, notes, and its original subcategory */}
                             <div className="flex items-center justify-between border-b border-stone-100/70 pb-2 mb-1">
                               <div className="flex items-center gap-2">
@@ -1818,11 +2022,21 @@ export function InspectorPanel({
                                   <PropertyIcon size={12} className="stroke-[2.25]" />
                                 </div>
                                 <div className="flex flex-col text-left">
-                                  <span className="text-[11.5px] font-bold text-stone-800 font-mono tracking-tight lowercase">
-                                    {pName}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[11.5px] font-bold text-stone-800 font-mono tracking-tight lowercase">
+                                      {pName}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setAnalyzingProperty(pName)}
+                                      title={`Open ${pName} Expert Study Manual`}
+                                      className="text-amber-500 hover:text-amber-600 hover:bg-stone-100 p-0.5 rounded cursor-pointer transition-colors"
+                                    >
+                                      <Lightbulb size={11} className="stroke-[2.5]" />
+                                    </button>
+                                  </div>
                                   {item.prop.note && (
-                                    <span className="text-[8.5px] text-stone-400 font-sans leading-none mt-0.5">
+                                    <span className="text-[8.5px] text-stone-400 font-sans leading-none mt-1">
                                       {item.prop.note}
                                     </span>
                                   )}
@@ -1854,10 +2068,10 @@ export function InspectorPanel({
                                 </button>
                               </div>
                             )}
-                          </div>
+                          </motion.div>
                         );
                       })}
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               );
@@ -1888,6 +2102,11 @@ export function InspectorPanel({
           <span>Delete Element</span>
         </button>
       </div>
+
+      <ExpertCSSManualDrawer
+        propertyName={analyzingProperty}
+        onClose={() => setAnalyzingProperty(null)}
+      />
     </div>
   );
 }

@@ -152,6 +152,106 @@ Requirements:
   }
 });
 
+// API: Gemini Dynamic Expert CSS Reference Generator
+app.post("/api/gemini/css-reference", async (req, res) => {
+  try {
+    if (!ai) {
+      return res.status(400).json({ error: "Gemini API key is missing or not configured." });
+    }
+
+    const { property } = req.body;
+    if (!property) {
+      return res.status(400).json({ error: "Please specify a CSS property to analyze." });
+    }
+
+    const prompt = `You are a world-class CSS architect, layout engineer, and technical educator.
+Analyze the following CSS property: "${property}".
+Generate a structured, highly technical JSON reference object that matches the following TypeScript interfaces:
+
+interface ExpertCSSData {
+  property: string;
+  overview: {
+    title: string;
+    text: string;
+  };
+  valueType: {
+    type: string;
+    meaning: string;
+    example: string;
+  }[];
+  validValues: {
+    initial: string;
+    computed: string;
+    inherited: string;
+    animatable: string;
+    appliesTo: string;
+    percentageRef: string;
+  };
+  categories: {
+    title: string;
+    code: string;
+    description: string;
+    behavior: string[];
+  }[];
+  functions: {
+    title: string;
+    code: string;
+    behavior: string;
+  }[];
+  invalidValues: {
+    example: string;
+    why: string;
+    behavior: string;
+  }[];
+  gotchas: {
+    title: string;
+    badCode: string;
+    explanation: string;
+    why: string;
+    fix: string;
+  }[];
+  interactions: string[];
+  guide: {
+    bestProduction: string[];
+    performance: {
+      bad: string;
+      fix: string;
+    };
+    examples: {
+      title: string;
+      code: string;
+    }[];
+  };
+  quickRef: {
+    label: string;
+    value: string;
+  }[];
+}
+
+Ensure the output is 100% syntactically valid JSON. Avoid explaining anything outside of the JSON block. Do not prepend "markdown" or \`\`\`json wrappers. Just output the raw JSON object itself. Ensure all strings are correctly escaped and valid. Make the guidance extremely rich, expert-level, and accurate. Give realistic production advice and interactive examples.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: prompt,
+    });
+
+    let rawText = response.text || "";
+    // Clean any potential markdown code blocks
+    rawText = rawText.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/, "").trim();
+
+    try {
+      const parsedData = JSON.parse(rawText);
+      res.json({ success: true, data: parsedData });
+    } catch (parseError) {
+      console.error("Failed to parse Gemini CSS reference response as JSON. Raw text was:", rawText);
+      res.status(500).json({ error: "Failed to compile structured CSS data. Please try again." });
+    }
+  } catch (error: any) {
+    console.error("CSS reference API error:", error);
+    res.status(500).json({ error: error.message || "Failed to generate CSS Reference guide." });
+  }
+});
+
 // Mount Vite middleware in development or static path in production
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {

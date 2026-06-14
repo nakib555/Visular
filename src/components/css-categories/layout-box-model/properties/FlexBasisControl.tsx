@@ -11,7 +11,8 @@ import {
   Activity,
   Lightbulb,
   Cpu,
-  Bookmark
+  Bookmark,
+  Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -26,6 +27,28 @@ export function FlexBasisControl({ value, onChange }: FlexBasisControlProps) {
   const [isGuidanceCollapsed, setIsGuidanceCollapsed] = useState(false); // default expanded because this is highly interesting!
   const [activeGuidanceTab, setActiveGuidanceTab] = useState<"gotchas" | "performance" | "specs">("gotchas");
   const [showTooltip, setShowTooltip] = useState(false);
+  
+  const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Click outside listener for units dropdown selection
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setUnitDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unitLabels: Record<string, string> = {
+    px: "Pixels (px)",
+    "%": "Percent (%)",
+    rem: "Relative (rem)",
+    em: "Element (em)",
+    vw: "Viewport (vw)"
+  };
 
   // Sync internal input value on external change
   useEffect(() => {
@@ -282,29 +305,55 @@ export function FlexBasisControl({ value, onChange }: FlexBasisControlProps) {
       </div>
 
       {/* Interactive Quick-switch Unit Toolbar */}
-      <div className="flex flex-col gap-1.5 bg-stone-50/50 p-2.5 rounded-xl border border-stone-150/40">
-        <div className="flex items-center justify-between text-[9px] font-bold text-slate-400 tracking-wide uppercase select-none">
-          <span>Active Length Units</span>
-          <span className="text-emerald-600/80 font-mono text-[8px]">Dynamic Swap</span>
+      <div className="flex items-center justify-between bg-stone-50/50 p-2.5 rounded-xl border border-stone-150/40 relative overflow-visible" ref={dropdownRef}>
+        <div className="flex flex-col">
+          <span className="text-[9px] font-bold text-slate-400 tracking-wide uppercase select-none">Active Length Units</span>
+          <span className="text-[8px] text-stone-450 font-medium">Convert value dynamically</span>
         </div>
-        <div className="grid grid-cols-5 gap-1">
-          {["px", "%", "rem", "em", "vw"].map((u) => {
-            const isCurrentUnit = !isSpecial && unit === u;
-            return (
-              <button
-                key={u}
-                type="button"
-                onClick={() => handleUnitSwap(u)}
-                className={`py-1 rounded-lg border text-[9px] font-mono font-bold transition-all ${
-                  isCurrentUnit
-                    ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
-                    : "bg-white border-stone-200/60 text-stone-500 hover:bg-stone-55 hover:text-stone-700"
-                }`}
+        
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setUnitDropdownOpen(!unitDropdownOpen)}
+            className="flex items-center gap-1 bg-white border border-stone-200 hover:border-emerald-500 hover:bg-emerald-50/20 px-2 py-1.5 rounded-lg text-stone-755 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
+          >
+            <span>{isSpecial ? "PX" : unit.toUpperCase()} Unit</span>
+            <ChevronDown size={11} className={`text-stone-400 font-extrabold transition-transform duration-200 ${unitDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {unitDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 mt-1.5 w-36 bg-white border border-stone-150 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
               >
-                {u}
-              </button>
-            );
-          })}
+                {["px", "%", "rem", "em", "vw"].map((u) => {
+                  const isCurrentUnit = !isSpecial && unit === u;
+                  return (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => {
+                        handleUnitSwap(u);
+                        setUnitDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-[9.5px] font-semibold flex items-center justify-between transition-all duration-150 cursor-pointer ${
+                        isCurrentUnit
+                          ? "bg-emerald-500/10 text-emerald-850 font-bold"
+                          : "text-stone-600 hover:bg-stone-55 hover:text-stone-900"
+                      }`}
+                    >
+                      <span className="font-mono">{unitLabels[u]}</span>
+                      {isCurrentUnit && <Check size={11} className="text-emerald-600 stroke-[3px]" />}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

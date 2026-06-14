@@ -362,7 +362,7 @@ export function PaddingControl({
   }, [currentPropertyValue]);
 
   useEffect(() => {
-    if (currentPropertyValue && parsedUnit !== "auto") {
+    if (currentPropertyValue && (parsedUnit as string) !== "auto") {
       setUnit(parsedUnit);
     }
   }, [currentPropertyValue, parsedUnit]);
@@ -387,7 +387,7 @@ export function PaddingControl({
   }, []);
 
   const handleNumericChange = (num: number, targetUnit = unit) => {
-    if (targetUnit === "auto") {
+    if ((targetUnit as string) === "auto") {
       handleCurrentPropertyChange("auto");
       return;
     }
@@ -409,7 +409,7 @@ export function PaddingControl({
   const [showLimitSettings, setShowLimitSettings] = useState(false);
 
   // fallback to px limit bounds if auto is selected
-  const activeLimitsUnit = unit === "auto" ? "px" : unit;
+  const activeLimitsUnit = (unit as string) === "auto" ? "px" : unit;
   const currentLimit = useMemo(() => {
     const lim = customLimits[activeLimitsUnit];
     return {
@@ -633,7 +633,7 @@ export function PaddingControl({
                         onClick={() => {
                           setUnit(u);
                           setUnitDropdownOpen(false);
-                          if (u === "auto") {
+                          if ((u as string) === "auto") {
                               handleNumericChange(0);
                           } else if (numericValue !== undefined) {
                             handleNumericChange(numericValue, u);
@@ -656,7 +656,7 @@ export function PaddingControl({
           </div>
         </div>
 
-        <div className={`flex flex-col gap-1 ${unit === "auto" ? "opacity-30 pointer-events-none" : ""}`}>
+        <div className={`flex flex-col gap-1 ${(unit as string) === "auto" ? "opacity-30 pointer-events-none" : ""}`}>
           <div className="flex justify-between items-center mb-0.5 select-none">
             <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest font-mono">
               Adjust Value
@@ -676,7 +676,7 @@ export function PaddingControl({
           </div>
 
           <AnimatePresence>
-            {showLimitSettings && unit !== "auto" && (
+            {showLimitSettings && (unit as string) !== "auto" && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
@@ -763,7 +763,7 @@ export function PaddingControl({
             max={currentLimit.max}
             step={currentLimit.step}
             value={numericValue || 0}
-            disabled={unit === "auto"}
+            disabled={(unit as string) === "auto"}
             onChange={(e) => {
               handleNumericChange(parseFloat(e.target.value));
             }}
@@ -771,38 +771,38 @@ export function PaddingControl({
           />
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div className="flex items-center gap-1.5 shrink-0 border-0" style={{ width: "132px", borderWidth: "0px" }}>
+        <div className="flex items-center justify-between gap-2.5 pt-1 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-1.5 shrink-0 border-0 w-full sm:w-auto" style={{ borderWidth: "0px" }}>
             <button
               type="button"
-              disabled={unit === "auto"}
+              disabled={(unit as string) === "auto"}
               onClick={() => {
                 const newVal = Math.max(currentLimit.min, (numericValue || 0) - currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
               }}
-              className="w-[25px] h-[25px] rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none disabled:opacity-50"
+              className="w-8 h-8 sm:w-[25px] sm:h-[25px] rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none disabled:opacity-50"
             >
               -
             </button>
 
-            <div className="relative flex items-center">
+            <div className="relative flex-1 sm:flex-initial flex items-center">
               <input
                 type="text"
                 value={currentPropertyValue || ""}
                 onChange={(e) => handleCurrentPropertyChange(e.target.value)}
                 placeholder="0px/auto"
-                className="w-[71px] bg-stone-50 border border-indigo-500/10 focus:border-indigo-500 rounded-xl px-1.5 py-1 text-center text-[10px] focus:outline-none font-mono text-indigo-700 font-extrabold focus:bg-white shadow-2xs transition-all"
+                className="w-full sm:w-[71px] bg-stone-50 border border-indigo-500/10 focus:border-indigo-500 rounded-xl px-1.5 py-1 text-center text-[10px] focus:outline-none font-mono text-indigo-700 font-extrabold focus:bg-white shadow-2xs transition-all"
               />
             </div>
 
             <button
               type="button"
-              disabled={unit === "auto"}
+              disabled={(unit as string) === "auto"}
               onClick={() => {
                 const newVal = Math.min(currentLimit.max, (numericValue || 0) + currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
               }}
-              className="w-[25px] h-[25px] rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none disabled:opacity-50"
+              className="w-8 h-8 sm:w-[25px] sm:h-[25px] rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-650 hover:bg-stone-100 active:bg-stone-250 transition-colors shadow-2xs cursor-pointer select-none disabled:opacity-50"
             >
               +
             </button>
@@ -813,7 +813,7 @@ export function PaddingControl({
               type="button"
               onClick={() => handleCurrentPropertyChange("")}
               title="Reset spacing"
-              className="w-7 h-7 bg-stone-50 hover:bg-red-50 hover:text-red-650 text-stone-400 border border-stone-200/60 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer shadow-3xs hover:border-red-200"
+              className="w-8 h-8 sm:w-7 sm:h-7 bg-stone-50 hover:bg-red-50 hover:text-red-650 text-stone-400 border border-stone-200/60 rounded-xl sm:rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer shadow-3xs hover:border-red-200 ml-auto"
             >
               <RotateCcw size={11} className="stroke-[2.5]" />
             </button>

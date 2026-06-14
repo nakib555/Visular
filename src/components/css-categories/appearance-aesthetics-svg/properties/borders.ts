@@ -6,7 +6,7 @@ export const bordersGroup: CSSSubCategory = {
     {
       name: "border",
       values: "none | <thickness> <style> <color>",
-      note: "e.g., 1px solid black, 2px dashed red",
+      note: "e.g., 1px solid #f5f5f4, 2px dashed red",
     },
     {
       name: "outline",
