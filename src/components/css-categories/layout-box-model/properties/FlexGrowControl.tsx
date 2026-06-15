@@ -88,23 +88,28 @@ export function FlexGrowControl({ value, onChange }: FlexGrowControlProps) {
   const numValue = isNaN(parseFloat(inputValue)) ? 0 : Math.max(0, parseFloat(inputValue));
 
   return (
-    <div className="flex flex-col w-full bg-[#FCFDFE] rounded-2xl border border-blue-100 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.08)] relative overflow-hidden p-4 gap-4">
+    <div className="flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
       
-      {/* Decorative colored grid in background */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Flexbox Grow Factor</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            flex-grow
+          </span>
+        </label>
 
-      {/* Header section with specialized tool styling */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
-              <Expand size={14} className="animate-pulse" />
+        <div className="w-full bg-white border border-stone-200/85 hover:border-stone-300 rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
+              <Expand size={14} className="text-stone-600" />
             </div>
-            <div>
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-stone-800 leading-tight">
                 Flexbox Grow
-              </h3>
-              <p className="text-[9px] text-slate-400 font-medium">Proportional Axis Fill Indicator</p>
+              </span>
+              <span className="text-[10px] text-stone-400 leading-none mt-0.5">
+                Proportional Axis Fill Indicator
+              </span>
             </div>
           </div>
 

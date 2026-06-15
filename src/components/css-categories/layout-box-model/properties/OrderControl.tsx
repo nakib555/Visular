@@ -139,24 +139,28 @@ export function OrderControl({ value, onChange }: OrderControlProps) {
   }, [orderNum]);
 
   return (
-    <div className="flex flex-col w-full bg-[#FCFDFE] rounded-2xl border border-rose-100 shadow-[0_4px_22px_-4px_rgba(244,63,94,0.06)] relative overflow-hidden p-4 gap-4">
-      {/* Visual top accent layout detail */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-rose-400/10 to-amber-400/15 rounded-full blur-xl pointer-events-none" />
+    <div className="flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
+      
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Render Order override</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            order
+          </span>
+        </label>
 
-      {/* Header section */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-rose-500 to-amber-500 text-white p-1.5 rounded-lg shadow-sm">
-              <ArrowLeftRight size={14} className="animate-pulse" />
+        <div className="w-full bg-white border border-stone-200/85 hover:border-stone-300 rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
+              <ArrowLeftRight size={14} className="text-stone-600" />
             </div>
-            <div>
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">
-                Render Sequence (Order)
-              </h3>
-              <p className="text-[9px] text-slate-400 font-medium font-sans">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-stone-800 leading-tight">
+                Render Sequence
+              </span>
+              <span className="text-[10px] text-stone-400 leading-none mt-0.5">
                 Visual presentation placement override
-              </p>
+              </span>
             </div>
           </div>
 

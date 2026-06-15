@@ -1477,7 +1477,7 @@ function DesignerApp() {
                 style={{ minHeight: "46px", borderRadius: "50px" }}
               >
                 {/* Left Column: Landscape vs Portrait + Device Selector */}
-                <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap">
+                <div className="flex flex-row flex-nowrap items-center gap-1.5 md:gap-3 shrink-0 whitespace-nowrap" style={{ borderColor: "#dedecc" }}>
                   {canvasViewport !== "desktop" && (
                     <div className="flex flex-row flex-nowrap items-center gap-1 bg-stone-50 p-0.5 md:p-1 rounded-[30px] border border-stone-100 shrink-0 whitespace-nowrap">
                       <button
@@ -1558,7 +1558,7 @@ function DesignerApp() {
                       }}
                       title="Set custom viewport dimensions"
                       className="px-2 py-1 md:py-1.5 rounded-[30px] bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-all flex flex-row flex-nowrap items-center gap-1 cursor-pointer text-[10px] md:text-[11px] font-bold shrink-0 whitespace-nowrap shadow-sm border border-rose-200/60"
-                      style={{ marginRight: "2.5px" }}
+                      style={{ marginLeft: "5px", marginRight: "5px" }}
                     >
                       <Maximize size={11} className="text-rose-600 animate-pulse" />
                       <span>Custom Size</span>
@@ -1573,7 +1573,7 @@ function DesignerApp() {
                           ? "bg-rose-600 text-white border-rose-700 hover:bg-rose-700"
                           : "bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border-rose-200/60"
                       }`}
-                      style={{ marginLeft: "2.5px" }}
+                      style={{ marginLeft: "5px" }}
                     >
                       <Hand size={11} className={isTouchZoomActive ? "text-rose-100 animate-bounce" : "text-rose-600"} />
                       <span>Touch Zoom</span>

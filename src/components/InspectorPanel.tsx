@@ -1740,7 +1740,8 @@ export function InspectorPanel({
       {/* Horizontal pill list of category properties */}
       {activeCategoryData.length > 0 && (
         <div
-          className="px-5 py-3 sm:py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-stone-150/40 flex-shrink-0 bg-stone-50/15 snap-x snap-mandatory scroll-smooth"
+          className="px-5 py-3 sm:py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b flex-shrink-0 bg-stone-50/15 snap-x snap-mandatory scroll-smooth"
+          style={{ borderColor: "#f5f5f5" }}
           onWheel={(e) => {
             if (e.deltaY !== 0 && e.deltaX === 0) {
               e.currentTarget.scrollLeft += e.deltaY;
@@ -1798,7 +1799,7 @@ export function InspectorPanel({
                 <div
                   key={catId}
                   id={`category-sec-${catId}`}
-                  className={`bg-stone-50/40 border border-stone-200/50 rounded-3xl transition-all duration-350 shadow-xs ${
+                  className={`transition-all duration-350 ${
                     isExpanded ? "overflow-visible" : "overflow-hidden"
                   }`}
                 >
@@ -1819,13 +1820,15 @@ export function InspectorPanel({
                         setInspectorSection(catId as InspectorSection);
                       }
                     }}
-                    className={`w-full px-5 py-3.5 flex items-center justify-between font-sans text-xs font-bold tracking-wider uppercase border-b transition-all ${
+                    className={`w-full py-3.5 flex flex-col gap-1 items-start justify-center font-sans transition-all ${
                       isExpanded
-                        ? "bg-rose-50/50 border-stone-200/30 text-rose-800"
-                        : "bg-white border-transparent text-stone-600 hover:text-stone-800 hover:bg-stone-50"
+                        ? "text-rose-800"
+                        : "text-stone-600 hover:text-stone-800"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    {/* Header Group */}
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider uppercase">
                       <catConfig.icon
                         size={14}
                         className={isExpanded ? "text-rose-600" : "text-stone-400"}
@@ -1843,6 +1846,7 @@ export function InspectorPanel({
                         }`}
                       />
                     </div>
+                    </div>
                   </button>
 
                   {/* Independent properties rendered directly as flat, first-class elements inside the category */}
@@ -1852,7 +1856,7 @@ export function InspectorPanel({
                       variants={containerVariants}
                       initial="hidden"
                       animate="visible"
-                      className="p-4 flex flex-col gap-4 bg-white border-t border-stone-100/60"
+                      className="flex flex-col gap-4 mt-1 pb-4"
                     >
                       {activeCategoryData.filter(item => item.prop.name === activePropName).map((item, idx) => {
                         const PropertyIcon = getIndependentPropertyIcon(item.prop.name);
@@ -2020,18 +2024,18 @@ export function InspectorPanel({
                           );
                         }
 
-                        // Style each property as an elegant, clean, standalone independent card
+                        // Style each property as an elegant, clean, flat standalone section
                         return (
-                          <motion.div key={pName} variants={itemVariants} className="bg-stone-50/30 border border-stone-200/85 hover:border-stone-300 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-xs rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200">
-                            {/* Card Header displaying property icon, label, notes, and its original subcategory */}
-                            <div className="flex items-center justify-between border-b border-stone-100/70 pb-2 mb-1">
+                          <motion.div key={pName} variants={itemVariants} className="w-full flex flex-col gap-3.5 py-2">
+                            {/* Flat Header displaying property icon, label, notes, and its original subcategory */}
+                            <div className="flex items-center justify-between border-b border-stone-100/75 pb-2 mb-1">
                               <div className="flex items-center gap-2">
-                                <div className="w-[24px] h-[24px] flex items-center justify-center rounded-lg bg-rose-50/40 border border-rose-100/10 text-rose-500">
-                                  <PropertyIcon size={12} className="stroke-[2.25]" />
-                                </div>
+                                <span className="text-rose-500 flex items-center justify-center">
+                                  <PropertyIcon size={13} className="stroke-[2.5]" />
+                                </span>
                                 <div className="flex flex-col text-left">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[11.5px] font-bold text-stone-800 font-mono tracking-tight lowercase">
+                                    <span className="text-[11.5px] font-black text-stone-850 font-mono tracking-tight lowercase">
                                       {pName}
                                     </span>
                                     <button
@@ -2040,7 +2044,7 @@ export function InspectorPanel({
                                       title={`Open ${pName} Expert Study Manual`}
                                       className="text-amber-500 hover:text-amber-600 hover:bg-stone-100 p-0.5 rounded cursor-pointer transition-colors"
                                     >
-                                      <Lightbulb size={11} className="stroke-[2.5]" />
+                                      <Lightbulb size={11.5} className="stroke-[2.5]" />
                                     </button>
                                   </div>
                                   {item.prop.note && (
@@ -2050,7 +2054,7 @@ export function InspectorPanel({
                                   )}
                                 </div>
                               </div>
-                              <span className="text-[7.5px] font-mono leading-none tracking-widest uppercase bg-stone-50 border border-stone-150/40 px-1.5 py-0.5 rounded text-stone-400">
+                              <span className="text-[7.5px] font-mono leading-none tracking-widest uppercase bg-stone-100/60 px-1.5 py-0.5 rounded text-stone-400 font-bold">
                                 {item.originalSubCategoryName}
                               </span>
                             </div>

@@ -205,28 +205,28 @@ export function FlexBasisControl({ value, onChange }: FlexBasisControlProps) {
   const bounds = getSliderBounds();
 
   return (
-    <div className="flex flex-col w-full bg-[#FCFDFB] rounded-2xl border border-emerald-100 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.08)] relative overflow-hidden p-4 gap-4">
+    <div className="flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
       
-      {/* Decorative emerald gradient blur in BG */}
-      <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-emerald-400/8 to-teal-500/8 rounded-full blur-2xl pointer-events-none"></div>
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Initial Sizing Axis</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            flex-basis
+          </span>
+        </label>
 
-      {/* Header section */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-1.5 rounded-lg shadow-sm">
-              <Scale size={14} className="animate-pulse" />
+        <div className="w-full bg-white border border-stone-200/85 hover:border-stone-300 rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
+              <Scale size={14} className="text-stone-600" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">
-                  Flex-Basis
-                </h3>
-                <span className="bg-emerald-50 text-emerald-700 text-[8px] font-black uppercase px-1.5 py-0.5 rounded border border-emerald-100">
-                  W3C Core
-                </span>
-              </div>
-              <p className="text-[9px] text-slate-400 font-medium">Initial Baseline Main-Axis Geometry</p>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-stone-800 leading-tight">
+                Flex-Basis
+              </span>
+              <span className="text-[10px] text-stone-400 leading-none mt-0.5">
+                Initial Baseline Main-Axis Geometry
+              </span>
             </div>
           </div>
 

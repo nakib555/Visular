@@ -433,8 +433,8 @@ export function MarginControl({
   const activeOption = useMemo(() => marginPropertyOptions.find(opt => opt.value === activeProperty)!, [activeProperty]);
 
   return (
-    <div className={`flex flex-col gap-3.5 w-full text-left bg-stone-50 p-4.5 rounded-[22px] border border-stone-200/60 relative overflow-visible group transition-all duration-200 ${
-      isAnyDropdownOpen ? "z-[250] shadow-md ring-1 ring-indigo-500/10" : "z-10"
+    <div className={`flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 ${
+      isAnyDropdownOpen ? "z-[250]" : "z-10"
     }`}>
       
       <div className="flex flex-col gap-1.5 w-full relative">

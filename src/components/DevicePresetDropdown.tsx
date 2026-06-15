@@ -118,6 +118,7 @@ export function DevicePresetDropdown({ devices, selectedId, onSelect }: DevicePr
             ? "bg-white border-stone-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.05)] text-stone-900" 
             : "bg-stone-50/50 border-stone-150/40 hover:bg-stone-100 hover:border-stone-200/50 text-stone-700"
         }`}
+        style={{ borderWidth: "0px", marginRight: "5px" }}
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <DeviceIcon size={12} className="text-stone-500 shrink-0" />

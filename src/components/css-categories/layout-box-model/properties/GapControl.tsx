@@ -311,8 +311,8 @@ export function GapControl({
   }, [activeProperty]);
 
   return (
-    <div className={`flex flex-col gap-3.5 w-full text-left bg-[#f5f5f5] p-4.5 rounded-[22px] border-0 relative overflow-visible group transition-all duration-200 ${
-      isAnyDropdownOpen ? "z-[250] shadow-md ring-1 ring-emerald-500/10" : "z-10"
+    <div className={`flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 ${
+      isAnyDropdownOpen ? "z-[250]" : "z-10"
     }`}>
       
       {/* Decorative top-right overlay glow */}

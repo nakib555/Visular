@@ -609,8 +609,8 @@ export function PositionOffsetsControl({
   }, [activeProperty]);
 
   return (
-    <div className={`flex flex-col gap-5 w-full text-left bg-stone-55 p-6 rounded-[28px] border border-stone-200 shadow-3xs transition-all duration-200 relative ${
-      isAnyDropdownOpen ? "z-[250] shadow-md ring-1 ring-indigo-500/10" : "z-10"
+    <div className={`flex flex-col gap-5 w-full text-left relative transition-all duration-200 ${
+      isAnyDropdownOpen ? "z-[250]" : "z-10"
     }`}>
       
       {/* 1. Header label with layout info */}
@@ -767,131 +767,6 @@ export function PositionOffsetsControl({
       {/* 5. Split Section: Interactive Layout Deck */}
       <div className="flex flex-col md:flex-row gap-5 items-stretch select-none">
         
-        {/* Left Side Visual Deck Block */}
-        <div className="flex-1 min-h-[170px] bg-stone-100/70 rounded-2xl border border-stone-200 flex flex-col items-center justify-center p-5 relative overflow-hidden shadow-sm">
-          <div className="absolute inset-0 opacity-[0.45] pointer-events-none bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:14px_14px]" />
-          
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-white/95 px-2 py-0.5 rounded-lg border border-stone-200 pointer-events-none shadow-3xs">
-            <Maximize className="w-2.5 h-2.5 text-indigo-600" />
-            <span className="text-[7.5px] font-mono tracking-widest text-stone-500 uppercase leading-none font-black">
-              Directional Handles
-            </span>
-          </div>
-
-          {/* Interactive Core Box representation */}
-          <div className="w-[125px] h-[125px] relative mt-1.5">
-            
-            {/* Center Dynamic Element container */}
-            <button
-              type="button"
-              onClick={() => setActiveProperty("inset")}
-              className={`absolute inset-[26px] bg-white border rounded-xl flex items-center justify-center flex-col p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] z-15 cursor-pointer transition-all ${
-                activeProperty === "inset"
-                  ? "border-indigo-500 ring-2 ring-indigo-500/15 bg-indigo-50/10 scale-102"
-                  : "border-stone-200 hover:border-stone-300"
-              }`}
-            >
-              <span className="text-[8.5px] font-mono font-extrabold text-stone-500 uppercase tracking-widest leading-none">
-                Card
-              </span>
-              <span className="text-[7.5px] text-indigo-650 font-mono mt-1 font-extrabold truncate max-w-full">
-                {activeProperty === "inset" ? "inset" : "offsets"}
-              </span>
-            </button>
-
-            {/* TOP Coordinate vector Handle */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSide("top");
-                setActiveProperty("top");
-              }}
-              className={`absolute top-0 left-[26px] right-[26px] h-[22px] rounded-t-lg transition-all flex items-center justify-center cursor-pointer ${
-                activeSide === "top" && activeProperty === "top"
-                  ? "bg-indigo-600 border-b border-indigo-500 text-white shadow-md shadow-indigo-600/30 z-20 scale-y-105"
-                  : "bg-white border hover:bg-stone-50 border-stone-200 text-stone-550 z-10 hover:text-stone-750 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex flex-col items-center gap-0.5 pointer-events-none">
-                <ArrowUp size={8} className="stroke-[3.5]" />
-                <span className="text-[7px] font-mono font-extrabold truncate max-w-[55px] leading-none">
-                  {(activeProperty === "inset" ? parsedInsetValue.top : topValue) || "auto"}
-                </span>
-              </div>
-            </button>
-
-            {/* RIGHT Coordinate vector Handle */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSide("right");
-                setActiveProperty("right");
-              }}
-              className={`absolute right-0 top-[26px] bottom-[26px] w-[22px] rounded-r-lg transition-all flex items-center justify-center cursor-pointer ${
-                activeSide === "right" && activeProperty === "right"
-                  ? "bg-indigo-600 border-l border-indigo-500 text-white shadow-md shadow-indigo-600/30 z-20 scale-x-105"
-                  : "bg-white border hover:bg-stone-50 border-stone-200 text-stone-550 z-10 hover:text-stone-750 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex flex-col items-center gap-0.5 origin-center rotate-90 pointer-events-none">
-                <ArrowRight size={8} className="stroke-[3.5] rotate-270" />
-                <span className="text-[7px] font-mono font-extrabold truncate max-w-[55px] leading-none">
-                  {(activeProperty === "inset" ? parsedInsetValue.right : rightValue) || "auto"}
-                </span>
-              </div>
-            </button>
-
-            {/* BOTTOM Coordinate vector Handle */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSide("bottom");
-                setActiveProperty("bottom");
-              }}
-              className={`absolute bottom-0 left-[26px] right-[26px] h-[22px] rounded-b-lg transition-all flex items-center justify-center cursor-pointer ${
-                activeSide === "bottom" && activeProperty === "bottom"
-                  ? "bg-indigo-600 border-t border-indigo-500 text-white shadow-md shadow-indigo-600/30 z-20 scale-y-105"
-                  : "bg-white border hover:bg-stone-50 border-stone-200 text-stone-550 z-10 hover:text-stone-750 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex flex-col items-center gap-0.5 pointer-events-none">
-                <span className="text-[7px] font-mono font-extrabold truncate max-w-[55px] leading-none">
-                  {(activeProperty === "inset" ? parsedInsetValue.bottom : bottomValue) || "auto"}
-                </span>
-                <ArrowDown size={8} className="stroke-[3.5]" />
-              </div>
-            </button>
-
-            {/* LEFT Coordinate vector Handle */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSide("left");
-                setActiveProperty("left");
-              }}
-              className={`absolute left-0 top-[26px] bottom-[26px] w-[22px] rounded-l-lg transition-all flex items-center justify-center cursor-pointer ${
-                activeSide === "left" && activeProperty === "left"
-                  ? "bg-indigo-600 border-r border-indigo-500 text-white shadow-md shadow-indigo-600/30 z-20 scale-x-105"
-                  : "bg-white border hover:bg-stone-50 border-stone-200 text-stone-550 z-10 hover:text-stone-750 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex flex-col items-center gap-0.5 origin-center rotate-270 pointer-events-none">
-                <span className="text-[7px] font-mono font-extrabold truncate max-w-[55px] leading-none">
-                  {(activeProperty === "inset" ? parsedInsetValue.left : leftValue) || "auto"}
-                </span>
-                <ArrowLeft size={8} className="stroke-[3.5]" />
-              </div>
-            </button>
-
-            {/* Radar glow indicators */}
-            {activeSide === "top" && activeProperty !== "inset" && <div className="absolute top-[22px] left-[26px] right-[26px] h-[1.5px] bg-indigo-500/40 animate-pulse" />}
-            {activeSide === "right" && activeProperty !== "inset" && <div className="absolute top-[26px] bottom-[26px] right-[22px] w-[1.5px] bg-indigo-500/40 animate-pulse" />}
-            {activeSide === "bottom" && activeProperty !== "inset" && <div className="absolute bottom-[22px] left-[26px] right-[26px] h-[1.5px] bg-indigo-500/40 animate-pulse" />}
-            {activeSide === "left" && activeProperty !== "inset" && <div className="absolute top-[26px] bottom-[26px] left-[22px] w-[1.5px] bg-indigo-500/40 animate-pulse" />}
-
-          </div>
-        </div>
-
         {/* Right Side Adjustment Deck Card */}
         <div className="flex-1 bg-white border border-stone-200 rounded-2xl p-4.5 flex flex-col justify-between gap-3.5 shadow-3xs overflow-visible">
           

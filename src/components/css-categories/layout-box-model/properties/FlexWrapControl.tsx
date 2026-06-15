@@ -29,21 +29,19 @@ export function FlexWrapControl({ value, onChange }: FlexWrapControlProps) {
   ];
 
   return (
-    <div className="flex flex-col w-full bg-[#FAFAFA] rounded-xl border border-stone-200/60 shadow-sm overflow-hidden font-sans">
-      {/* Header Area */}
-      <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-stone-100">
-        <label className="flex items-center gap-2 text-[11px] font-semibold text-stone-700 tracking-wide uppercase">
-          <WrapText size={14} className="text-emerald-500" />
-          Flex Wrap
+    <div className="flex flex-col gap-3 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
+      
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Flex Wrap</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            {value || "nowrap"}
+          </span>
         </label>
-        <span className="text-[10px] font-mono font-medium text-stone-500 bg-stone-100/80 px-2 py-0.5 rounded-full border border-stone-200/50">
-          {value || "nowrap"}
-        </span>
       </div>
 
       {/* Main Control Area */}
-      <div className="p-3">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
           {options.map((opt) => {
             const isSelected = value === opt.val || (!value && opt.val === "nowrap");
             const Icon = opt.icon;
@@ -121,7 +119,6 @@ export function FlexWrapControl({ value, onChange }: FlexWrapControlProps) {
             );
           })}
         </div>
-      </div>
       
       {/* Footer Info */}
       <div className="px-3 py-2 bg-stone-50 border-t border-stone-100">

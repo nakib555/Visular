@@ -112,6 +112,7 @@ export function AspectRatioControl({ value, onChange }: AspectRatioControlProps)
   // Set local decimal states
   const [widthRatio, setWidthRatio] = useState(16);
   const [heightRatio, setHeightRatio] = useState(9);
+  const [orientation, setOrientation] = useState<"w2h" | "h2w">("w2h");
   const [objectFit, setObjectFit] = useState<"cover" | "contain" | "fill">("cover");
 
   // Synchronize state when raw ratio changes
@@ -124,12 +125,14 @@ export function AspectRatioControl({ value, onChange }: AspectRatioControlProps)
         if (!isNaN(w) && w > 0 && !isNaN(h) && h > 0) {
           setWidthRatio(w);
           setHeightRatio(h);
+          setOrientation(w >= h ? "w2h" : "h2w");
         }
       } else {
         const singleNum = parseFloat(rawRatioPart);
         if (!isNaN(singleNum) && singleNum > 0) {
           setWidthRatio(singleNum);
           setHeightRatio(1);
+          setOrientation(singleNum >= 1 ? "w2h" : "h2w");
         }
       }
     }
@@ -178,7 +181,7 @@ export function AspectRatioControl({ value, onChange }: AspectRatioControlProps)
   }, [rawRatioPart]);
 
   return (
-    <div className="flex flex-col gap-5 w-full text-left bg-stone-50 p-6 rounded-[28px] border border-stone-200 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] relative overflow-visible z-10">
+    <div className="flex flex-col gap-5 w-full text-left relative overflow-visible z-10">
       
       {/* 1. Label and header info */}
       <div className="flex items-center justify-between pl-1 select-none">
@@ -356,10 +359,10 @@ export function AspectRatioControl({ value, onChange }: AspectRatioControlProps)
       <div className="bg-white border border-stone-200 rounded-3xl p-5 flex flex-col gap-4 shadow-3xs relative z-10">
         
         {/* Header fine-tuning and Fallback Toggle */}
-        <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-          <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-3">
+          <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <Settings2 size={12} className="text-stone-400 shrink-0" />
-            <span className="text-[10.5px] font-black text-stone-650 font-mono uppercase tracking-wider">
+            <span className="text-[10.5px] font-black text-stone-650 font-mono uppercase tracking-wider leading-tight">
               Free-form Coef Settings
             </span>
           </div>
@@ -367,122 +370,113 @@ export function AspectRatioControl({ value, onChange }: AspectRatioControlProps)
           <button
             type="button"
             onClick={handleToggleAutoCombine}
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[9px] font-mono font-black transition-all cursor-pointer select-none ${
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-[8.5px] font-mono font-black transition-all cursor-pointer select-none shrink-0 text-center max-w-[120px] justify-center ${
               isAutoCombined 
                 ? "bg-indigo-55/90 border-indigo-250 text-indigo-700 shadow-3xs font-extrabold"
                 : "bg-stone-50 border-stone-200/80 text-stone-500 hover:text-stone-850"
             }`}
             title="Sinks the 'auto' rule prefix context before aspect ratios"
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${isAutoCombined ? "bg-indigo-550 animate-pulse" : "bg-stone-400"}`} />
-            <span>Auto Fallback Prefix</span>
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isAutoCombined ? "bg-indigo-550 animate-pulse" : "bg-stone-400"}`} />
+            <span className="leading-tight">Auto Fallback Prefix</span>
           </button>
         </div>
 
-        {/* Split Factor dials inputs side-by-side */}
-        <div className="flex items-center justify-between gap-4 mt-1">
+        {/* Segmented Control and Unified Input Box */}
+        <div className="flex flex-col mt-1 bg-stone-50 border border-stone-200 rounded-3xl p-3">
           
-          {/* Width Input factor */}
-          <div className="flex-1 flex flex-col gap-1.5">
-            <span className="text-[8.5px] font-bold uppercase tracking-wider font-mono text-stone-400 text-center select-none">
-              Width Coeff (W)
-            </span>
-            <div className="flex items-center justify-between gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  const val = Math.max(1, widthRatio - 1);
-                  setWidthRatio(val);
-                  handleApplyRatio(`${val} / ${heightRatio}`);
-                }}
-                className="w-7 h-7 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-xs font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none"
-              >
-                -
-              </button>
-              <input
-                type="number"
-                min="1"
-                max="32"
-                value={widthRatio}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  if (!isNaN(val) && val > 0) {
-                    setWidthRatio(val);
-                    handleApplyRatio(`${val} / ${heightRatio}`);
-                  }
-                }}
-                className="w-12 bg-transparent text-center font-mono font-black text-xs text-stone-800 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const val = Math.min(32, widthRatio + 1);
-                  setWidthRatio(val);
-                  handleApplyRatio(`${val} / ${heightRatio}`);
-                }}
-                className="w-7 h-7 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-xs font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none"
-              >
-                +
-              </button>
+          {/* Segmented Control */}
+          <div 
+            className="relative bg-stone-100 p-1 rounded-2xl flex cursor-pointer w-full select-none"
+            onClick={() => {
+              const newOrientation = orientation === "w2h" ? "h2w" : "w2h";
+              setOrientation(newOrientation);
+            }}
+          >
+            <div 
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                orientation === "h2w" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
+              }`}
+            />
+            <div className={`flex-1 text-center py-2 z-10 text-[9.5px] uppercase font-bold transition-colors duration-300 ${orientation === "w2h" ? "text-stone-800" : "text-stone-400"}`}>
+              Width
+            </div>
+            <div className={`flex-1 text-center py-2 z-10 text-[9.5px] uppercase font-bold transition-colors duration-300 ${orientation === "h2w" ? "text-stone-800" : "text-stone-400"}`}>
+              Height
             </div>
           </div>
 
-          <div className="shrink-0 flex flex-col items-center justify-center pt-3 select-none">
-            <span className="text-lg font-serif text-stone-300 font-bold leading-none">/</span>
-            <span className="text-[7.5px] font-mono text-stone-400 uppercase tracking-widest leading-none mt-1">
-              VS
+          {/* Unified Input Box */}
+          <div className="flex flex-col mt-4 mb-2 gap-2 items-center">
+            <span className="text-[8.5px] font-bold uppercase tracking-wider font-mono text-stone-400 text-center select-none mb-1">
+              {orientation === "w2h" ? "Width Ratio Coeff" : "Height Ratio Coeff"}
             </span>
-          </div>
-
-          {/* Height Input factor */}
-          <div className="flex-1 flex flex-col gap-1.5">
-            <span className="text-[8.5px] font-bold uppercase tracking-wider font-mono text-stone-400 text-center select-none">
-              Height Coeff (H)
-            </span>
-            <div className="flex items-center justify-between gap-1.5 bg-stone-50 border border-stone-200 rounded-xl p-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  const val = Math.max(1, heightRatio - 1);
-                  setHeightRatio(val);
-                  handleApplyRatio(`${widthRatio} / ${val}`);
-                }}
-                className="w-7 h-7 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-xs font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none"
-              >
-                -
-              </button>
-              <input
-                type="number"
-                min="1"
-                max="32"
-                value={heightRatio}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  if (!isNaN(val) && val > 0) {
-                    setHeightRatio(val);
-                    handleApplyRatio(`${widthRatio} / ${val}`);
-                  }
-                }}
-                className="w-12 bg-transparent text-center font-mono font-black text-xs text-stone-800 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const val = Math.min(32, heightRatio + 1);
-                  setHeightRatio(val);
-                  handleApplyRatio(`${widthRatio} / ${val}`);
-                }}
-                className="w-7 h-7 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-xs font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none"
-              >
-                +
-              </button>
+            <div className="flex w-[180px] max-w-full items-center justify-between gap-1.5 p-1 bg-white border border-stone-200/80 rounded-[18px]">
+              
+              {/* Single Value */}
+              <div className="flex flex-1 items-center justify-between bg-stone-50 rounded-xl p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (orientation === "w2h") {
+                      const val = Math.max(0.1, widthRatio - 1);
+                      setWidthRatio(val);
+                      handleApplyRatio(`${val} / ${heightRatio}`);
+                    } else {
+                      const val = Math.max(0.1, heightRatio - 1);
+                      setHeightRatio(val);
+                      handleApplyRatio(`${widthRatio} / ${val}`);
+                    }
+                  }}
+                  className="w-8 h-8 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-sm font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none shadow-sm"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  max="100"
+                  value={orientation === "w2h" ? widthRatio : heightRatio}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val > 0) {
+                      if (orientation === "w2h") {
+                        setWidthRatio(val);
+                        handleApplyRatio(`${val} / ${heightRatio}`);
+                      } else {
+                        setHeightRatio(val);
+                        handleApplyRatio(`${widthRatio} / ${val}`);
+                      }
+                    }
+                  }}
+                  className="w-16 bg-transparent text-center font-mono font-black text-sm text-stone-800 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (orientation === "w2h") {
+                      const val = Math.min(100, widthRatio + 1);
+                      setWidthRatio(val);
+                      handleApplyRatio(`${val} / ${heightRatio}`);
+                    } else {
+                      const val = Math.min(100, heightRatio + 1);
+                      setHeightRatio(val);
+                      handleApplyRatio(`${widthRatio} / ${val}`);
+                    }
+                  }}
+                  className="w-8 h-8 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center text-sm font-black text-stone-600 hover:bg-stone-100 cursor-pointer select-none shadow-sm"
+                >
+                  +
+                </button>
+              </div>
+            
             </div>
           </div>
-
         </div>
 
         {/* Coeff tactile fine sliders */}
-        <div className="flex flex-col gap-3 mt-1 bg-stone-50 border border-stone-150 p-3.5 rounded-2xl select-none">
+        <div className="flex flex-col gap-3 mt-1 bg-stone-50 border border-stone-150 p-3.5 rounded-2xl select-none" style={{ borderWidth: "0px" }}>
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-center text-[7.5px] font-mono text-stone-400 font-bold">
               <span>WIDTH SCALE (W): {widthRatio}</span>

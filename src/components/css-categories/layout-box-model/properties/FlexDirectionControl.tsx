@@ -39,15 +39,15 @@ export function FlexDirectionControl({ value, onChange }: FlexDirectionControlPr
   ];
 
   return (
-    <div className="flex flex-col gap-2.5 w-full text-left bg-gradient-to-b from-stone-50 to-stone-100 p-3 rounded-2xl border border-stone-200/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)]">
-      <div className="flex items-center justify-between mb-0.5">
-        <label className="text-[10px] text-stone-600 font-extrabold uppercase tracking-widest flex items-center gap-1.5 font-mono">
-          <span className="w-1.5 h-3 bg-violet-400 rounded-full" />
-          Flex Direction
+    <div className="flex flex-col gap-3 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
+      
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>Flex Direction</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
+            {value || "row"}
+          </span>
         </label>
-        <span className="text-[9px] font-mono font-medium text-stone-400 bg-white px-1.5 py-0.5 rounded-md border border-stone-200 shadow-sm">
-          {value || "default"}
-        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">

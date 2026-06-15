@@ -265,16 +265,15 @@ export function GridTemplateColumnsControl({ propName = "grid-template-columns",
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full text-left bg-gradient-to-b from-stone-50 to-stone-100 p-4 rounded-2xl border border-stone-200/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)]">
-      {/* Property Header */}
-      <div className="flex items-center justify-between mb-0.5">
-        <label className="text-[10px] text-stone-600 font-extrabold uppercase tracking-widest flex items-center gap-1.5 font-mono">
-          <span className="w-1.5 h-3 bg-rose-500 rounded-full animate-pulse" />
-            {isRows ? "Grid Rows" : "Grid Columns"}
+    <div className="flex flex-col gap-3 w-full text-left relative overflow-visible group transition-all duration-200 z-10">
+      
+      <div className="flex flex-col gap-1.5 w-full relative">
+        <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
+          <span>{isRows ? "Grid Rows" : "Grid Columns"}</span>
+          <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case max-w-[180px] truncate" title={activeVal}>
+            {activeVal}
+          </span>
         </label>
-        <span className="text-[9.5px] font-mono font-bold text-rose-600 bg-white px-2 py-0.5 rounded-lg border border-stone-200/80 shadow-xs max-w-[180px] truncate" title={activeVal}>
-          {activeVal}
-        </span>
       </div>
 
       {/* Segmented Controls for Presets vs Builder */}
