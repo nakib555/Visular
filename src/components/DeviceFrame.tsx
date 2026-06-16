@@ -416,26 +416,7 @@ export function DeviceFrame({
             )}
           </AnimatePresence>
 
-          {/* Empty State Prompts */}
-          {isEmpty && (
-            <div id="empty_view" className={`absolute z-10 bg-white/80 backdrop-blur-md border border-stone-200 shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500
-              ${canvasViewport === "mobile" 
-                ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-[85%] p-6 rounded-2xl" 
-                : canvasViewport === "tablet"
-                ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center max-w-sm p-8 rounded-2xl w-[85%]"
-                : "relative mx-auto mt-[20vh] text-center max-w-lg p-10 rounded-[20px] w-[85%]"
-              }`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5" />
-              <Layout className="mx-auto text-stone-400 mb-3 relative z-10" size={canvasViewport === "desktop" ? 32 : 24} />
-              <h3 className="text-xs font-bold text-stone-800 tracking-tight relative z-10">{deviceName}</h3>
-              <p className="text-[10px] text-stone-500 mt-1.5 leading-relaxed font-semibold relative z-10">
-                {canvasViewport === "mobile" && "Drag and drop elements here to construct your mobile UI."}
-                {canvasViewport === "tablet" && "Layout is optimized for tablet widths. Build bento cells or multi-column grids."}
-                {canvasViewport === "desktop" && "Start by dragging layout containers to construct your layout hierarchy, then insert individual text, image, and interactive elements."}
-              </p>
-            </div>
-          )}
+          {/* Empty State Prompts removed */}
 
           {/* User Built Application Content */}
           {children}
