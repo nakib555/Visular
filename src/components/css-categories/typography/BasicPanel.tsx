@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronDown, Type } from "lucide-react";
 import { VisualElement } from "../../../types";
 import { SegmentedControl } from "../../InspectorPanel";
+import { FontFamilyControl } from "./properties/font-family";
 import {
   fontFamilyMap,
   fontWeightMap,
@@ -31,30 +32,10 @@ export function BasicPanel({ selectedElement, updateTree }: PanelProps) {
       </div>
 
       {/* font-family */}
-      <div className="space-y-2">
-        <SegmentedControl
-          label="font-family"
-          value={_getPropValue("font-family", fontFamilyMap) || "sans-serif"}
-          onChange={(val) => _setPropValue("font-family", val, fontFamilyMap)}
-          options={[
-            { value: "sans-serif", label: "Sans" },
-            { value: "serif", label: "Serif" },
-            { value: "monospace", label: "Mono" },
-          ]}
-        />
-        <div className="flex flex-col gap-1.5 w-full text-left">
-          <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider pl-0.5 font-sans">
-            Custom Font Override
-          </span>
-          <input
-            type="text"
-            placeholder='e.g. "Space Grotesk"'
-            value={_parseArbitraryProperty("font-family")}
-            onChange={(e) => _updateArbitraryProperty("font-family", e.target.value)}
-            className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs text-stone-700 focus:outline-none placeholder-stone-300 font-mono shadow-sm"
-          />
-        </div>
-      </div>
+      <FontFamilyControl
+        value={_getPropValue("font-family", fontFamilyMap) || "sans-serif"}
+        onChange={(val) => _setPropValue("font-family", val, fontFamilyMap)}
+      />
 
       {/* font-weight */}
       <div className="flex flex-col gap-1">

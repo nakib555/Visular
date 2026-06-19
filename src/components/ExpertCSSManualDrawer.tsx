@@ -241,6 +241,164 @@ width: min-content;`,
   ]
 };
 
+// Exactly matching the expert-level analysis for "font-family"
+export const FONT_FAMILY_EXPERT_DATA: ExpertCSSData = {
+  property: "font-family",
+  overview: {
+    title: "Overview",
+    text: "The font-family property defines a prioritized, comma-separated list of font family names and/or generic family names for the text content of selected elements. It belongs to the CSS Fonts Module. Its primary purpose in real-world layouts is to establish typographic hierarchy, maintain brand identity, and guarantee text readability across different operating systems. It directly impacts layout (reflow), paint, and accessibility because different font faces possess unique horizontal and vertical glyph dimensions, meaning loading a web font dynamically will cause text boundaries to recalculate."
+  },
+  valueType: [
+    { type: "<string>", meaning: "Quoted specific font family name (required if it contains spaces, numbers, or special characters)", example: '"Helvetica Neue", "Fira Code", "Roboto Mono"' },
+    { type: "<custom-ident>", meaning: "Unquoted font family name (only valid if it behaves as a single CSS identifier)", example: "Arial, Georgia, Tahoma" },
+    { type: "<generic-family>", meaning: "Browser-mapped typographic category fallback keyword", example: "sans-serif, serif, monospace, system-ui" },
+    { type: "<global-value>", meaning: "Standard CSS rollback value", example: "inherit, initial, unset" }
+  ],
+  validValues: {
+    initial: "User-Agent dependent (Typically maps to Times New Roman or serif depending on user settings)",
+    computed: "As specified",
+    inherited: "Yes (All child elements inherit typographic properties unless overridden)",
+    animatable: "Discrete (Snaps instantly from one font face to another without transition)",
+    appliesTo: "All elements, as well as ::first-letter and ::first-line pseudo-elements",
+    percentageRef: "N/A"
+  },
+  categories: [
+    {
+      title: "1. Single Word Font Families (Unquoted)",
+      code: "font-family: Helvetica;",
+      description: "A single, standard font identifier.",
+      behavior: [
+        "The browser searches locally on the client machine for a font exactly matching 'Helvetica'."
+      ]
+    },
+    {
+      title: "2. Multi-Word Font Families (Quoted)",
+      code: 'font-family: "Segoe UI", "Fira Code";',
+      description: "Any font name containing spaces, numbers, or punctuation must be enclosed in single or double quotes.",
+      behavior: [
+        "Safe parsing. Ensures the browser interprets the words as a single font family instead of separate keywords."
+      ]
+    },
+    {
+      title: "3. Prioritized Fallback List",
+      code: 'font-family: "Inter", Arial, sans-serif;',
+      description: "A prioritized, comma-separated list evaluated from left to right.",
+      behavior: [
+        "The browser searches for 'Inter' locally or via @font-face. If unavailable, it falls back to 'Arial'. If 'Arial' is missing, it renders the system's default sans-serif font."
+      ]
+    }
+  ],
+  functions: [
+    {
+      title: "var() Custom Properties",
+      code: "font-family: var(--font-primary, sans-serif);",
+      behavior: "Standard practice in design systems. This enables dynamic font-toggling (such as dark-mode editorial fonts vs. standard interface fonts) by changing custom properties on the :root element."
+    }
+  ],
+  invalidValues: [
+    { example: "font-family: Open Sans, sans-serif;", why: "Multi-word family names must be wrapped in quotes if they contain spaces. Without quotes, some browsers may fail to parse 'Open Sans' as a singular name and discard it.", behavior: "Ignores the 'Open Sans' name and falls back to subsequent fonts in the stack." },
+    { example: "font-family: \"Inter\" sans-serif;", why: "Missing comma separator. Elements in the fallback stack must be explicitly divided by commas.", behavior: "Parsing error; the entire font-family declaration is discarded." },
+    { example: "font-family: \"Roboto\", 100serif;", why: "Unquoted font names cannot begin with numbers. It must be written as \"100serif\" or resolved to a valid identifier.", behavior: "Syntactic error; ignores the 100serif fallback." }
+  ],
+  gotchas: [
+    {
+      title: "1. FOUT vs. FOIT (Flash of Unstyled vs. Invisible Text)",
+      badCode: `@font-face {
+  font-family: "BrandSans";
+  src: url("/fonts/brandsans.woff2") format("woff2");
+  /* missing font-display parameter */
+}`,
+      explanation: "Text content remains invisible or snaps visual dimensions abruptly.",
+      why: "When utilizing external web fonts (from Google Fonts or Typekit), the browser may take a moment to fetch the font file, causing Flash of Invisible Text (FOIT) or Flash of Unstyled Text (FOUT).",
+      fix: "Always combine font-family with the @font-face property 'font-display: swap;'."
+    },
+    {
+      title: "2. Cumulative Layout Shift (CLS)",
+      badCode: `body {
+  font-family: "BrandSans", Arial, sans-serif;
+}`,
+      explanation: "When loading web fonts, sudden layout changes cause layout shifting.",
+      why: "If your primary web font and your system fallback font have different horizontal spacing (widths), the moment the web font downloads, the text will jump. This shifts elements, altering layout geometry and lowering your Google SEO ranking.",
+      fix: "Use modern CSS fallback adjustments (like size-adjust, ascent-override, or descent-override inside your @font-face rules) to match the dimensions of your system fallback font to your loaded web font."
+    },
+    {
+      title: "3. Shorthand Override Pitfall",
+      badCode: `p {
+  font-family: "Inter", sans-serif;
+  font: 14px/1.4 system-ui; /* Overwrites font-family! */
+}`,
+      explanation: "Using shorthand resets un-declared granular sub-properties.",
+      why: "Typographic longhands (like font-family, font-weight, line-height) are completely cleared if they are specified before the font shorthand, which resets omitted components back to their initial values.",
+      fix: "Ensure the shorthand font property is declared first, or solely use individual longhands."
+    }
+  ],
+  interactions: [
+    "Parent → Child: Highly inherited. Declaring font-family on html or body will apply it to every heading, paragraph, button, and input on your web page unless overridden.",
+    "Sizing Properties (font-size, line-height): Glyphs of different fonts render at different absolute visual scales even if they share the exact same font-size: 16px;. Changing font-family often requires tweaking line-height.",
+    "The font Shorthand: font-family is a component of the font shorthand (e.g., font: 16px/1.5 'Inter', sans-serif;). Caution: Setting the font shorthand will completely reset any independently declared typography longhands if declared out of order."
+  ],
+  guide: {
+    bestProduction: [
+      "Always combine font-family with the @font-face property 'font-display: swap;' to keep text content immediately readable.",
+      "Tailwind CSS standard configurations: use standard font-sans ('sans-serif'), font-serif ('serif'), and font-mono ('monospace') utility classes."
+    ],
+    performance: {
+      bad: "Layout Cost: Re-evaluating font-family triggers layout calculations (reflow). Avoid changing fonts dynamically with classes or hover states.",
+      fix: "Network Cost: Limit your custom web fonts to 1 or 2 families with minimal font-weight variants (e.g., just regular 400 and bold 700) to keep your load time optimal."
+    },
+    examples: [
+      {
+        title: "Example 1: Standard Modern SaaS Web Typography",
+        code: `:root {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04"; /* Optional: Inter specific ligatures */
+}
+
+code {
+  font-family: var(--font-mono);
+}`
+      },
+      {
+        title: "Example 2: Clean Typography Stack with Local Priority",
+        code: `h1, h2, h3 {
+  /* Checks local machines for Apple's serif, then Caslon, then standard Serif */
+  font-family: "SF Pro Serif", "Big Caslon", Georgia, serif;
+  font-weight: 700;
+  line-height: 1.2;
+}`
+      },
+      {
+        title: "Example 3: Performance-optimized Web Font Loader Fallback",
+        code: `@font-face {
+  font-family: "BrandSans";
+  src: url("/fonts/brandsans.woff2") format("woff2");
+  font-display: swap; /* Keeps content visible while loading */
+}
+
+body {
+  font-family: "BrandSans", -apple-system, sans-serif;
+}`
+      }
+    ]
+  },
+  quickRef: [
+    { label: "Initial Value", value: "User-Agent dependent (typically serif)" },
+    { label: "Inherited", value: "Yes" },
+    { label: "Animatable", value: "No (Discrete)" },
+    { label: "Minimum Valid Value", value: "1 Generic Font Keyword" },
+    { label: "Maximum Valid Value", value: "Unbounded stack chain" },
+    { label: "Professional Range", value: "Specific Web Font + system fallbacks + generic backup" },
+    { label: "Common Production Values", value: '"Inter", sans-serif; system-ui, sans-serif;' },
+    { label: "Related Properties", value: "font-size, font-weight, line-height, font-display" },
+    { label: "Performance Impact", value: "⚠️ Moderate (Triggers Layout / Reflow on font load)" }
+  ]
+};
+
 interface ExpertCSSManualDrawerProps {
   propertyName: string | null;
   onClose: () => void;
@@ -266,6 +424,10 @@ export function ExpertCSSManualDrawer({ propertyName, onClose }: ExpertCSSManual
 
     if (normName === "width") {
       setData(WIDTH_EXPERT_DATA);
+      setError(null);
+      setLoading(false);
+    } else if (normName === "font-family" || normName === "fontfamily") {
+      setData(FONT_FAMILY_EXPERT_DATA);
       setError(null);
       setLoading(false);
     } else {

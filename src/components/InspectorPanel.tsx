@@ -96,6 +96,7 @@ import { FlexBasisControl } from "./css-categories/layout-box-model/properties/F
 import { MarginControl } from "./css-categories/layout-box-model/properties/MarginControl";
 import { PaddingControl } from "./css-categories/layout-box-model/properties/PaddingControl";
 import { WidthControl } from "./css-categories/layout-box-model/properties/WidthControl";
+import { HeightControl } from "./css-categories/layout-box-model/properties/HeightControl";
 import { AspectRatioControl } from "./css-categories/layout-box-model/properties/AspectRatioControl";
 import { PositionOffsetsControl } from "./css-categories/layout-box-model/properties/PositionOffsetsControl";
 import { AlignItemsControl } from "./css-categories/layout-box-model/properties/AlignItemsControl";
@@ -1317,6 +1318,14 @@ export function InspectorPanel({
       propName === "min-inline-size" || 
       propName === "max-inline-size";
 
+    const isHeightProperty = 
+      propName === "height" || 
+      propName === "min-height" || 
+      propName === "max-height" || 
+      propName === "block-size" || 
+      propName === "min-block-size" || 
+      propName === "max-block-size";
+
     if (isWidthProperty) {
       return (
         <div key={propIdx} className="w-full animate-fade-in relative z-[200]">
@@ -1334,6 +1343,28 @@ export function InspectorPanel({
             onInlineSizeChange={(val) => setPropValue("inline-size", val)}
             onMinInlineSizeChange={(val) => setPropValue("min-inline-size", val)}
             onMaxInlineSizeChange={(val) => setPropValue("max-inline-size", val)}
+          />
+        </div>
+      );
+    }
+
+    if (isHeightProperty) {
+      return (
+        <div key={propIdx} className="w-full animate-fade-in relative z-[190]">
+          <HeightControl
+            propName={propName}
+            value={getPropValue("height")}
+            onChange={(val) => setPropValue("height", val)}
+            minHeightValue={getPropValue("min-height")}
+            maxHeightValue={getPropValue("max-height")}
+            blockSizeValue={getPropValue("block-size")}
+            minBlockSizeValue={getPropValue("min-block-size")}
+            maxBlockSizeValue={getPropValue("max-block-size")}
+            onMinHeightChange={(val) => setPropValue("min-height", val)}
+            onMaxHeightChange={(val) => setPropValue("max-height", val)}
+            onBlockSizeChange={(val) => setPropValue("block-size", val)}
+            onMinBlockSizeChange={(val) => setPropValue("min-block-size", val)}
+            onMaxBlockSizeChange={(val) => setPropValue("max-block-size", val)}
           />
         </div>
       );

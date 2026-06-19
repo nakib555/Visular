@@ -9,60 +9,48 @@ import {
   Check,
   RotateCcw,
   ArrowUpToLine,
-  ArrowRightToLine,
   ArrowDownToLine,
-  ArrowLeftToLine,
   Maximize
 } from "lucide-react";
 
-interface PaddingControlProps {
+interface HeightControlProps {
+  propName?: string;
   value: string;
   onChange: (val: string) => void;
-  paddingTopValue?: string;
-  paddingRightValue?: string;
-  paddingBottomValue?: string;
-  paddingLeftValue?: string;
-  paddingBlockValue?: string;
-  paddingInlineValue?: string;
-  paddingBlockStartValue?: string;
-  paddingBlockEndValue?: string;
-  paddingInlineStartValue?: string;
-  paddingInlineEndValue?: string;
-  onPaddingTopChange?: (val: string) => void;
-  onPaddingRightChange?: (val: string) => void;
-  onPaddingBottomChange?: (val: string) => void;
-  onPaddingLeftChange?: (val: string) => void;
-  onPaddingBlockChange?: (val: string) => void;
-  onPaddingInlineChange?: (val: string) => void;
-  onPaddingBlockStartChange?: (val: string) => void;
-  onPaddingBlockEndChange?: (val: string) => void;
-  onPaddingInlineStartChange?: (val: string) => void;
-  onPaddingInlineEndChange?: (val: string) => void;
+  minHeightValue?: string;
+  maxHeightValue?: string;
+  blockSizeValue?: string;
+  minBlockSizeValue?: string;
+  maxBlockSizeValue?: string;
+  onMinHeightChange?: (val: string) => void;
+  onMaxHeightChange?: (val: string) => void;
+  onBlockSizeChange?: (val: string) => void;
+  onMinBlockSizeChange?: (val: string) => void;
+  onMaxBlockSizeChange?: (val: string) => void;
 }
 
-interface PaddingPreset {
+interface HeightPreset {
   label: string;
   value: string;
   badgeColor: string;
 }
 
-const PADDING_PRESETS: PaddingPreset[] = [
-  { label: "0", value: "0px", badgeColor: "bg-stone-100 text-stone-500 border-stone-200" },
-  { label: "1", value: "4px", badgeColor: "bg-teal-50 text-teal-600 border-teal-100" },
-  { label: "2", value: "8px", badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
-  { label: "3", value: "12px", badgeColor: "bg-green-50 text-green-600 border-green-100" },
-  { label: "4", value: "16px", badgeColor: "bg-cyan-50 text-cyan-600 border-cyan-100" },
-  { label: "5", value: "20px", badgeColor: "bg-sky-50 text-sky-600 border-sky-100" },
-  { label: "6", value: "24px", badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
-  { label: "8", value: "32px", badgeColor: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-  { label: "10", value: "40px", badgeColor: "bg-violet-50 text-violet-600 border-violet-100" },
-  { label: "12", value: "48px", badgeColor: "bg-purple-50 text-purple-600 border-purple-100" },
-  { label: "16", value: "64px", badgeColor: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100" },
-  
+const HEIGHT_PRESETS: HeightPreset[] = [
+  { label: "auto", value: "auto", badgeColor: "bg-rose-50 text-rose-600 border-rose-100" },
+  { label: "100%", value: "100%", badgeColor: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  { label: "50%", value: "50%", badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  { label: "100dvh", value: "100dvh", badgeColor: "bg-blue-50 text-blue-655 border-blue-100" },
+  { label: "max-content", value: "max-content", badgeColor: "bg-violet-50 text-violet-650 border-violet-100" },
+  { label: "min-content", value: "min-content", badgeColor: "bg-fuchsia-50 text-fuchsia-650 border-fuchsia-100" },
+  { label: "fit-content", value: "fit-content", badgeColor: "bg-orange-50 text-orange-650 border-orange-100" },
+  { label: "400px", value: "400px", badgeColor: "bg-cyan-50 text-cyan-600 border-cyan-100" },
+  { label: "600px", value: "600px", badgeColor: "bg-sky-50 text-sky-655 border-sky-100" },
+  { label: "800px", value: "800px", badgeColor: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  { label: "100vh", value: "100vh", badgeColor: "bg-stone-55 text-stone-655 border-stone-100" },
 ];
 
-interface PaddingPropertyOption {
-  value: "padding" | "padding-top" | "padding-right" | "padding-bottom" | "padding-left" | "padding-block" | "padding-inline" | "padding-block-start" | "padding-block-end" | "padding-inline-start" | "padding-inline-end";
+interface HeightPropertyOption {
+  value: "height" | "min-height" | "max-height" | "block-size" | "min-block-size" | "max-block-size";
   label: string;
   description: string;
   icon: React.ComponentType<any>;
@@ -70,167 +58,100 @@ interface PaddingPropertyOption {
   badgeContent: React.ReactNode;
 }
 
-const paddingPropertyOptions: PaddingPropertyOption[] = [
+const heightPropertyOptions: HeightPropertyOption[] = [
   {
-    value: "padding",
-    label: "All Sides (padding)",
-    description: "Applies spacing to all four sides equally",
+    value: "height",
+    label: "Height (height)",
+    description: "Sets the vertical size of the element",
     icon: Maximize,
     badgeBg: "bg-indigo-50/90 border border-indigo-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
     badgeContent: (
-      <div className="w-[18px] h-[18px] border-2 border-indigo-400 border-dashed rounded-sm flex items-center justify-center">
-         <div className="w-[8px] h-[8px] bg-indigo-500 rounded-sm" />
+      <div className="w-[18px] h-[18px] border-2 border-indigo-400 rounded-sm flex flex-col items-center justify-between py-[2px]">
+         <div className="h-[2px] w-[10px] bg-indigo-500 rounded-full" />
+         <div className="w-[2px] h-[6px] bg-indigo-500/60" />
+         <div className="h-[2px] w-[10px] bg-indigo-500 rounded-full" />
       </div>
     )
   },
   {
-    value: "padding-inline",
-    label: "Horizontal (padding-inline)",
-    description: "Spacing on the left and right edges",
-    icon: ArrowRightToLine,
+    value: "min-height",
+    label: "Min Height (min-height)",
+    description: "Sets the lower bound limit of element height",
+    icon: ArrowUpToLine,
+    badgeBg: "bg-teal-50/90 border border-teal-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
+    badgeContent: (
+      <div className="w-[18px] h-[18px] border-2 border-teal-400 border-dashed rounded-sm flex flex-col items-center justify-start pt-[2px]">
+         <div className="h-[2px] w-[10px] bg-teal-500 rounded-full scale-x-110" />
+      </div>
+    )
+  },
+  {
+    value: "max-height",
+    label: "Max Height (max-height)",
+    description: "Sets the upper bound limit of element height",
+    icon: ArrowDownToLine,
     badgeBg: "bg-fuchsia-50/90 border border-fuchsia-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
     badgeContent: (
-      <div className="w-[18px] h-[18px] border-l-2 border-r-2 border-fuchsia-400 border-dashed rounded-sm flex items-center justify-center">
-         <div className="w-[8px] h-[8px] bg-fuchsia-500 rounded-sm" />
+      <div className="w-[18px] h-[18px] border-2 border-fuchsia-400 border-dashed rounded-sm flex flex-col items-center justify-end pb-[2px]">
+         <div className="h-[2px] w-[10px] bg-fuchsia-500 rounded-full scale-x-110" />
       </div>
     )
   },
   {
-    value: "padding-block",
-    label: "Vertical (padding-block)",
-    description: "Spacing on the top and bottom edges",
+    value: "block-size",
+    label: "Block Size (block-size)",
+    description: "Logical height depending on language vertical/horizontal flow",
+    icon: Square,
+    badgeBg: "bg-violet-50/90 border border-violet-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
+    badgeContent: (
+      <div className="w-[18px] h-[18px] border-x-2 border-violet-400 rounded-sm flex items-center justify-center">
+         <div className="h-[8px] w-[2px] bg-violet-500 rounded-sm" />
+      </div>
+    )
+  },
+  {
+    value: "min-block-size",
+    label: "Min Block Size (min-block-size)",
+    description: "Logical lower bound height depending on writing mode flow",
     icon: ArrowUpToLine,
-    badgeBg: "bg-violet-50/90 border border-violet-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center",
+    badgeBg: "bg-emerald-50/90 border border-emerald-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
     badgeContent: (
-      <div className="w-[18px] h-[18px] border-t-2 border-b-2 border-violet-400 border-dashed rounded-sm flex flex-col items-center justify-center">
-         <div className="w-[8px] h-[8px] bg-violet-500 rounded-sm" />
+      <div className="w-[18px] h-[18px] border-x-2 border-emerald-400 border-dashed rounded-sm flex flex-col items-center justify-start pt-[2px]">
+         <div className="h-[3px] w-[6px] bg-emerald-500 rounded-xs" />
       </div>
     )
   },
   {
-    value: "padding-top",
-    label: "Top (padding-top)",
-    description: "Spacing on the top edge",
-    icon: ArrowUpToLine,
-    badgeBg: "bg-sky-50/90 border border-sky-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-t-2 border-sky-400 border-dashed rounded-sm flex flex-col pt-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-sky-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-right",
-    label: "Right (padding-right)",
-    description: "Spacing on the right edge",
-    icon: ArrowRightToLine,
-    badgeBg: "bg-emerald-50/90 border border-emerald-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center pr-0.5",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-r-2 border-emerald-400 border-dashed rounded-sm flex justify-end pr-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-emerald-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-bottom",
-    label: "Bottom (padding-bottom)",
-    description: "Spacing on the bottom edge",
+    value: "max-block-size",
+    label: "Max Block Size (max-block-size)",
+    description: "Logical upper bound height depending on writing mode flow",
     icon: ArrowDownToLine,
-    badgeBg: "bg-rose-50/90 border border-rose-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center pb-0.5",
+    badgeBg: "bg-orange-50/90 border border-orange-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center",
     badgeContent: (
-      <div className="w-[18px] h-[18px] border-b-2 border-rose-400 border-dashed rounded-sm flex flex-col justify-end pb-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-rose-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-left",
-    label: "Left (padding-left)",
-    description: "Spacing on the left edge",
-    icon: ArrowLeftToLine,
-    badgeBg: "bg-amber-50/90 border border-amber-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center pl-0.5",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-l-2 border-amber-400 border-dashed rounded-sm flex pl-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-amber-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-inline-start",
-    label: "Inline Start (padding-inline-start)",
-    description: "Logical logical start edge (usually left)",
-    icon: ArrowLeftToLine,
-    badgeBg: "bg-teal-50/90 border border-teal-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center pl-0.5",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-l-2 border-teal-400 border-dashed rounded-sm flex pl-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-teal-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-inline-end",
-    label: "Inline End (padding-inline-end)",
-    description: "Logical inline end edge (usually right)",
-    icon: ArrowRightToLine,
-    badgeBg: "bg-cyan-50/90 border border-cyan-100/70 p-1 rounded-lg w-9 h-7 flex items-center justify-center pr-0.5",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-r-2 border-cyan-400 border-dashed rounded-sm flex justify-end pr-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-cyan-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-block-start",
-    label: "Block Start (padding-block-start)",
-    description: "Logical block start edge (usually top)",
-    icon: ArrowUpToLine,
-    badgeBg: "bg-blue-50/90 border border-blue-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-t-2 border-blue-400 border-dashed rounded-sm flex flex-col pt-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-blue-500 rounded-sm" />
-      </div>
-    )
-  },
-  {
-    value: "padding-block-end",
-    label: "Block End (padding-block-end)",
-    description: "Logical block end edge (usually bottom)",
-    icon: ArrowDownToLine,
-    badgeBg: "bg-orange-50/90 border border-orange-100/70 p-1 rounded-lg w-9 h-7 flex flex-col items-center justify-center pb-0.5",
-    badgeContent: (
-      <div className="w-[18px] h-[18px] border-b-2 border-orange-400 border-dashed rounded-sm flex flex-col justify-end pb-[2px] items-center">
-         <div className="w-[8px] h-[8px] bg-orange-500 rounded-sm" />
+      <div className="w-[18px] h-[18px] border-x-2 border-orange-400 border-dashed rounded-sm flex flex-col items-center justify-end pb-[2px]">
+         <div className="h-[3px] w-[6px] bg-orange-500 rounded-xs" />
       </div>
     )
   }
 ];
 
-export function PaddingControl({ 
+export function HeightControl({ 
+  propName = "height",
   value, 
   onChange,
-  paddingTopValue = "",
-  paddingRightValue = "",
-  paddingBottomValue = "",
-  paddingLeftValue = "",
-  paddingBlockValue = "",
-  paddingInlineValue = "",
-  paddingBlockStartValue = "",
-  paddingBlockEndValue = "",
-  paddingInlineStartValue = "",
-  paddingInlineEndValue = "",
-  onPaddingTopChange,
-  onPaddingRightChange,
-  onPaddingBottomChange,
-  onPaddingLeftChange,
-  onPaddingBlockChange,
-  onPaddingInlineChange,
-  onPaddingBlockStartChange,
-  onPaddingBlockEndChange,
-  onPaddingInlineStartChange,
-  onPaddingInlineEndChange
-}: PaddingControlProps) {
-  const [activeProperty, setActiveProperty] = useState<PaddingPropertyOption["value"]>("padding");
-  const [unit, setUnit] = useState<"px" | "rem" | "%" | "em" | "vw" | "vh" | "vmin" | "vmax" | "ch" | "ex" | "dvw" | "dvh" | "svw" | "svh" | "lvw" | "lvh">("px");
+  minHeightValue = "",
+  maxHeightValue = "",
+  blockSizeValue = "",
+  minBlockSizeValue = "",
+  maxBlockSizeValue = "",
+  onMinHeightChange,
+  onMaxHeightChange,
+  onBlockSizeChange,
+  onMinBlockSizeChange,
+  onMaxBlockSizeChange
+}: HeightControlProps) {
+  const [activeProperty, setActiveProperty] = useState<HeightPropertyOption["value"]>("height");
+  const [unit, setUnit] = useState<"px" | "rem" | "%" | "em" | "vw" | "vh" | "vmin" | "vmax" | "ch" | "ex" | "dvw" | "dvh" | "svw" | "svh" | "lvw" | "lvh" | "auto">("px");
   const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
   const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
   
@@ -257,38 +178,34 @@ export function PaddingControl({
     placement: "top" | "bottom" 
   } | null>(null);
 
+  // Synchronize active property based on which propName was rendered
+  useEffect(() => {
+    if (propName && heightPropertyOptions.some(opt => opt.value === propName)) {
+      setActiveProperty(propName as any);
+    }
+  }, [propName]);
+
   const currentPropertyValue = useMemo(() => {
     switch (activeProperty) {
-      case "padding-top": return paddingTopValue;
-      case "padding-right": return paddingRightValue;
-      case "padding-bottom": return paddingBottomValue;
-      case "padding-left": return paddingLeftValue;
-      case "padding-block": return paddingBlockValue;
-      case "padding-inline": return paddingInlineValue;
-      case "padding-block-start": return paddingBlockStartValue;
-      case "padding-block-end": return paddingBlockEndValue;
-      case "padding-inline-start": return paddingInlineStartValue;
-      case "padding-inline-end": return paddingInlineEndValue;
+      case "min-height": return minHeightValue;
+      case "max-height": return maxHeightValue;
+      case "block-size": return blockSizeValue;
+      case "min-block-size": return minBlockSizeValue;
+      case "max-block-size": return maxBlockSizeValue;
       default: return value;
     }
   }, [
-    activeProperty, value, paddingTopValue, paddingRightValue, paddingBottomValue, paddingLeftValue,
-    paddingBlockValue, paddingInlineValue, paddingBlockStartValue, paddingBlockEndValue,
-    paddingInlineStartValue, paddingInlineEndValue
+    activeProperty, value, minHeightValue, maxHeightValue,
+    blockSizeValue, minBlockSizeValue, maxBlockSizeValue
   ]);
 
   const handleCurrentPropertyChange = (val: string) => {
     switch (activeProperty) {
-      case "padding-top": onPaddingTopChange?.(val); break;
-      case "padding-right": onPaddingRightChange?.(val); break;
-      case "padding-bottom": onPaddingBottomChange?.(val); break;
-      case "padding-left": onPaddingLeftChange?.(val); break;
-      case "padding-block": onPaddingBlockChange?.(val); break;
-      case "padding-inline": onPaddingInlineChange?.(val); break;
-      case "padding-block-start": onPaddingBlockStartChange?.(val); break;
-      case "padding-block-end": onPaddingBlockEndChange?.(val); break;
-      case "padding-inline-start": onPaddingInlineStartChange?.(val); break;
-      case "padding-inline-end": onPaddingInlineEndChange?.(val); break;
+      case "min-height": onMinHeightChange?.(val); break;
+      case "max-height": onMaxHeightChange?.(val); break;
+      case "block-size": onBlockSizeChange?.(val); break;
+      case "min-block-size": onMinBlockSizeChange?.(val); break;
+      case "max-block-size": onMaxBlockSizeChange?.(val); break;
       default: onChange(val); break;
     }
   };
@@ -300,7 +217,7 @@ export function PaddingControl({
       if (
         propertyDropdownTriggerRef.current && 
         !propertyDropdownTriggerRef.current.contains(target) && 
-        !((target as Element).closest('#padding-property-dropdown-menu'))
+        !((target as Element).closest('#height-property-dropdown-menu'))
       ) {
         setPropertyDropdownOpen(false);
       }
@@ -308,7 +225,7 @@ export function PaddingControl({
       if (
         unitTriggerRef.current &&
         !unitTriggerRef.current.contains(target) &&
-        !((target as Element).closest('#padding-unit-dropdown-menu'))
+        !((target as Element).closest('#height-unit-dropdown-menu'))
       ) {
         setUnitDropdownOpen(false);
       }
@@ -350,7 +267,7 @@ export function PaddingControl({
       updatePosition();
       
       const handleScroll = (e: Event) => {
-        if (e.target instanceof Element && e.target.closest('#padding-unit-dropdown-menu')) return;
+        if (e.target instanceof Element && e.target.closest('#height-unit-dropdown-menu')) return;
         updatePosition();
       };
 
@@ -371,7 +288,7 @@ export function PaddingControl({
         const rect = propertyDropdownTriggerRef.current.getBoundingClientRect();
         const spaceBelow = window.innerHeight - rect.bottom;
         const spaceAbove = rect.top;
-        const dropdownHeight = 350;
+        const dropdownHeight = 300;
         
         if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
           setDropdownPos({
@@ -396,7 +313,7 @@ export function PaddingControl({
       updatePosition();
       
       const handleScroll = (e: Event) => {
-        if (e.target instanceof Element && e.target.closest('#padding-property-dropdown-menu')) return;
+        if (e.target instanceof Element && e.target.closest('#height-property-dropdown-menu')) return;
         updatePosition();
       };
 
@@ -412,9 +329,10 @@ export function PaddingControl({
 
   const { numericValue, parsedUnit } = useMemo(() => {
     if (!currentPropertyValue) return { numericValue: 0, parsedUnit: "px" as const };
+    if (currentPropertyValue === "auto") return { numericValue: 0, parsedUnit: "auto" as const };
+    if (currentPropertyValue === "none") return { numericValue: 100, parsedUnit: "%" as const }; // fallback max-height 'none' visual representation
     
-    // Support basic single values. Multi-values split not handled in simple slider.
-    const primaryPart = currentPropertyValue.split(" ").pop() || currentPropertyValue;
+    const primaryPart = currentPropertyValue.trim();
     const num = parseFloat(primaryPart);
     if (isNaN(num)) return { numericValue: 0, parsedUnit: "px" as const };
     if (primaryPart.endsWith("rem")) return { numericValue: num, parsedUnit: "rem" as const };
@@ -436,7 +354,7 @@ export function PaddingControl({
   }, [currentPropertyValue]);
 
   useEffect(() => {
-    if (currentPropertyValue && (parsedUnit as string) !== "auto") {
+    if (currentPropertyValue && parsedUnit !== "auto") {
       setUnit(parsedUnit);
     }
   }, [currentPropertyValue, parsedUnit]);
@@ -461,7 +379,7 @@ export function PaddingControl({
   }, []);
 
   const handleNumericChange = (num: number, targetUnit = unit) => {
-    if ((targetUnit as string) === "auto") {
+    if (targetUnit === "auto") {
       handleCurrentPropertyChange("auto");
       return;
     }
@@ -473,24 +391,29 @@ export function PaddingControl({
     handleCurrentPropertyChange(val);
   };
 
-  const [customLimits, setCustomLimits] = useState<Record<"px" | "rem" | "%" | "em", { min: number; max: number }>>({
-    px: { min: 0, max: 150 },
-    rem: { min: 0, max: 10 },
-    "%": { min: -50, max: 50 },
-    em: { min: 0, max: 10 },
+  const [customLimits, setCustomLimits] = useState<Record<"px" | "rem" | "%" | "em" | "vw" | "vh" | "dvw" | "dvh" | "vmin" | "vmax", { min: number; max: number }>>({
+    px: { min: 0, max: 1440 },
+    rem: { min: 0, max: 100 },
+    "%": { min: 0, max: 100 },
+    em: { min: 0, max: 100 },
+    vw: { min: 0, max: 100 },
+    vh: { min: 0, max: 100 },
+    dvw: { min: 0, max: 100 },
+    dvh: { min: 0, max: 100 },
+    vmin: { min: 0, max: 100 },
+    vmax: { min: 0, max: 100 },
   });
 
   const [showLimitSettings, setShowLimitSettings] = useState(false);
 
-  // fallback to px limit bounds if auto is selected
-  const activeLimitsUnit = (unit as string) === "auto" ? "px" : unit;
+  const activeLimitsUnit = unit === "auto" ? "px" : unit;
   const currentLimit = useMemo(() => {
     const lim = customLimits[activeLimitsUnit];
     return {
       min: lim.min,
       max: lim.max,
-      step: activeLimitsUnit === "px" ? 1 : activeLimitsUnit === "%" ? 0.5 : 0.125,
-      label: unit === "px" ? "Pixels" : unit === "rem" ? "Relative (rem)" : unit === "%" ? "Percentage" : unit === "em" ? "Relative (em)" : "Auto"
+      step: activeLimitsUnit === "px" ? 10 : activeLimitsUnit === "%" ? 1 : 0.5,
+      label: unit === "px" ? "Pixels" : unit === "rem" ? "Relative (rem)" : unit === "%" ? "Percentage" : unit === "em" ? "Relative (em)" : unit === "vw" ? "Viewport Width" : unit === "vh" ? "Viewport Height" : unit === "dvw" ? "Dynamic VW" : unit === "dvh" ? "Dynamic VH" : unit === "vmin" ? "Viewport Min" : unit === "vmax" ? "Viewport Max" : "Auto"
     };
   }, [customLimits, activeLimitsUnit, unit]);
 
@@ -514,7 +437,7 @@ export function PaddingControl({
   };
 
   const isAnyDropdownOpen = propertyDropdownOpen || unitDropdownOpen;
-  const activeOption = useMemo(() => paddingPropertyOptions.find(opt => opt.value === activeProperty)!, [activeProperty]);
+  const activeOption = useMemo(() => heightPropertyOptions.find(opt => opt.value === activeProperty) || heightPropertyOptions[0], [activeProperty]);
 
   return (
     <div className={`flex flex-col gap-3.5 w-full text-left relative overflow-visible group transition-all duration-200 ${
@@ -523,7 +446,7 @@ export function PaddingControl({
       
       <div className="flex flex-col gap-1.5 w-full relative">
         <label className="text-[10px] text-stone-550 font-bold uppercase tracking-wider pl-1 font-mono flex justify-between select-none">
-          <span>Padding Property</span>
+          <span>Height & Sizing Property</span>
           <span className="text-[10px] font-mono font-bold text-stone-400 select-all normal-case">
             {activeProperty}
           </span>
@@ -536,7 +459,7 @@ export function PaddingControl({
           className={`w-full bg-white border ${
             propertyDropdownOpen ? "border-indigo-400 ring-4 ring-indigo-500/10" : "border-stone-200/85 hover:border-stone-300"
           } rounded-2xl p-3 flex items-center justify-between shadow-xs transition-all cursor-pointer text-left focus:outline-none`}
-          id="padding-property-dropdown-trigger"
+          id="height-property-dropdown-trigger"
         >
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-stone-50 border border-stone-100 text-stone-500">
@@ -574,7 +497,7 @@ export function PaddingControl({
                 exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
                 transition={{ type: "spring", stiffness: 380, damping: 28 }}
                 className="fixed bg-white border border-stone-200 rounded-3xl p-3 shadow-2xl z-[999999] flex flex-col"
-                id="padding-property-dropdown-menu"
+                id="height-property-dropdown-menu"
                 style={{
                   top: dropdownPos.placement === "bottom" ? dropdownPos.top : "auto",
                   bottom: dropdownPos.placement === "top" ? dropdownPos.bottom : "auto",
@@ -585,11 +508,11 @@ export function PaddingControl({
               >
                 <div className="text-[9.5px] uppercase font-bold tracking-wider text-indigo-600 font-mono mb-2 flex items-center gap-1.5 pl-1.5 flex-shrink-0 select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                  <span>Select Padding Side</span>
+                  <span>Select Dimension Side</span>
                 </div>
 
                 <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-1 pr-1 pb-1">
-                  {paddingPropertyOptions.map((opt) => {
+                  {heightPropertyOptions.map((opt) => {
                     const isSelected = activeProperty === opt.value;
                     const Icon = opt.icon;
 
@@ -641,7 +564,7 @@ export function PaddingControl({
       <div className="flex flex-col gap-1.5 relative z-10">
         <div className="flex items-center justify-between pl-1">
           <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest font-mono select-none">
-            Scale Presets
+            Height Presets
           </span>
           {currentPropertyValue ? (
             <span className="text-[9px] font-mono font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.5 rounded-lg shadow-3xs">
@@ -657,7 +580,7 @@ export function PaddingControl({
           ref={presetsScrollRef}
           className="flex overflow-x-auto gap-2 pb-2 pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory select-none"
         >
-          {PADDING_PRESETS.map((preset) => {
+          {HEIGHT_PRESETS.map((preset) => {
             const isSelected = currentPropertyValue === preset.value;
             return (
               <button
@@ -685,7 +608,7 @@ export function PaddingControl({
           <div className="flex items-center gap-1.5 min-w-0">
             <Settings2 size={12} className="text-stone-400 shrink-0" />
             <span className="text-[10px] font-bold text-stone-600 font-mono uppercase tracking-wider truncate">
-              Values & Slider
+              Dimension Options & Slider
             </span>
           </div>
 
@@ -709,7 +632,7 @@ export function PaddingControl({
                     exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
                     transition={{ type: "spring", stiffness: 380, damping: 28 }}
                     className="fixed bg-white border border-stone-200 rounded-2xl p-1 shadow-2xl z-[9999999] flex flex-col gap-0.5"
-                    id="padding-unit-dropdown-menu"
+                    id="height-unit-dropdown-menu"
                     style={{
                       top: unitDropdownPos.placement === "bottom" ? unitDropdownPos.top : "auto",
                       bottom: unitDropdownPos.placement === "top" ? unitDropdownPos.bottom : "auto",
@@ -723,7 +646,7 @@ export function PaddingControl({
                     </div>
                     <div className="flex flex-col gap-0.5 max-h-[160px] overflow-y-auto custom-scrollbar">
                       {((Object.keys(unitLabels)) as readonly (keyof typeof unitLabels)[]).map((u) => {
-                        const isSelected = u === unit;
+                        const isSelected = (u as string) === unit;
                         return (
                           <button
                             key={u}
@@ -731,9 +654,7 @@ export function PaddingControl({
                             onClick={() => {
                               setUnit(u);
                               setUnitDropdownOpen(false);
-                              if ((u as string) === "auto") {
-                                  handleNumericChange(0);
-                              } else if (numericValue !== undefined) {
+                              if (numericValue !== undefined) {
                                 handleNumericChange(numericValue, u);
                               }
                             }}
@@ -757,10 +678,10 @@ export function PaddingControl({
           </div>
         </div>
 
-        <div className={`flex flex-col gap-1 ${(unit as string) === "auto" ? "opacity-30 pointer-events-none" : ""}`}>
+        <div className={`flex flex-col gap-1 ${unit === "auto" ? "opacity-35 pointer-events-none" : ""}`}>
           <div className="flex justify-between items-center mb-0.5 select-none">
             <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest font-mono">
-              Adjust Value
+              Sizing Range Slider
             </span>
             <button
               type="button"
@@ -777,7 +698,7 @@ export function PaddingControl({
           </div>
 
           <AnimatePresence>
-            {showLimitSettings && (unit as string) !== "auto" && (
+            {showLimitSettings && unit !== "auto" && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
@@ -788,7 +709,7 @@ export function PaddingControl({
                 <div className="bg-stone-50/80 border border-stone-200/50 p-2 rounded-xl flex flex-col gap-2 mt-0.5 select-none animate-fade-in text-left">
                   <div className="flex items-center justify-between px-0.5">
                     <span className="text-[8px] font-extrabold text-stone-500 uppercase tracking-wider font-mono">
-                      Set Bounds ({activeLimitsUnit})
+                      Set bounds ({activeLimitsUnit})
                     </span>
                     <button
                       type="button"
@@ -810,7 +731,7 @@ export function PaddingControl({
                               "svh": { min: 0, max: 100 },
                               "lvw": { min: 0, max: 100 },
                               "lvh": { min: 0, max: 100 }
-                        };
+  };
                         setCustomLimits(prev => ({
                           ...prev,
                           [activeLimitsUnit as keyof typeof customLimits]: defaults[activeLimitsUnit as keyof typeof customLimits]
@@ -825,15 +746,16 @@ export function PaddingControl({
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[7.5px] font-bold text-stone-400 uppercase tracking-wider font-mono pl-0.5">
-                        Lower (Min)
+                        Lower limit (Min)
                       </span>
                       <input
                         type="number"
+                        min="0"
                         value={customLimits[activeLimitsUnit as keyof typeof customLimits].min}
                         step={currentLimit.step}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) {
+                          if (!isNaN(val) && val >= 0) {
                             setCustomLimits(prev => ({
                               ...prev,
                               [activeLimitsUnit]: { ...prev[activeLimitsUnit as keyof typeof customLimits], min: val }
@@ -846,15 +768,16 @@ export function PaddingControl({
 
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[7.5px] font-bold text-stone-400 uppercase tracking-wider font-mono pl-0.5">
-                        Upper (Max)
+                        Upper limit (Max)
                       </span>
                       <input
                         type="number"
+                        min="1"
                         value={customLimits[activeLimitsUnit as keyof typeof customLimits].max}
                         step={currentLimit.step}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) {
+                          if (!isNaN(val) && val > 0) {
                             setCustomLimits(prev => ({
                               ...prev,
                               [activeLimitsUnit]: { ...prev[activeLimitsUnit as keyof typeof customLimits], max: val }
@@ -876,7 +799,7 @@ export function PaddingControl({
             max={currentLimit.max}
             step={currentLimit.step}
             value={numericValue || 0}
-            disabled={(unit as string) === "auto"}
+            disabled={unit === "auto"}
             onChange={(e) => {
               handleNumericChange(parseFloat(e.target.value));
             }}
@@ -885,10 +808,10 @@ export function PaddingControl({
         </div>
 
         <div className="flex items-center justify-between gap-2.5 pt-1 flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-1.5 shrink-0 border-0 w-full sm:w-auto" style={{ borderWidth: "0px" }}>
+          <div className="flex items-center gap-1.5 shrink-0 border-0 w-full sm:w-auto">
             <button
               type="button"
-              disabled={(unit as string) === "auto"}
+              disabled={unit === "auto"}
               onClick={() => {
                 const newVal = Math.max(currentLimit.min, (numericValue || 0) - currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
@@ -903,14 +826,14 @@ export function PaddingControl({
                 type="text"
                 value={currentPropertyValue || ""}
                 onChange={(e) => handleCurrentPropertyChange(e.target.value)}
-                placeholder="0px/auto"
-                className="w-full sm:w-[71px] bg-stone-50 border border-indigo-500/10 focus:border-indigo-500 rounded-xl px-1.5 py-1 text-center text-[10px] focus:outline-none font-mono text-indigo-700 font-extrabold focus:bg-white shadow-2xs transition-all"
+                placeholder="auto"
+                className="w-full sm:w-[82px] bg-stone-50 border border-indigo-500/10 focus:border-indigo-500 rounded-xl px-1.5 py-1 text-center text-[10px] focus:outline-none font-mono text-indigo-700 font-extrabold focus:bg-white shadow-2xs transition-all"
               />
             </div>
 
             <button
               type="button"
-              disabled={(unit as string) === "auto"}
+              disabled={unit === "auto"}
               onClick={() => {
                 const newVal = Math.min(currentLimit.max, (numericValue || 0) + currentLimit.step);
                 handleNumericChange(parseFloat(newVal.toFixed(3)));
@@ -925,8 +848,8 @@ export function PaddingControl({
             <button
               type="button"
               onClick={() => handleCurrentPropertyChange("")}
-              title="Reset spacing"
-              className="w-8 h-8 sm:w-7 sm:h-7 bg-stone-50 hover:bg-red-50 hover:text-red-650 text-stone-400 border border-stone-200/60 rounded-xl sm:rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer shadow-3xs hover:border-red-200 ml-auto"
+              title="Reset height scale"
+              className="w-8 h-8 sm:w-7 sm:h-7 bg-stone-50 hover:bg-red-50 hover:text-red-655 text-stone-400 border border-stone-200/60 rounded-xl sm:rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer shadow-3xs hover:border-red-200 ml-auto"
             >
               <RotateCcw size={11} className="stroke-[2.5]" />
             </button>
@@ -938,7 +861,7 @@ export function PaddingControl({
       <div className="flex items-start gap-1.5 p-2 bg-indigo-50/30 border border-indigo-100/45 rounded-xl z-10 relative">
         <Info size={11} className="text-indigo-600 shrink-0 mt-0.5" />
         <p className="text-[9px] leading-normal text-stone-550 font-medium select-none">
-          The <b>{activeProperty}</b> property controls spacing <em>inside</em> the element's block layout. Supports absolute, percentage, and <code>auto</code> centering logic for Block containers. Note: padding collapsing rules may apply.
+          The <b>{activeProperty}</b> property controls the vertical size constraint of elements. Adjusting width values triggers browser reflow and changes layout flow. Supports local auto calculation, relative ratios, or solid pixels.
         </p>
       </div>
 

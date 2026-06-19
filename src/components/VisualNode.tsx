@@ -559,6 +559,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
               </span>
               {/* Ghost Indicator Label Badge */}
               <span className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
+                <span>Insert here</span>
                 {dragSnapCoords && (
                   <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
                     X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px
@@ -583,6 +584,7 @@ export function VisualNode({ elem }: VisualNodeProps) {
               </span>
               {/* Ghost Indicator Label Badge */}
               <span className="absolute left-7 -translate-y-4 px-2 py-0.5 rounded bg-rose-600/95 backdrop-blur-sm text-[9px] text-white font-mono font-bold shadow-md shadow-rose-900/20 flex items-center gap-1.5">
+                <span>Insert here</span>
                 {dragSnapCoords && (
                   <span className="text-[8.5px] opacity-90 bg-rose-800 px-1 rounded font-normal font-mono border border-rose-500/30">
                     X: {dragSnapCoords.x}px Y: {dragSnapCoords.y}px

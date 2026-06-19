@@ -327,6 +327,7 @@ export function PositionOffsetsControl({
 
   // Refs for tracking click outside
   const unitDropdownRef = useRef<HTMLDivElement>(null);
+  const unitTriggerRef = useRef<HTMLButtonElement>(null);
   const positionDropdownRef = useRef<HTMLDivElement>(null);
   const propertyDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -336,6 +337,15 @@ export function PositionOffsetsControl({
 
   // Floating coordinates positions state for portalled overlays
   const [positionDropdownPos, setPositionDropdownPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    bottom?: number;
+    maxHeight?: number;
+    placement: "top" | "bottom";
+  } | null>(null);
+
+  const [unitDropdownPos, setUnitDropdownPos] = useState<{
     top: number;
     left: number;
     width: number;
@@ -359,7 +369,11 @@ export function PositionOffsetsControl({
       const target = event.target as Node;
       const targetElement = target as Element;
 
-      if (unitDropdownRef.current && !unitDropdownRef.current.contains(target)) {
+      if (
+        unitTriggerRef.current &&
+        !unitTriggerRef.current.contains(target) &&
+        !targetElement.closest("#position-unit-dropdown-menu")
+      ) {
         setUnitDropdownOpen(false);
       }
 
@@ -378,6 +392,53 @@ export function PositionOffsetsControl({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (unitDropdownOpen && unitTriggerRef.current) {
+      const updatePosition = () => {
+        if (!unitTriggerRef.current) return;
+        const rect = unitTriggerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const dropdownWidth = 144; // w-36
+        const dropdownHeight = 240;
+        
+        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+          setUnitDropdownPos({
+            placement: "top",
+            bottom: window.innerHeight - rect.top + 4,
+            left: rect.right - dropdownWidth,
+            width: dropdownWidth,
+            top: 0,
+            maxHeight: spaceAbove - 16
+          });
+        } else {
+          setUnitDropdownPos({
+            placement: "bottom",
+            top: rect.bottom + 4,
+            left: rect.right - dropdownWidth,
+            width: dropdownWidth,
+            maxHeight: spaceBelow - 16
+          });
+        }
+      };
+
+      updatePosition();
+      
+      const handleScroll = (e: Event) => {
+        if (e.target instanceof Element && e.target.closest('#position-unit-dropdown-menu')) return;
+        updatePosition();
+      };
+
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", updatePosition);
+
+      return () => {
+        window.removeEventListener("scroll", handleScroll, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [unitDropdownOpen]);
 
   // Compute position floating rect dynamically for Position dropdown
   useEffect(() => {
@@ -496,7 +557,7 @@ export function PositionOffsetsControl({
   };
 
   // Sync unit based on the current parsed coordinate value
-  const [activeUnit, setActiveUnit] = useState<"px" | "%" | "rem" | "auto">("px");
+  const [activeUnit, setActiveUnit] = useState<"px" | "rem" | "%" | "em" | "vw" | "vh" | "vmin" | "vmax" | "ch" | "ex" | "dvw" | "dvh" | "svw" | "svh" | "lvw" | "lvh" | "auto">("px");
   useEffect(() => {
     if (currentPropertyValue === "auto" || currentPropertyValue === "") {
       setActiveUnit("auto");
@@ -544,7 +605,7 @@ export function PositionOffsetsControl({
     handleCurrentPropertyChange(`${numVal}${activeUnit}`);
   };
 
-  const handleUnitToggle = (unit: "px" | "%" | "rem" | "auto") => {
+  const handleUnitToggle = (unit: "px" | "rem" | "%" | "em" | "vw" | "vh" | "vmin" | "vmax" | "ch" | "ex" | "dvw" | "dvh" | "svw" | "svh" | "lvw" | "lvh" | "auto") => {
     setActiveUnit(unit);
     if (unit === "auto") {
       handleCurrentPropertyChange("auto");
@@ -578,9 +639,22 @@ export function PositionOffsetsControl({
   }, [activeUnit]);
 
   const unitLabels = {
-    px: "Pixels (px)",
-    rem: "Relative (rem)",
+    "px": "Pixels (px)",
+    "rem": "Relative (rem)",
     "%": "Percent (%)",
+    "em": "Element (em)",
+    "vw": "Viewport W (vw)",
+    "vh": "Viewport H (vh)",
+    "dvw": "Dynamic VW (dvw)",
+    "dvh": "Dynamic VH (dvh)",
+    "vmin": "Viewport Min (vmin)",
+    "vmax": "Viewport Max (vmax)",
+    "ch": "Character (ch)",
+    "ex": "X-Height (ex)",
+    "svw": "Small VW (svw)",
+    "svh": "Small VH (svh)",
+    "lvw": "Large VW (lvw)",
+    "lvh": "Large VH (lvh)",
     "auto": "Auto Space"
   };
 
@@ -786,49 +860,66 @@ export function PositionOffsetsControl({
             </div>
 
             {/* Elegant Dropdown for active unit selection */}
-            <div className="relative" ref={unitDropdownRef}>
+            <div className="relative">
               <button
+                ref={unitTriggerRef}
                 type="button"
                 onClick={() => setUnitDropdownOpen(!unitDropdownOpen)}
-                className="flex items-center gap-1 bg-stone-100 border border-stone-200/60 hover:border-indigo-300 hover:bg-indigo-50/20 px-2.5 py-1 rounded-lg text-stone-750 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
+                className="flex items-center gap-1 bg-stone-100 border border-stone-200/60 hover:border-indigo-300 hover:bg-indigo-50/20 px-2.5 py-1 rounded-lg text-stone-755 font-mono text-[9px] font-extrabold transition-all duration-150 cursor-pointer shadow-3xs"
               >
                 <span>{activeUnit.toUpperCase()} Unit</span>
                 <ChevronDown size={11} className={`text-stone-400 font-extrabold transition-transform duration-250 ${unitDropdownOpen ? "rotate-180 text-indigo-600" : ""}`} />
               </button>
 
-              <AnimatePresence>
-                {unitDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute right-0 mt-1.5 w-36 bg-white border border-stone-150 rounded-xl shadow-lg p-1 z-[999] flex flex-col gap-0.5"
-                  >
-                    {(["px", "%", "rem", "auto"] as const).map((u) => {
-                      const isSelected = u === activeUnit;
-                      return (
-                        <button
-                          key={u}
-                          type="button"
-                          onClick={() => {
-                            handleUnitToggle(u);
-                            setUnitDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-2 py-1.5 rounded-lg text-[9.5px] font-semibold flex items-center justify-between transition-all duration-150 cursor-pointer ${
-                            isSelected
-                              ? "bg-indigo-500/10 text-indigo-850 font-bold"
-                              : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
-                          }`}
-                        >
-                          <span className="font-mono">{unitLabels[u]}</span>
-                          {isSelected && <Check size={11} className="text-indigo-600 stroke-[3px]" />}
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {typeof document !== "undefined" && createPortal(
+                <AnimatePresence>
+                  {unitDropdownOpen && unitDropdownPos && (
+                    <motion.div
+                      initial={{ opacity: 0, y: unitDropdownPos.placement === "top" ? 6 : -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
+                      transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                      className="fixed bg-white border border-stone-200 rounded-2xl p-1 shadow-2xl z-[9999999] flex flex-col gap-0.5"
+                      id="position-unit-dropdown-menu"
+                      style={{
+                        top: unitDropdownPos.placement === "bottom" ? unitDropdownPos.top : "auto",
+                        bottom: unitDropdownPos.placement === "top" ? unitDropdownPos.bottom : "auto",
+                        left: unitDropdownPos.left,
+                        width: unitDropdownPos.width,
+                        maxHeight: unitDropdownPos.maxHeight ? unitDropdownPos.maxHeight : "auto",
+                      }}
+                    >
+                      <div className="text-[8px] uppercase font-bold tracking-wider text-indigo-600 font-mono mb-1 mt-1 pl-2 select-none">
+                        Select Unit
+                      </div>
+                      <div className="flex flex-col gap-0.5 max-h-[160px] overflow-y-auto custom-scrollbar">
+                        {((Object.keys(unitLabels)) as readonly (keyof typeof unitLabels)[]).map((u) => {
+                          const isSelected = u === activeUnit;
+                          return (
+                            <button
+                              key={u}
+                              type="button"
+                              onClick={() => {
+                                handleUnitToggle(u);
+                                setUnitDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-2 py-1.5 rounded-lg text-[9.5px] font-semibold flex items-center justify-between transition-all duration-150 cursor-pointer ${
+                                isSelected
+                                  ? "bg-indigo-500/10 text-indigo-850 font-bold"
+                                  : "text-stone-600 hover:bg-stone-55 hover:text-stone-900"
+                              }`}
+                            >
+                              <span className="font-mono">{unitLabels[u]}</span>
+                              {isSelected && <Check size={11} className="text-indigo-600 stroke-[3px]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>,
+                document.body
+              )}
             </div>
           </div>
 
